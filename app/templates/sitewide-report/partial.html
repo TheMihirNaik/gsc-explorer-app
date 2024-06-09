@@ -1,5 +1,19 @@
 
-<div class="mt-5 mb-5 border rounded max-w-max p-5">
+<div role="alert" class="alert mt-5 max-w-fit pr-5">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <span> 
+        The data from Google Search Console covers the following dates:
+        <p class="text-sm">
+            <b>Current Period :</b> {{ cp_earliest_date }} <> {{ cp_latest_date }}
+            <br/> <b>Previous Period :</b> {{ pp_earliest_date }} <> {{ pp_latest_date }}
+            <br/> <b>Previous Year : </b>{{ py_earliest_date }} <> {{ py_latest_date }}
+        </p>
+        
+    </span>
+  </div>
+
+
+<div class="mt-5 mb-5 border rounded max-w-max p-5 hidden">
     <p class="text-lg mb-2">GSC Data is for the following periods:</p>
 
     <p class="text-sm">

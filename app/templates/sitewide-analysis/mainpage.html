@@ -39,7 +39,7 @@
   </div>
 
   
-  <div class="row-auto">
+  <div class="row-auto mt-4">
     <!-- <form class="" id="sitewide-analysis-data" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis">
       <div id="foo" class="">
           <input placeholder="Start Date" type="text" name="start_date" class="border border-bg-accent rounded px-2 py-1 focus:outline-none focus:border-bg-accent">
@@ -58,7 +58,7 @@
     <form id="dateRangeForm" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis" class="inline-block">
       <input type="hidden" name="start_date" id="start_date">
       <input type="hidden" name="end_date" id="end_date">
-      <button type="submit" class="btn btn-primary">Fetch</button>
+      <button type="submit" class="btn btn-primary">Submit</button>
       <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
     </form>
 
@@ -77,8 +77,8 @@
 <script type="text/javascript">
   $(function() {
   
-      var start = moment().subtract(29, 'days');
-      var end = moment();
+    var start = moment().subtract(31, 'days');
+    var end = moment().subtract(2, 'days');
   
       function cb(start, end) {
           $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));

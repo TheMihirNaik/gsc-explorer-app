@@ -116,6 +116,10 @@ def sitewide_analysis():
         ]}]
         
         gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+        
+        # get earliest and latest date from gsc_data
+        earliest_date = gsc_data['DATE'].min()
+        latest_date = gsc_data['DATE'].max()
 
         #total numbers
         total_clicks = gsc_data['clicks'].sum()
@@ -349,7 +353,9 @@ def sitewide_analysis():
                                     brand_query_count_graph=brand_query_count_graph,
                                     non_brand_query_count_graph=non_brand_query_count_graph,
                                     brand_position_bucket_graph=brand_position_bucket_graph,
-                                    non_brand_position_bucket_graph=non_brand_position_bucket_graph
+                                    non_brand_position_bucket_graph=non_brand_position_bucket_graph,
+                                    earliest_date=earliest_date,
+                                    latest_date=latest_date
                                     )
 
         return send_html
@@ -394,6 +400,18 @@ def sitewide_report():
 
         previous_year_df = fetch_search_console_data(webmasters_service, selected_property, previous_year_start_date, previous_year_end_date, dimensions, dimensionFilterGroups)
 
+
+        # get earliest and latest date from gsc_data
+        cp_earliest_date = current_period_df['DATE'].min()
+        cp_latest_date = current_period_df['DATE'].max()
+
+        # get earliest and latest date from gsc_data
+        pp_earliest_date = previous_period_df['DATE'].min()
+        pp_latest_date = previous_period_df['DATE'].max()
+
+        # get earliest and latest date from gsc_data
+        py_earliest_date = previous_year_df['DATE'].min()
+        py_latest_date = previous_year_df['DATE'].max()
 
         #preparing data by country
         current_period_by_country = current_period_df.groupby('COUNTRY').agg(
@@ -642,6 +660,17 @@ def sitewide_report():
                                     #dates
                                     current_start_date=current_start_date,
                                     current_end_date=current_end_date,
+
+                                    #data available dates
+                                    cp_earliest_date=cp_earliest_date,
+                                    cp_latest_date=cp_latest_date,
+                                    pp_earliest_date=pp_earliest_date,
+                                    pp_latest_date=pp_latest_date,
+                                    py_earliest_date=py_earliest_date,
+                                    py_latest_date=py_latest_date,
+
+
+
                                     previous_period_start_date=previous_period_start_date,
                                     previous_period_end_date=previous_period_end_date,
                                     previous_year_start_date=previous_year_start_date,
@@ -684,6 +713,20 @@ def query_aggregate_report():
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
 
+        #check available dates
+        date_checher_start_date = "2020-01-01" 
+        date_checker_end_date = "2050-01-01"
+
+        date_checker_dimensions = ['DATE']
+        date_checker_dimensionFilterGroups = [{"filters": [
+            #{"dimension": "DATE", "operator": "between", "expressions": [date_checher_start_date, date_checker_end_date]}
+        ]}]
+
+        date_checker_df = fetch_search_console_data(webmasters_service, selected_property, date_checher_start_date, date_checker_end_date, date_checker_dimensions, date_checker_dimensionFilterGroups)
+        
+        date_checker_earliest_date = date_checker_df['DATE'].min()
+        date_checker_latest_date = date_checker_df['DATE'].max()
+
         current_start_date, current_end_date, previous_period_start_date, previous_period_end_date, previous_year_start_date, previous_year_end_date = process_dates(start_date_str, end_date_str)
 
         #total numbers make GSC API Call
@@ -699,6 +742,18 @@ def query_aggregate_report():
 
         previous_year_df = fetch_search_console_data(webmasters_service, selected_property, previous_year_start_date, previous_year_end_date, dimensions, dimensionFilterGroups)
         
+
+        """ get earliest and latest date from gsc_data
+        cp_earliest_date = current_period_df['DATE'].min()
+        cp_latest_date = current_period_df['DATE'].max()
+
+        # get earliest and latest date from gsc_data
+        pp_earliest_date = previous_period_df['DATE'].min()
+        pp_latest_date = previous_period_df['DATE'].max()
+
+        # get earliest and latest date from gsc_data
+        py_earliest_date = previous_year_df['DATE'].min()
+        py_latest_date = previous_year_df['DATE'].max() """
 
         merge_df = previous_period_df.merge(previous_year_df, on='QUERY', suffixes=('_prev_p', '_prev_y'), how='outer')
         merge_df = merge_df.merge(current_period_df, on='QUERY', how='outer')
@@ -774,7 +829,9 @@ def query_aggregate_report():
 
         return render_template('/query-aggregate-report/partial.html', 
                                current_period_df=current_period_df,
-                               data_json=data_json
+                               data_json=data_json,
+                               date_checker_earliest_date=date_checker_earliest_date,
+                               date_checker_latest_date=date_checker_latest_date,
                                #current_period_df_html=current_period_df_html
                                )
     

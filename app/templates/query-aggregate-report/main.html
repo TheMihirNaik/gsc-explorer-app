@@ -28,8 +28,9 @@
   <!-- H1 Heading -->
   <div class="row-auto p-2">
     <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">Sitewide Queries Report</h1>
+    
     <div role="alert" class="alert max-w-fit inline-block">
-      <p class="text-lg mt-2">🔋 What's more than Google Search Console?</p>
+      <p class="text-lg mt-0">🔋 What's more than Google Search Console?</p>
       <p class="text-sm mt-2">
         💡 Queries are labeled for Brand vs Non Brand
         <br>💡 Period over Period and Year over Year Comaparison
@@ -37,6 +38,7 @@
         <br>💡 Export Data in CSV, Excel, PDF or Print
         <br>💡 No Limit of 1000 Rows of Data
     </div>
+
   </div>
 
   <!-- GSC Data Form -->
@@ -81,8 +83,8 @@
 <script type="text/javascript">
   $(function() {
   
-      var start = moment().subtract(29, 'days');
-      var end = moment();
+    var start = moment().subtract(31, 'days');
+    var end = moment().subtract(2, 'days');
   
       function cb(start, end) {
           $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));

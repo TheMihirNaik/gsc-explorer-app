@@ -86,8 +86,8 @@
 <script type="text/javascript">
   $(function() {
   
-      var start = moment().subtract(29, 'days');
-      var end = moment();
+      var start = moment().subtract(31, 'days');
+      var end = moment().subtract(2, 'days');
   
       function cb(start, end) {
           $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
