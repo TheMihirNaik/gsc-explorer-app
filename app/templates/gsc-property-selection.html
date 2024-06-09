@@ -4,13 +4,13 @@
 
 {% block content %}
 
-<h1 class="text-5xl font-bold mb-10">GSC Property Selection</h1>
+<h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">GSC Property Selection</h1>
 
-
+<p class="mb-0">Please select the property you want to analyze.</p>
+<p class="mb-5">If you don't select the property, the reports won't be generated.</p>
 
 <form action="/gsc-property-selection/" method="POST">
-    <p class="mb-5">Please select the property you want to analyze.</p>
-
+    
     <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto">
         <option disabled selected>{{selected_property}}</option>
         {% for site in site_list%}
@@ -18,9 +18,15 @@
         {% endfor %}
     </select>
     
-    <p class="text-2xl">Brand Keywords:</p>
-    <p class="">Every Keyword you add here will work as "contains".</p>
-    <p class="text-xs mb-5">Example: If your brand name is Stripe, adding 'stripe' here will include all the Queries that has stripe in it.</p>
+    <p class="text-3xl font-bold mt-5">Brand Variants:</p>
+    <p class="text-sm mb-5 mt-5">
+        Add keywords that represent your brand to label all relevant queries as "Brand". 
+        <br> Others will get labelled as "Non Brand". Separate each keyword with a comma. 
+        </p>
+    <p class="text-xs mb-5"><b>Example:</b>   
+        <br>If your brand name is Stripe, adding 'stripe' here will include all the Queries that has stripe in it.
+        <br>Every Keyword you add here will work as "contains" while labelling them as "Brand".
+    </p>
     <textarea placeholder="keyword1, keyword2, keyword3" class="textarea textarea-bordered row-auto" name="brand_keywords" id="brand_keywords" rows="5" cols="40">{{brand_keywords_string}}</textarea>
     
     
