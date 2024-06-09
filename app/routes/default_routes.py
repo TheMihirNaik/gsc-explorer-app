@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, date
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
 import plotly.express as px
-import gc
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -339,9 +338,6 @@ def sitewide_analysis():
 
         non_brand_numbers = [non_brand_clicks, non_brand_impressions, non_brand_ctr, non_brand_position, non_brand_query_count]
 
-        # Manually trigger garbage collection
-        gc.collect()
-
         send_html = render_template('/sitewide-analysis/partial-gsc-data.html', 
                                     total_data=total_data, 
                                     brand_numbers=brand_numbers,
@@ -640,8 +636,6 @@ def sitewide_report():
 
         merge_df_html_by_device = merge_df_by_device.to_html(classes='table table-striped', table_id="byDevice", index=False)
 
-        # Manually trigger garbage collection
-        gc.collect()
 
 
         send_html = render_template('/sitewide-report/partial.html', 
@@ -776,9 +770,6 @@ def query_aggregate_report():
 
 
         data_json = merge_df.to_json(orient='split')
-
-        # Manually trigger garbage collection
-        gc.collect()
 
 
         return render_template('/query-aggregate-report/partial.html', 
