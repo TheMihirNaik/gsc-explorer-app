@@ -154,7 +154,7 @@ def sitewide_analysis():
             count_queries = ('query', 'count'),
         ).reset_index()
 
-        print(date_plot_df)
+        #print(date_plot_df)
 
 
 
@@ -426,7 +426,7 @@ def sitewide_report():
         merge_df = previous_period_by_country.merge(previous_year_by_country, on='COUNTRY', suffixes=('_prev_p', '_prev_y'), how='outer')
         merge_df = merge_df.merge(current_period_by_country, on='COUNTRY', how='outer')
 
-        print(merge_df.info())
+        #print(merge_df.info())
 
         merge_df['clicks_pop'] = round((merge_df['clicks'] - merge_df['clicks_prev_p'])/merge_df['clicks_prev_p'] * 100,2)
         merge_df['impressions_pop'] = round((merge_df['impressions'] - merge_df['impressions_prev_p'])/merge_df['impressions_prev_p'] * 100,2)
@@ -469,7 +469,7 @@ def sitewide_report():
         # Fill NaN values with 0
         merge_df.fillna(0, inplace=True)
 
-        print(merge_df.info())
+        #print(merge_df.info())
 
 
         # Assuming your DataFrame is named df
@@ -547,8 +547,8 @@ def sitewide_report():
         merge_df_by_device = previous_period_by_device.merge(previous_year_by_device, on='DEVICE', suffixes=('_prev_p', '_prev_y'), how='outer')
         merge_df_by_device = merge_df_by_device.merge(current_period_by_device, on='DEVICE', how='outer')
 
-        print(merge_df_by_device.info())
-        print('-----')
+        #print(merge_df_by_device.info())
+        #print('-----')
 
         merge_df_by_device['clicks_pop'] = round((merge_df_by_device['clicks'] - merge_df_by_device['clicks_prev_p'])/merge_df_by_device['clicks_prev_p'] * 100,2)
         merge_df_by_device['impressions_pop'] = round((merge_df_by_device['impressions'] - merge_df_by_device['impressions_prev_p'])/merge_df_by_device['impressions_prev_p'] * 100,2)
@@ -591,7 +591,7 @@ def sitewide_report():
         # Fill NaN values with 0
         merge_df_by_device.fillna(0, inplace=True)
 
-        print(merge_df_by_device.info())
+        #print(merge_df_by_device.info())
 
 
         # Assuming your DataFrame is named df
@@ -656,7 +656,7 @@ def sitewide_report():
                                     merge_df_html=merge_df_html,
                                     merge_df_html_by_device=merge_df_html_by_device
                                     )
-        print('send_html successful')
+        #print('send_html successful')
 
         return send_html
 
@@ -707,7 +707,7 @@ def query_aggregate_report():
  
         merge_df.fillna(0, inplace=True)
 
-        print(merge_df)
+        #print(merge_df)
 
         merge_df['clicks_pop'] = ((merge_df['clicks'] - merge_df['clicks_prev_p']) / merge_df['clicks_prev_p'] * 100).round(2)
         merge_df['impressions_pop'] = ((merge_df['impressions'] - merge_df['impressions_prev_p']) / merge_df['impressions_prev_p'] * 100).round(2)
@@ -755,7 +755,7 @@ def query_aggregate_report():
             ('Position (PY)')
         ]
 
-        print(merge_df.info())
+        #print(merge_df.info())
 
         merge_df = merge_df.reindex(columns=columns_order)
 
