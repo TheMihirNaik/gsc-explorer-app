@@ -5,15 +5,16 @@
 {% block content %}
 
 <!-- Hero Banner -->
-<div class="hero bg-neutral-content p-10 min-h-screen">
+<div class="hero bg-neutral-content p-10">
   <div class="hero-content flex-col lg:flex-row-reverse">
     <img src="{{ url_for('static', filename='/images/flask-for-microsaas.png') }}" class="max-w-sm rounded-lg shadow-2xl hidden" />
     <div>
       <h1 class="text-5xl font-bold">✨GSC Explorer</h1>
       <h2 class="text-3xl mt-2 mb-2">🔥 Explore your GSC Data in Meaningful ways.</h2>
       <ul class="mb-10 mt-10">
-        <li>⚒️ Prebuilt Charts & Reports for Google Search Console Data</li>
-        <li>⚒️ <a href="https://github.com/TheMihirNaik/gsc-explorer-app" class="link" target="_blank">OpenSource GSC Web Application</a> anyone can contribute to!</li>
+        <li class="mt-2">💰 Completely FREE! No strings attached.</li>
+        <li class="mt-2">⚒️ Prebuilt Charts & Reports for Google Search Console Data</li>
+        <li class="mt-2">⚒️ <a href="https://github.com/TheMihirNaik/gsc-explorer-app" class="link" target="_blank">OpenSource GSC Web Application</a> anyone can contribute to!</li>
       </ul>
       <a href="/dashboard/"><button class="btn btn-active btn-primary m-2">Continue to Dashboard</button></a>
 
@@ -26,6 +27,52 @@
     </div>
   </div>
 </div>
+
+<!-- FAQs-->
+<div class=" pb-10 bg-neutral-content mx-auto w-1/2 items-center justify-center">
+
+  <h2 class="text-4xl font-bold mx-auto text-center">Expected Questions</h2>
+
+  <div class="pt-10 pb-10">
+    <div class="collapse collapse-arrow bg-neutral-content">
+      <input type="radio" name="my-accordion-2" checked="checked" /> 
+      <div class="collapse-title text-xl font-medium">
+        Why GSC Explorer is FREE?
+      </div>
+      <div class="collapse-content"> 
+        <p>This is my learning project. I know I don't have skills to release a product where I can charge yet, but I want to learn. 
+          I just expect this to be useful in your worklow, and you put in more feature request so I can learn more. Since, GSC API is free, the cost of running this project is just $7 per month. </p>
+      </div>
+    </div>
+    <div class="collapse collapse-arrow bg-neutral-content">
+      <input type="radio" name="my-accordion-2" /> 
+      <div class="collapse-title text-xl font-medium">
+        Do you store any data?
+      </div>
+      <div class="collapse-content"> 
+        This tool calls GSC API when you hit "Fetch" button. All the data and credentials are store locally, and gets removed once you exit the session. 
+        There are no database connections in the code. Refer to the <a href="https://github.com/TheMihirNaik/gsc-explorer-app" target="_blank" class="link">public codebase</a> to verify.
+      </div>
+    </div>
+    <div class="collapse collapse-arrow bg-neutral-content">
+      <input type="radio" name="my-accordion-2" /> 
+      <div class="collapse-title text-xl font-medium">
+        What's worth knowing?
+      </div>
+      <div class="collapse-content"> 
+        <p>i've installed Google Analytics 4 (GA4) to help me understand how our products are being used and to learn more about user behavior. 
+          This information will help us improve your experience with our products. Personally, I want to learn more about product analytics as well.
+          <br>
+          <br>
+          Additionally, I've installed Microsoft Clarity to get insights through heatmaps and session recordings. 
+          This means I might be able to see recordings of how you interact with our site. 
+          I'm doing this to identify areas for improvement and to make our features even better for you.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 
 <!-- Choices -->
 <div class="mt-20 mb-20 hidden">
