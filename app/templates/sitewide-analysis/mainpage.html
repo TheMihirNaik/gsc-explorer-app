@@ -40,7 +40,7 @@
 
   
   <div class="row-auto">
-    <form class="" id="sitewide-analysis-data" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis">
+    <!-- <form class="" id="sitewide-analysis-data" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis">
       <div id="foo" class="">
           <input placeholder="Start Date" type="text" name="start_date" class="border border-bg-accent rounded px-2 py-1 focus:outline-none focus:border-bg-accent">
           <span class="text-gray-500">to</span>
@@ -48,7 +48,20 @@
           <button class="btn btn-primary" type="submit">Fetch</button>
           <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
         </div>
+    </form> -->
+
+    <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;" class="inline-block max-w-fit mr-5">
+      <i class="fa fa-calendar"></i>&nbsp;
+      <span></span> <i class="fa fa-caret-down"></i>
+    </div>
+    
+    <form id="dateRangeForm" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis" class="inline-block">
+      <input type="hidden" name="start_date" id="start_date">
+      <input type="hidden" name="end_date" id="end_date">
+      <button type="submit" class="btn btn-primary">Fetch</button>
+      <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
     </form>
+
   </div>
 
   <!-- H1 Heading -->
@@ -61,10 +74,38 @@
 
 
 
-
+<script type="text/javascript">
+  $(function() {
+  
+      var start = moment().subtract(29, 'days');
+      var end = moment();
+  
+      function cb(start, end) {
+          $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+          $('#start_date').val(start.format('MM/DD/YYYY'));
+          $('#end_date').val(end.format('MM/DD/YYYY'));
+      }
+  
+      $('#reportrange').daterangepicker({
+          startDate: start,
+          endDate: end,
+          ranges: {
+             'Today': [moment(), moment()],
+             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+             'This Month': [moment().startOf('month'), moment().endOf('month')],
+             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+          }
+      }, cb);
+  
+      cb(start, end);
+  
+  });
+</script>
 
 <!-- Date Picker Script-->
-<script>
+<!-- <script>
   const startInput = document.querySelector('input[name="start_date"]');
   const endInput = document.querySelector('input[name="end_date"]');
   const datepickerStart = new Datepicker(startInput, {
@@ -73,6 +114,6 @@
   const datepickerEnd = new Datepicker(endInput, {
     // options for end datepicker
   });
-</script>
+</script> -->
 
 {% endblock %}
