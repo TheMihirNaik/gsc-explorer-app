@@ -1,0 +1,44 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+<div class="text-center m-5 p-5 items-center justify-center">
+
+    <h1 class="text-5xl font-bold m-5">DataTables Example</h1>
+    <p class="text-3xl m-5">This is an example of using DataTables to create Interactive Tables</p>
+
+    <table id="irisTable">
+        <thead>
+            <tr>
+                <th>Sepal Length</th>
+                <th>Sepal Width</th>
+                <th>Petal Length</th>
+                <th>Petal Width</th>
+                <th>Species</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in df %}
+            <tr>
+                <td>{{ row['sepal_length'] }}</td>
+                <td>{{ row['sepal_width'] }}</td>
+                <td>{{ row['petal_length'] }}</td>
+                <td>{{ row['petal_width'] }}</td>
+                <td>{{ row['species'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<!-- Datatable Script -->
+<script>
+    $(document).ready(function() {
+        $('#irisTable').DataTable();
+    });
+</script>
+
+{% endblock %}

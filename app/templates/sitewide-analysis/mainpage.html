@@ -1,0 +1,78 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Sitewide Analysis for {{ selected_property}} {% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
+
+<!-- Website Name & Brand Term Section-->
+<div class="flex flex-row">
+
+  <div role="alert" class="alert alert-success max-w-fit	 pr-10">
+    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    <b>GSC Property : </b>
+    <span>{{ selected_property}}</span>
+  </div>
+
+  <div role="alert" class="alert alert-success max-w-fit	 pr-10 ml-10">
+    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    <span><b>Brand Terms :</b>  {{ brand_keywords }}</span>
+  </div>
+
+</div>
+
+<div class="row-auto">
+  <!-- H1 Heading -->
+  <div class="row-auto p-2">
+    <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">Sitewide Analysis</h1>
+    <div role="alert" class="alert max-w-fit inline-block">
+      <p class="text-lg mt-2">🔋 What's more than Google Search Console?</p>
+      <p class="text-sm mt-2">
+        💡 GSC Metrics(Clicks, Impressions, CTR, Positions) by Brand, Non Brand and Anonymized Queries
+        <br>📈 Pre-Built Charts for GSC Metrics by Brand vs Non Brand Queries
+        <br>📈 Query Count Charts by Brand vs Non Brand Queries
+        <br>📈 Query Count by Position Bucket Charts by Brand vs Non Brand Queries
+        <br>💡 No Limit of 1000 Rows of Data
+    </div>
+  </div>
+
+  
+  <div class="row-auto">
+    <form class="" id="sitewide-analysis-data" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis">
+      <div id="foo" class="">
+          <input placeholder="Start Date" type="text" name="start_date" class="border border-bg-accent rounded px-2 py-1 focus:outline-none focus:border-bg-accent">
+          <span class="text-gray-500">to</span>
+          <input placeholder="End Date" type="text" name="end_date" class="border border-bg-accent rounded px-2 py-1 focus:outline-none focus:border-bg-accent">
+          <button class="btn btn-primary" type="submit">Fetch</button>
+          <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
+        </div>
+    </form>
+  </div>
+
+  
+
+  <div id="sitewide-analysis">
+
+  </div>
+
+</div>
+
+
+
+
+
+<!-- Date Picker Script-->
+<script>
+  const startInput = document.querySelector('input[name="start_date"]');
+  const endInput = document.querySelector('input[name="end_date"]');
+  const datepickerStart = new Datepicker(startInput, {
+    // options for start datepicker
+  });
+  const datepickerEnd = new Datepicker(endInput, {
+    // options for end datepicker
+  });
+</script>
+
+{% endblock %}

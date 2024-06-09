@@ -1,0 +1,32 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+
+<div class="text-center m-5 p-5 items-center justify-center">
+
+    <h1 class="text-5xl font-bold m-5">ValueSERP API Example</h1>
+    <p class="text-3xl m-5">This is an example of using ValueSERP to Scrape Google SERP in realtime.</p>
+
+
+    <form hx-trigger="submit" hx-swap="innerHTML" hx-target="#valueserp-api-data" hx-post="/valueserp-api/" method="POST" id="my-form">
+        <input class="textarea textarea-bordered m-2" type="text" placeholder="e.g. best laptop for gaming" name="keyword" id="system_prompt"></textarea>
+        <input class="textarea textarea-bordered m-2" type="text" placeholder="e.g Toronto, Ontario, Canada" name="location" id="user_prompt"></textarea>
+        <input class="textarea textarea-bordered m-2" type="text" placeholder="e.g CA for Canada" name="country" id="task_prompt"></textarea>
+        <input class="textarea textarea-bordered m-2" type="text" placeholder="e.g EN for English" name="Language" id="task_prompt"></textarea>
+        <br>
+        <div class="tooltip" data-tip="Clicking this button will make a call to OpenAI API, and return response.">
+            <button type="submit" class="btn btn-active btn-primary items-center">Submit</button>
+          </div>
+    </form>
+    
+    <div id="valueserp-api-data" class="m-5 p-5 bg-primary-content min-h-48 rounded-lg">
+        The response will be here.
+    </div>
+
+
+</div>
+
+{% endblock %}

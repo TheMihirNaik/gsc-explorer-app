@@ -1,0 +1,30 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block content %}
+
+<h1 class="text-5xl font-bold mb-10">GSC Property Selection</h1>
+
+
+
+<form action="/gsc-property-selection/" method="POST">
+    <p class="mb-5">Please select the property you want to analyze.</p>
+
+    <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto">
+        <option disabled selected>{{selected_property}}</option>
+        {% for site in site_list%}
+        <option>{{ site }}</option>
+        {% endfor %}
+    </select>
+    
+    <p class="text-2xl">Brand Keywords:</p>
+    <p class="">Every Keyword you add here will work as "contains".</p>
+    <p class="text-xs mb-5">Example: If your brand name is Stripe, adding 'stripe' here will include all the Queries that has stripe in it.</p>
+    <textarea placeholder="keyword1, keyword2, keyword3" class="textarea textarea-bordered row-auto" name="brand_keywords" id="brand_keywords" rows="5" cols="40">{{brand_keywords_string}}</textarea>
+    
+    
+    <button type="submit" class="btn btn-accent m-4">Select</button>
+</form>
+
+{% endblock %}

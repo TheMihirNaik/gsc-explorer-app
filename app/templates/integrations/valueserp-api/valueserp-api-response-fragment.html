@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SERP Data</title>
+</head>
+<body>
+    {% for item in serp_data['organic_results'] %}
+        <div>
+            <p>{{ item['block_position'] }}</p>
+            <p>{{ item['title'] }}</p>
+            <p>{{ item['snippet'] }}</p>
+            <p>{{ item['link'] }}</p>
+        </div>
+    {% endfor %}
+</body>
+</html>

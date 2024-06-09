@@ -1,0 +1,108 @@
+{% extends "/default/loggedout-base.html" %}
+
+{% block title %} GSC Explorer {% endblock %}
+
+{% block content %}
+
+<!-- Hero Banner -->
+<div class="hero bg-neutral-content p-10 min-h-screen">
+  <div class="hero-content flex-col lg:flex-row-reverse">
+    <img src="{{ url_for('static', filename='/images/flask-for-microsaas.png') }}" class="max-w-sm rounded-lg shadow-2xl hidden" />
+    <div>
+      <h1 class="text-5xl font-bold">✨GSCExplorer.App</h1>
+      <h2 class="text-3xl mt-2 mb-2">🔥 Explore your GSC Data in Meaningful ways.</h2>
+      <ul class="mb-10 mt-10">
+        <li>⚒️ Prebuilt Charts & Reports for Google Search Console Data</li>
+        <li>⚒️ OpenSource GSC Web Application anyone can contribute to!</li>
+      </ul>
+      <a href="/dashboard/"><button class="btn btn-active btn-primary m-2">Continue to Dashboard</button></a>
+
+      <div class="mt-10">
+        Built by <a href="https://www.mihirnaik.com/" class="link">Mihir Naik</a>  with ❤️ in Toronto, Canada
+        <p class="py-6">
+          <b>Note: </b> This tool doesn't save any data permanently. Everything is stored only during your current session and is deleted once the session ends. <br>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Choices -->
+<div class="mt-20 mb-20 hidden">
+  <h2 class="text-3xl font-bold text-center m-10">What are the choices in Flask Boilerplate? </h2>
+
+  <div class="grid grid-cols-3 gap-4 m-10">
+    <div >
+      <h3 class="text-2xl font-bold">DaisyUI on TailwindCSS</h3>
+      <p>Very flexible TailwindCSS with DaisyUI for quick builds.</p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">MongoDB Connection</h3>
+      <p>Using pymongo to connect to MongoDB database.</p>
+      Here is an <a href="/dashboard/" class="link">example</a> of how I'm using it.</p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">HTMX</h3>
+      <p>HTMX for interactivity. Use click and buttons to trigger GET and POST requests. 
+        The server will send HTML fragments that will get relace a part of the HTML.
+        Here is an <a href="/openai/" class="link">example</a> of how I'm using it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="mt-20 mb-20 hidden">
+  <h2 class="text-3xl font-bold text-center m-10">Ready to Use Integrations</h2>
+
+  <div class="grid grid-cols-3 gap-4 m-10">
+    <div>
+      <h3 class="text-2xl font-bold">Google Search Console API</h3>
+      <p>For SEO tasks, GSC data is important. Here is authentication and authorization for GSC.
+        Here is an <a href="/google-search-console/" class="link">example</a> of how I'm using it.</p>
+      </p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">DataTables</h3>
+      <p>To show tables, using DataTables as it comes packed with features.
+        Here is an <a href="/datatables/" class="link">example</a> of how I'm using it.</p>
+      </p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Plotly</h3>
+      <p>To visulize data, using Plotly Express. Here is an <a href="/plotly-graphs/" class="link">example</a> of how I'm using it.</p>
+    </div>
+  </div>
+  <div class="grid grid-cols-3 gap-4 m-10">
+    <div>
+      <h3 class="text-2xl font-bold">ValueSERP API</h3>
+      <p>For SEO tasks, scraping real-time SERP is important so I have integrated with ValueSERP
+        Here is an <a href="/valueserp-api/" class="link">example</a> of how I'm using it.</p>
+      </p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Customer Feedback</h3>
+      <p>For any web application, getting user feedback or suggestion is important so I have built native way to collect it.
+        You can click on bottom right corner comment icon and check
+      </p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Stripe Payments (Coming soon)</h3>
+  
+    </div>
+  </div>
+  <div class="grid grid-cols-3 gap-4 m-10">
+    <div>
+      <h3 class="text-2xl font-bold">Transactional Emails (Coming soon)</h3>
+      
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Product Analytics (Coming Soon)</h3>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Suggest Feature</h3>
+    </div>
+  </div>
+
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+<div class="text-center m-5 p-5 items-center justify-center">
+
+    <h1 class="text-5xl font-bold m-5">Google Search Console API Example</h1>
+    <p class="text-3xl m-5">This is an example of using GSC API to get the list of website and queries.</p>
+
+    <a href="/google-search-console/" class="link">Google Search Console Example</a>
+    <a href="/gsc_clear" class="link">Clear Session Cookies</a>
+    <a href="/gsc_revoke" class="link">Revoke GSC Access</a>
+
+
+    <button class="btn btn-active btn-primary m-2" hx-post="/google-search-console/" hx-target="#gsc-property-list" hx-swap="innerHTML">Get List of GSC Properties</button>
+
+    <div id="gsc-property-list">
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+<div class="text-center m-5 p-5 items-center justify-center">
+
+    <h1 class="text-5xl font-bold m-5">Plotly Example</h1>
+    <p class="text-3xl m-5">This is an example of using Plotly Express to generate graphs.</p>
+
+    {{graph|safe}}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Dashboard : {{ selected_property}}  {% endblock %}
+
+{% block content %}
+
+<div class="flex flex-row">
+
+    <div role="alert" class="alert alert-success max-w-fit	 pr-10">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <b>GSC Property : </b>
+      <span>{{ selected_property}}</span>
+    </div>
+  
+    <div role="alert" class="alert alert-success max-w-fit	 pr-10 ml-10">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <span><b>Brand Terms :</b>  {{ brand_keywords }}</span>
+    </div>
+  
+</div>
+
+<h2 class="text-4xl font-bold m-10">Charts</h2>
+
+<div class="grid grid-cols-3 gap-5 m-10">
+  <div>
+    <h2 class="text-2xl">Sitewide Analysis</h3>
+      <p class="text-l mt-2 font-bold">By Brand, Non Brand & Anonymized Queries</p>
+      <p class="text-sm mt-2">GSC Metrics Charts by Brand vs Non Brand Queries</p>
+      <a href="/charts/sitewide-brand-vs-non-brand/"><button class="btn btn-neutral mt-5">Explore</button></a>
+      
+  </div>
+  <div class="hidden">
+    <h2 class="text-2xl">Query Analysis</h3>
+
+    <a href="/sitewide-query-analysis/"><button class="btn btn-neutral mt-5">Explore</button></a>
+  </div>
+  <div class="hidden">
+    <h2 class="text-2xl">Page Analysis</h3>
+  </div>
+</div>
+
+
+<h2 class="text-4xl font-bold m-10">Reports</h2>
+
+<div class="grid grid-cols-3 gap-5 m-10">
+  <div>
+    <h2 class="text-2xl">Sitewide Overview</h3>
+      <p class="text-l mt-2 font-bold">Aggregate, By Country, By Device</p>
+      <p class="text-sm mt-2">Table with Data showing Current Period, Previous Period & Previous Year Reports</p>
+      <a href="/reports/sitewide-overview/"><button class="btn btn-neutral mt-5">Explore</button></a>
+      
+  </div>
+  <div>
+    <h2 class="text-2xl">Sitewide Queries</h3>
+    <p class="text-l mt-2 font-bold">Aggregate, By Country, By Device</p>
+    <p class="text-sm mt-2">Current Period, Previous Period & Previous Year Reports</p>
+    <a href="/reports/sitewide-queries/"><button class="btn btn-neutral mt-5">Explore</button></a>
+  </div>
+  <div class="hidden">
+    <h2 class="text-2xl">Page Analysis</h3>
+  </div>
+</div>
+
+
+
+{% endblock %}

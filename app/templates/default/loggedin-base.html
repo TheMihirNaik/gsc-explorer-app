@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="autumn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - GSCExplorer.App✨</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+
+    
+    <!-- DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+  
+    <!-- Jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Datatables -->
+    <link href="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/date-1.5.2/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sb-1.7.1/sp-2.3.1/sl-2.0.1/sr-1.4.1/datatables.min.css" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/date-1.5.2/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sb-1.7.1/sp-2.3.1/sl-2.0.1/sr-1.4.1/datatables.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LV2HG04JYC"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-LV2HG04JYC');
+    </script>
+
+    <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "movkiwje2r");
+    </script>
+  </head>
+<body class="">
+  
+  <div class="drawer lg:drawer-open">
+    <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
+    
+    <!-- Main Content -->
+    <div class="drawer-content p-10">
+      
+
+      <!-- Flash Messages -->
+      <div class="bg-gray-100">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div role="alert" class="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- Page content here -->
+      <label for="my-drawer-2" class="btn btn-primary drawer-button lg:hidden">Open drawer</label>
+      {% block content %} 
+      {% endblock %}
+    
+    </div> 
+
+    <!-- Side Bar -->
+    <div class="drawer-side">
+
+      <label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
+
+      <!-- Side Bar Content -->
+      <div class="menu p-4 w-80 min-h-full bg-neutral text-neutral-content justify-between">
+
+
+        <div class="flex flex-col">
+            <!-- Main Logo -->
+          <div class="font-bold text-xl">
+            <a href="/" class="">✨GSC Explorer App</a>
+          </div>
+
+          <!-- Sidebar content here -->
+          <div class="">
+            <ul class="menu p-4 bg-neutral text-neutral-content text-xl">
+              <li class="m-2">
+                <a href="/dashboard/"><i class="fa-solid fa-gauge"></i>Dashboard</a>
+              </li>
+              
+              <b><li class="m-2 text-lg">Charts/Visualizations</li></b>
+              <li class="m-2 text-sm">
+                <a href="/charts/sitewide-brand-vs-non-brand/"><i class="fa-solid fa-chart-line"></i>Sitewide BR vs NB</a>
+              </li>
+              
+              <b><li class="m-2 text-lg">Reports/Tables</li></b>
+              <li class="m-2 text-sm"><a href="/reports/sitewide-overview/"><i class="fa-solid fa-table-cells"></i>Sitewide Overview</a></li>
+              <li class="m-2 text-sm"><a href="/reports/sitewide-queries/"><i class="fa-solid fa-table-cells"></i>Sitewide Queries</a></li>
+            </ul>
+          </div>
+
+        </div>
+        
+          <!-- Upper content here -->
+          <div class="">
+            <ul class="menu p-4 bg-neutral text-neutral-content justify-between text-xl">
+
+              <div class="tooltip tooltip-accent" data-tip="Click here to choose a different Google Search Console property for your analysis. This allows you to analyze GSC data from different websites within your GSC account.">
+                <li class="m-2"><a href="/gsc-property-selection/">Select a GSC Property</a></li>
+              </div>
+
+              <div class="tooltip tooltip-primary" data-tip="Click this button to remove Google Search Console access. This action will revoke permissions and disconnect your Google Account.">
+                <li class="m-2"><a href="/gsc_revoke"><button class="btn btn-primary">Revoke GSC Access</button></a></li>
+              </div>
+
+              <div class="tooltip tooltip-primary" data-tip="Click here to remove your current session cookies where your GSC Credentials are stored.">
+                <li class="m-2"><a href="/gsc_clear"><button class="btn btn-primary">Clear Session Cookies</button></a></li>
+              </div>
+              
+              
+            </ul>
+          </div>
+
+      </div>
+    </div>
+
+     <!-- Customer Feedback Modal-->
+    <div>
+        <!-- Open the modal using ID.showModal() method -->
+        
+      <button id="feedbackButton" class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-3 shadow-lg" 
+      onclick="my_modal_2.showModal()">
+        <i class="fa fa-comment"></i>
+      </button>
+
+      <!-- Open the modal using ID.showModal() method -->
+      
+      <dialog id="my_modal_2" class="modal">
+        <div class="modal-box p-8">
+          <h3 class="font-bold text-lg mb-5">Share your feedback, comments, and suggestions</h3>
+          
+          <div id="feedback-response">
+            
+            <form class="form" id="form-feedback">
+              <input type="text" name="customer_feedback" placeholder='Enter your Feedback' class="input input-bordered input-lg w-full"><br><br>
+              <input type="submit" id="sub" class="btn btn-active btn-primary">
+            </form>
+            
+            <p id="msg" class="py-2"></p> <!-- Element to display API response -->
+          </div>
+          <p class="py-2">Press ESC key or click outside to close</p>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+      
+    </div>
+
+  </div>
+
+  <script>
+    let form = document.querySelector("#form-feedback"); // Select form using id
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      document.querySelector("#sub").value = "Submitting..";
+      let data = new FormData(form);
+      fetch('https://script.google.com/macros/s/AKfycbzBS2FGa1_tkH-6LtUHKnRUY7v2xSu9g8-yp5OfMxY6WyEiKZnQL_Fo2B5SGgdflWQ5rg/exec', {
+          method: "POST",
+          body: data
+        })
+        .then(res => res.text())
+        .then(data => {
+          document.querySelector("#msg").innerHTML = data; // Display response in #msg element
+          document.querySelector("#sub").value = "Submit";
+        });
+    });
+  </script>
+
+</body>
+</html>

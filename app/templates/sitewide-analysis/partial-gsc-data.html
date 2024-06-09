@@ -1,0 +1,122 @@
+<h2 class="text-3xl font-bold mt-10 mb-10">Sitewide : Brand, Non Brand & Anonymized Queries Analysis</h2>
+
+<table class="table bg-neutral-content text-right w-fit">
+    <tbody>
+        <thead class="text-xl">
+            <td></td>
+            <td>Clicks</td>
+            <td>Impressions</td>
+            <td>CTR</td>
+            <td>Position</td>
+            <td>Query Count</td>
+        </thead>
+        <tr>
+            <td class="text-l">Brand
+                <div class="tooltip" data-tip="GSC Metrics for Queries lablled as Branded Queries."> 
+                    <i class="fa fa-comment"></i>
+                </div>
+            </td>
+            
+            <td>{{ brand_numbers[0]|format_number }}</td>
+            <td>{{ brand_numbers[1]|format_number }}</td>
+            <td>{{ brand_numbers[2]|round(2) }}</td>
+            <td>{{ brand_numbers[3]|round(2) }}</td>
+            <td>{{ brand_numbers[4]|format_number }}</td>
+        </tr>
+        <tr>
+            <td class="text-l">Non Brand
+                <div class="tooltip" data-tip="GSC Metrics for Queries lablled as Non Branded Queries."> 
+                    <i class="fa fa-comment"></i>
+                </div>
+            </td>
+            
+            <td>{{ non_brand_numbers[0]|format_number }}</td>
+            <td>{{ non_brand_numbers[1]|format_number }}</td>
+            <td>{{ non_brand_numbers[2]|round(2) }}</td>
+            <td>{{ non_brand_numbers[3]|round(2) }}</td>
+            <td>{{ non_brand_numbers[4]|format_number }}</td>
+        </tr>
+        <tr>
+            <td class="text-l">Anonymized
+                <div class="tooltip" data-tip="GSC Metrics for Anonymized Queries"> 
+                    <i class="fa fa-comment"></i>
+                </div>
+            </td>
+            <td>{{ (total_data[0] - non_brand_numbers[0] - brand_numbers[0])|format_number }}</td>
+            <td>{{ (total_data[1] - non_brand_numbers[1] - brand_numbers[1])|format_number }}</td>
+            <td>{{ ((total_data[0] - non_brand_numbers[0] - brand_numbers[0]) / (total_data[1] - non_brand_numbers[1] - brand_numbers[1]) * 100 )|round(2)}}</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <b>
+            <tr class="bg-neutral text-white">
+                <td class="text-l">Total</td>
+                <td>{{ total_data[0]|format_number }}</td>
+                <td>{{ total_data[1]|format_number }}</td>
+                <td>{{ total_data[2]|round(2) }}</td>
+                <td>{{ total_data[3]|round(2) }}</td>
+                <td></td>
+            </tr>
+        </b>
+
+    </tbody>
+</table>
+
+<h2 class="text-3xl font-bold mt-10 mb-10">GSC Metrics : Brand vs Non Brand Charts</h2>
+
+<div class="grid grid-cols-2 gap-3">
+    
+    <div>
+        <h3 class="text-2xl font-bold">Clicks</h3>
+        {{clicks_graph|safe}}
+    </div>
+    <div>
+        <h3 class="text-2xl font-bold">Impressions</h3>
+        {{impressions_graph|safe}}
+    </div>
+    <div>
+        <h3 class="text-2xl font-bold">CTR</h3>
+        {{ctr_fig_graph|safe}}
+    </div>
+    <div>
+        <h3 class="text-2xl font-bold">Position</h3>
+        {{position_fig_graph|safe}}
+    </div>
+
+</div>
+
+<h2 class="text-3xl font-bold mt-10 mb-10">Query Count by Brand vs Non Brand Charts</h2>
+
+<div class="grid grid-cols-2 gap-3">
+    <div>
+        <h3 class="text-2xl font-bold">Brand Queries</h3>
+        {{brand_query_count_graph|safe}}
+    </div>
+    <div>
+        <h3 class="text-2xl font-bold">Non Brand Queries</h3>
+        {{non_brand_query_count_graph|safe}}
+    </div>
+</div>
+
+<h2 class="text-3xl font-bold mt-10 mb-10">Query Count by Position Brand vs Non Brand Charts</h2>
+
+<div class="grid grid-cols-2 gap-3">
+    <div>
+        <h3 class="text-2xl font-bold">Brand Queries</h3>
+        {{brand_position_bucket_graph|safe}}
+    </div>
+    <div>
+        <h3 class="text-2xl font-bold">Non Brand Queries</h3>
+        {{non_brand_position_bucket_graph|safe}}
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+

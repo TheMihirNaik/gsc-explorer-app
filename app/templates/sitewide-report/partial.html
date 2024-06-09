@@ -1,0 +1,168 @@
+
+<div class="mt-5 mb-5 border rounded max-w-max p-5">
+    <p class="text-lg mb-2">GSC Data is for the following periods:</p>
+
+    <p class="text-sm">
+        <b>Current Period :: </b>{{ current_start_date }} <> {{ current_end_date }}
+        <br/> <b>Previous Period ::  </b> {{ previous_period_start_date }} <> {{ previous_period_end_date }}
+        <br/><b>Previous Year  ::</b> {{ previous_year_start_date }} <> {{ previous_year_end_date }}<br>
+    </p>
+    
+</div>
+
+
+
+
+<h2 class="text-4xl font-bold mb-10 mt-10 ">Aggregate</h2>
+<!-- hidden table-->
+<div class="hidden">
+    <table class="table bg-neutral-content text-right w-fit">
+        <tbody>
+            <thead class="text-xl">
+                <td></td>
+                <td>Clicks</td>
+                <td>Impressions</td>
+                <td>CTR</td>
+                <td>Position</td>
+            </thead>
+            <tr>
+                <td>Current Period</td>
+                <td>{{current_period_df['clicks'].sum()}}</td>
+                <td>{{current_period_df['impressions'].sum()}}</td>
+                <td>{{ (current_period_df['clicks'].sum() / current_period_df['impressions'].sum() * 100)|round(2) }}%</td>
+                <td>{{current_period_df['position'].mean()|round(2)}}</td>
+            </tr>
+            <tr>
+                <td>Previous Period</td>
+                <td>{{previous_period_df['clicks'].sum()}}</td>
+                <td>{{previous_period_df['impressions'].sum()}}</td>
+                <td>{{ (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100)|round(2) }}%</td>
+                <td>{{previous_period_df['position'].mean()|round(2)}}</td>
+            </tr>
+            <tr>
+    
+                <td>Previous Year</td>
+                <td>{{previous_year_df['clicks'].sum()}}</td>
+                <td>{{previous_year_df['impressions'].sum()}}</td>
+                <td>{{ (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100)|round(2) }}%</td>
+                <td>{{previous_year_df['position'].mean()|round(2)}}</td>
+    
+            </tr>
+            <tr>
+                <td>PoP (%)</td>
+                <td>{{ ((current_period_df['clicks'].sum() - previous_period_df['clicks'].sum())/previous_period_df['clicks'].sum()* 100)|round(2) }}%</td>
+                <td>{{ ((current_period_df['impressions'].sum() - previous_period_df['impressions'].sum())/previous_period_df['impressions'].sum()* 100)|round(2) }}%</td>
+                <td>{{ ((current_period_df['ctr'].sum() - previous_period_df['ctr'].sum())/previous_period_df['ctr'].sum()* 100)|round(2) }}%</td>
+                <td>{{ ((previous_period_df['ctr'].sum() - current_period_df['ctr'].sum())/previous_period_df['ctr'].sum()* 100)|round(2) }}%</td>
+    
+            </tr>
+            <tr>
+    
+                <td>YoY (%)</td>
+                <td>{{ ((previous_period_df['clicks'].sum() - previous_year_df['clicks'].sum())/previous_year_df['clicks'].sum()* 100)|round(2) }}%</td>
+                <td>{{ ((previous_period_df['impressions'].sum() - previous_year_df['impressions'].sum())/previous_year_df['impressions'].sum()* 100)|round(2) }}%</td>
+                <td>{{ ((previous_period_df['ctr'].sum() - previous_year_df['ctr'].sum())/previous_year_df['ctr'].sum()* 100)|round(2) }}%</td>
+                <td>{{ ((previous_year_df['ctr'].sum() - previous_period_df['ctr'].sum())/previous_year_df['ctr'].sum()* 100)|round(2) }}%</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<table class="table bg-neutral-content text-right w-fit">
+    <tbody>
+        <thead class="text-xl">
+            <td>Metrics</td>
+            <td>Current Period</td>
+            <td>PoP (%)</td>
+            <td>Previous Period</td>
+            <td>YoY (%)</td>
+            <td>Previous Year</td>
+        </thead>
+        <tr>
+            <td>Clicks</td>
+            <td>{{current_period_df['clicks'].sum()}}</td>
+            <td>{{ ((current_period_df['clicks'].sum() - previous_period_df['clicks'].sum())/previous_period_df['clicks'].sum()* 100)|round(2) }}%</td>
+            <td>{{previous_period_df['clicks'].sum()}}</td>
+            <td>{{ ((previous_period_df['clicks'].sum() - previous_year_df['clicks'].sum())/previous_year_df['clicks'].sum()* 100)|round(2) }}%</td>
+            <td>{{previous_year_df['clicks'].sum()}}</td>
+            
+        </tr>
+        <tr>
+            <td>Impressions</td>
+            <td>{{current_period_df['impressions'].sum()}}</td>
+            <td>{{ ((current_period_df['impressions'].sum() - previous_period_df['impressions'].sum())/previous_period_df['impressions'].sum()* 100)|round(2) }}%</td>
+            <td>{{previous_period_df['impressions'].sum()}}</td>
+            <td>{{ ((previous_period_df['impressions'].sum() - previous_year_df['impressions'].sum())/previous_year_df['impressions'].sum()* 100)|round(2) }}%</td>
+            <td>{{previous_year_df['impressions'].sum()}}</td>
+            
+            
+        </tr>
+        <tr>
+
+            <td>CTR</td>
+            <td>{{ (current_period_df['clicks'].sum() / current_period_df['impressions'].sum() * 100)|round(2) }}%</td>
+
+            <td>{{
+                
+                (( (current_period_df['clicks'].sum() / current_period_df['impressions'].sum() * 100) 
+                -  (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100) ) /  
+                (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100) * 100)|round(2) 
+            }}%</td>
+
+            <td>{{ (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100)|round(2) }}%</td>
+
+            <td>{{
+                
+                (( (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100) 
+                -  (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100) ) /  
+                (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100) * 100)|round(2) 
+            }}%</td>
+
+            <td>{{ (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100)|round(2) }}%</td>
+
+        </tr>
+        <tr>
+            <td>Position</td>
+            <td>{{current_period_df['position'].mean()|round(2)}}</td>
+            <td>{{ (((current_period_df['position'].mean() - previous_period_df['position'].mean()) / previous_period_df['position'].mean()) * 100)|round(2) * -1 }}%</td> 
+    
+            <td>{{previous_period_df['position'].mean()|round(2)}}</td>
+            <td>{{ (((previous_period_df['position'].mean() - previous_year_df['position'].mean()) / previous_year_df['position'].mean()) * 100)|round(2) * -1}}%</td>
+            <td>{{previous_year_df['position'].mean()|round(2)}}</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2 class="text-4xl font-bold mb-10 mt-10">By Country</h2>
+
+{{ merge_df_html|safe }}
+
+<!-- Datatable Script -->
+<script>
+    $(document).ready(function() {
+            // Initialize DataTable and specify numeric sorting for the column
+            $('#byCountry').DataTable({
+                "columnDefs": [
+                    { "type": "num", "targets": [1] } // Assuming ('Current Period', 'Clicks') is the second column (index 1)
+                ],
+                "order": [[1, "desc"]], // Sort the second column in descending order
+                dom: 'QtpRB',
+            });
+        });
+</script>
+
+<h2 class="text-4xl font-bold mb-10 mt-10">By Device</h2>
+
+{{ merge_df_html_by_device|safe }}
+
+<!-- Datatable Script -->
+<script>
+    $(document).ready(function() {
+        $('#byDevice').DataTable({
+            dom: 'QtpRB',
+        });
+    });
+</script>
+

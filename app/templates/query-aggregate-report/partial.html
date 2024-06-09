@@ -1,0 +1,38 @@
+<!-- HTML Table -->
+<table id="byQuery" class="">
+    <!-- Table header will be populated dynamically -->
+    <thead>
+        <!-- Define your table headers here if known -->
+        <!-- Example: <th>Name</th><th>Age</th> -->
+    </thead>
+    <tbody>
+        <!-- Table body will be populated dynamically -->
+    </tbody>
+</table>
+
+
+
+<!-- DataTables initialization script -->
+<script>
+
+    var data_load = {{ data_json | tojson }};
+    // Retrieve data from local storage
+    var data = JSON.parse(data_load);
+
+    // Initialize DataTables with retrieved data
+    $('#byQuery').DataTable({
+        columnDefs: [{ width: 300, targets: 0 }],
+        ordering: true,
+        data: data.data, // Assuming the JSON data has a 'data' key
+        columns: data.columns.map(function(columnName) {
+            return { title: columnName }; // Creating column definition objects with 'title' property
+        }),
+        order: [[2, 'desc']], // Ordering by the 2nd column (index 1) in ascending order
+        dom: 'QtpRB',
+        fixedHeader: true,
+        fixedColumns: true,
+        scrollX: true,
+        scrollY: true
+    });
+
+</script>
