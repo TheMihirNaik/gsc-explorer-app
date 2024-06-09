@@ -12,7 +12,7 @@
 <form action="/gsc-property-selection/" method="POST">
     
     <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto">
-        <option disabled selected>{{selected_property}}</option>
+        <option disabled selected>Select your Website</option>
         {% for site in site_list%}
         <option>{{ site }}</option>
         {% endfor %}
@@ -27,7 +27,7 @@
         <br>If your brand name is Stripe, adding 'stripe' here will include all the Queries that has stripe in it.
         <br>Every Keyword you add here will work as "contains" while labelling them as "Brand".
     </p>
-    <textarea placeholder="keyword1, keyword2, keyword3" class="textarea textarea-bordered row-auto" name="brand_keywords" id="brand_keywords" rows="5" cols="40">{{brand_keywords_string}}</textarea>
+    <textarea placeholder="keyword1, keyword2, keyword3" class="textarea textarea-bordered row-auto" name="brand_keywords" id="brand_keywords" rows="5" cols="40"></textarea>
     
     
     <button type="submit" class="btn btn-accent m-4">Select</button>
