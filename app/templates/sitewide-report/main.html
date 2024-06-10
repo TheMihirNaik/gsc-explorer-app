@@ -65,11 +65,12 @@
       <span></span> <i class="fa fa-caret-down"></i>
     </div>
     
-    <form id="dateRangeForm" hx-post="/reports/sitewide-overview/" hx-swap="innerHTML" hx-target="#sitewide-report" class="inline-block">
+    <form id="dateRangeForm" hx-post="/reports/sitewide-overview/" 
+    hx-swap="innerHTML" hx-target="#sitewide-report" class="inline-block" hx-indicator="#loading-spinner">
       <input type="hidden" name="start_date" id="start_date">
       <input type="hidden" name="end_date" id="end_date">
-      <button type="submit" class="btn btn-primary">Fetch</button>
-      <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
+      <button type="submit" class="btn btn-primary">Fetch Data</button>
+      <span class="loading loading-dots loading-lg htmx-indicator align-middle" id="loading-spinner"></span>
     </form>
 
   </div>
@@ -89,6 +90,8 @@
       </span>
     </div>
 
+    <!-- HTMX Indicator-->
+    <span id="loading-spinner" class="loading loading-dots loading-lg htmx-indicator align-middle">Please Wait.</span>
   </div>
 
 </div>
