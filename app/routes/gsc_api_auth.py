@@ -138,6 +138,27 @@ def clear_credentials():
   flash('Your Session Cookies are cleared.')
   return redirect(url_for('home'))
 
+@app.route('/revoke-gsc-clear-session')
+def revoke_gsc_clear_session():
+  if 'credentials' not in flask.session:
+    return redirect(url_for('home'))
+  
+  credentials = google.oauth2.credentials.Credentials(
+    **flask.session['credentials'])
+
+  revoke = requests.post('https://oauth2.googleapis.com/revoke',
+      params={'token': credentials.token},
+      headers = {'content-type': 'application/x-www-form-urlencoded'})
+
+  status_code = getattr(revoke, 'status_code')
+
+  if status_code == 200:
+    del flask.session['credentials']
+    flash('Your GSC Access has been revoked, and your Session Cookies are cleared.')
+    return redirect(url_for('home'))
+  
+
+
 def credentials_to_dict(credentials):
   return {'token': credentials.token,
           'refresh_token': credentials.refresh_token,
