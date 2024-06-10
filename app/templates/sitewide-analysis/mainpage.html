@@ -38,7 +38,7 @@
     </div>
   </div>
 
-  
+  <!-- GSC Data Form -->
   <div class="row-auto mt-4">
     <!-- <form class="" id="sitewide-analysis-data" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis">
       <div id="foo" class="">
@@ -58,7 +58,7 @@
     <form id="dateRangeForm" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis" class="inline-block">
       <input type="hidden" name="start_date" id="start_date">
       <input type="hidden" name="end_date" id="end_date">
-      <button type="submit" class="btn btn-primary">Submit</button>
+      <button type="submit" class="btn btn-primary">Fetch Data</button>
       <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
     </form>
 
@@ -67,6 +67,17 @@
   <!-- H1 Heading -->
 
   <div id="sitewide-analysis">
+    <!-- Explainer-->
+    <div role="alert" class="alert mt-5 bg-primary-content">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <span> 
+          Once you hit "Fetch Data" button, depending on the size of your data, you will have to wait for a couple of mins on this page.
+          <p class="text-sm">
+              If it's taking longer than 2 mins, try reducing the date range to 7 days.
+          </p>
+          
+      </span>
+    </div>
 
   </div>
 
