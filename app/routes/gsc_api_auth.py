@@ -156,6 +156,10 @@ def revoke_gsc_clear_session():
     del flask.session['credentials']
     flash('Your GSC Access has been revoked, and your Session Cookies are cleared.')
     return redirect(url_for('home'))
+  else:
+    del flask.session['credentials']
+    return redirect(url_for('home'))
+
   
 
 
