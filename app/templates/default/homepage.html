@@ -5,39 +5,47 @@
 {% block content %}
 
 <!-- Hero Banner -->
-<div class="hero bg-neutral-content p-4">
-  <div class="hero-content flex-col lg:flex-row-reverse">
-    <div>
-      <iframe width="500" height="300" 
-      src="https://www.youtube.com/embed/5-zfPmm8HKw?si=2kGcWfCnC_uYtuZh" title="YouTube video player" 
-      frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    </div>
+ <div class="text-center pt-16">
+  <h1 class="text-4xl lg:text-6xl font-bold pb-2">✨ GSCExplorer.app </h1>
+  <h2 class="lg:text-2xl mt-2 mb-2 pb-2">🔥 Explore your GSC Data in Meaningful ways.</h2>
+ </div>
 
-    <img src="{{ url_for('static', filename='/images/flask-for-microsaas.png') }}" class="max-w-sm rounded-lg shadow-2xl hidden" />
+<div class="hero bg-neutral-content lg:p-4 pb-16">
+  <div class="hero-content flex-col lg:flex-row">
+    <!-- Hero Content -->
     <div>
-      <h1 class="text-5xl font-bold">GSC Explorer ✨</h1>
-      <h2 class="text-3xl mt-2 mb-2">🔥 Explore your GSC Data in Meaningful ways.</h2>
-      <ul class="mb-4 mt-4">
+      <ul class="mb-4 mt-4 pb-2">
         <li class="mt-2">💰 Completely FREE! No strings attached.</li>
         <li class="mt-2">⚒️ Prebuilt Charts & Reports for Google Search Console Data</li>
         <li class="mt-2">⚒️ <a href="https://github.com/TheMihirNaik/gsc-explorer-app" class="link" target="_blank">OpenSource GSC Web Application</a> anyone can contribute to!</li>
       </ul>
-      <a href="/dashboard/"><button class="btn btn-active btn-primary m-0">Continue to Dashboard</button></a>
+      <a href="/dashboard/" class="pb-2"><button class="btn btn-active btn-primary m-0">Continue to Dashboard</button></a>
 
-      <div class="mt-4">
-        Built by <a href="https://www.mihirnaik.com/" class="link">Mihir Naik</a>  with ❤️ in Toronto, Canada
-
+      <div class="mt-6">
+        <p>
+          Built by <a href="https://www.mihirnaik.com/" class="link" target="_blank">Mihir Naik</a>  with ❤️ in Toronto, Canada
+        </p>
+        <br> Join <a href="https://www.mihirnaik.com/newsletter/" class="link" target="_blank">SEO Workflow Automation</a> Newsletter! 
       </div>
 
     </div>
 
-    
+    <!-- Video - Border -->
+    <div class="p-0 lg:border border-base-500 rounded-box p-2">
+      <iframe width="500" height="300" 
+      src="https://www.youtube-nocookie.com/embed/5-zfPmm8HKw?si=AIlk8AdyEpbhAhZf&amp;start=5" 
+      title="YouTube video player" frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+
+      </iframe>
+    </div>
+  
   </div>
 </div>
 
 <!-- FAQs-->
-<div class=" pb-10 bg-neutral-content mx-auto w-1/2 items-center justify-center">
+<div class="pb-10 bg-neutral-content items-center justify-center">
 
   <h2 class="text-4xl font-bold mx-auto text-center">Expected Questions</h2>
 

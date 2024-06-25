@@ -52,11 +52,11 @@
 
 
   </head>
-<body class="min-h-screen bg-neutral-content ">
-      <!-- Google Tag Manager (noscript) -->
+<body class="min-h-screen bg-neutral-content max-w-full lg:w-full mx-auto">
+    <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-54FLDRK3"
-      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-      <!-- End Google Tag Manager (noscript) -->
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
 
     <!-- Nav Bar -->
     <nav class="navbar hidden">
@@ -96,7 +96,7 @@
     </div>
 
      <!-- Main Content -->
-    <div class="bg-neutral-content">
+    <div class="bg-neutral-content max-w-full lg:max-w-5xl mx-auto">
       {% block content %} {% endblock %}
     </div>
     
@@ -124,55 +124,56 @@
       </nav>
     </footer>
 
-         <!-- Customer Feedback Modal-->
-         <div>
-          <!-- Open the modal using ID.showModal() method -->
+    <!-- Customer Feedback Modal-->
+    <div>
+    <!-- Open the modal using ID.showModal() method -->  
+    <button id="feedbackButton" class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-3 shadow-lg" 
+    onclick="my_modal_2.showModal()">
+      <i class="fa fa-comment"></i> Share Feedback
+    </button>
+
+    <!-- Open the modal using ID.showModal() method -->
+    
+    <dialog id="my_modal_2" class="modal">
+      <div class="modal-box p-8">
+        <h3 class="font-bold text-lg mb-5">Share your feedback, comments, and suggestions</h3>
+        <p class="mb-5"> I'm eager to learn more about issues you are facing, so please let me know. All responses are <a href="https://docs.google.com/spreadsheets/d/16HKm5ytVzMMyw4vjim-hJyPvq5Z876ZAN8GmFD9Hgz8/edit?usp=sharing" class="link" target="_blank">collected here</a>.</p>
+        
+        <div id="feedback-response">
           
-        <button id="feedbackButton" class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-3 shadow-lg" 
-        onclick="my_modal_2.showModal()">
-          <i class="fa fa-comment"></i> Share Feedback
-        </button>
-  
-        <!-- Open the modal using ID.showModal() method -->
-        
-        <dialog id="my_modal_2" class="modal">
-          <div class="modal-box p-8">
-            <h3 class="font-bold text-lg mb-5">Share your feedback, comments, and suggestions</h3>
-            <p class="mb-5"> I'm eager to learn more about issues you are facing, so please let me know. All responses are <a href="https://docs.google.com/spreadsheets/d/16HKm5ytVzMMyw4vjim-hJyPvq5Z876ZAN8GmFD9Hgz8/edit?usp=sharing" class="link" target="_blank">collected here</a>.</p>
-            
-            <div id="feedback-response">
-              
-              <form class="form" id="form-feedback">
-                <input type="text" name="customer_feedback" placeholder='Enter your Feedback' class="input input-bordered input-lg w-full"><br><br>
-                <input type="submit" id="sub" class="btn btn-active btn-primary">
-              </form>
-              
-              <p id="msg" class="py-2"></p> <!-- Element to display API response -->
-            </div>
-            <p class="py-2">Press ESC key or click outside to close</p>
-          </div>
-          <form method="dialog" class="modal-backdrop">
-            <button>close</button>
+          <form class="form" id="form-feedback">
+            <input type="text" name="customer_feedback" placeholder='Enter your Feedback' class="input input-bordered input-lg w-full"><br><br>
+            <input type="submit" id="sub" class="btn btn-active btn-primary">
           </form>
-        </dialog>
-        
+          
+          <p id="msg" class="py-2"></p> <!-- Element to display API response -->
+        </div>
+        <p class="py-2">Press ESC key or click outside to close</p>
       </div>
-      <script>
-        let form = document.querySelector("#form-feedback"); // Select form using id
-        form.addEventListener('submit', (e) => {
-          e.preventDefault();
-          document.querySelector("#sub").value = "Submitting..";
-          let data = new FormData(form);
-          fetch('https://script.google.com/macros/s/AKfycbzBS2FGa1_tkH-6LtUHKnRUY7v2xSu9g8-yp5OfMxY6WyEiKZnQL_Fo2B5SGgdflWQ5rg/exec', {
-              method: "POST",
-              body: data
-            })
-            .then(res => res.text())
-            .then(data => {
-              document.querySelector("#msg").innerHTML = data; // Display response in #msg element
-              document.querySelector("#sub").value = "Submit";
-            });
-        });
-      </script>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+    
+    </div>
+    
+    <script>
+      let form = document.querySelector("#form-feedback"); // Select form using id
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        document.querySelector("#sub").value = "Submitting..";
+        let data = new FormData(form);
+        fetch('https://script.google.com/macros/s/AKfycbzBS2FGa1_tkH-6LtUHKnRUY7v2xSu9g8-yp5OfMxY6WyEiKZnQL_Fo2B5SGgdflWQ5rg/exec', {
+            method: "POST",
+            body: data
+          })
+          .then(res => res.text())
+          .then(data => {
+            document.querySelector("#msg").innerHTML = data; // Display response in #msg element
+            document.querySelector("#sub").value = "Submit";
+          });
+      });
+    </script>
+
 </body>
 </html>
