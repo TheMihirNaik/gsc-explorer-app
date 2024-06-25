@@ -148,8 +148,6 @@ def sitewide_analysis():
             count_queries = ('query', 'count'),
         ).reset_index()
 
-
-
         date_plot_df = query_df.groupby(['date', 'Query Type']).agg(
             clicks = ('clicks', 'sum'),
             impressions = ('impressions', 'sum'),
@@ -323,7 +321,8 @@ def sitewide_analysis():
         brand_impressions = brand_query_df['impressions'].sum()
         brand_ctr = brand_clicks / brand_impressions * 100
         brand_position = brand_query_df['position'].mean()
-        brand_query_count = plot_df['count_queries'][0]
+
+        brand_query_count = brand_query_df['query'].nunique()
 
         brand_numbers = [brand_clicks, brand_impressions, brand_ctr, brand_position, brand_query_count]
 
@@ -336,7 +335,8 @@ def sitewide_analysis():
         non_brand_position = non_brand_query_df['position'].mean()
 
         try:
-            non_brand_query_count = plot_df['count_queries'][1]
+            non_brand_query_count = non_brand_query_df['query'].nunique()
+
         except KeyError:
             non_brand_query_count = 0  # or any default value you prefer
 
@@ -842,5 +842,8 @@ def query_aggregate_report():
     return render_template('/query-aggregate-report/main.html',
                         selected_property=selected_property,
                         brand_keywords=brand_keywords)
+
+
+
 
 
