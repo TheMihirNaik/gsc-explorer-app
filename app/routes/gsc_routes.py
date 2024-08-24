@@ -109,25 +109,3 @@ def generate_regex_from_urls(urls):
     
     return expression_string
 
-@app.route('/gsc-celery-test/')
-def gsc_celery_test():
-
-    webmasters_service = build_gsc_service()
-
-    selected_property = 'https://www.mihirnaik.com'
-
-    start_date_formatted = '2024-01-01'
-
-    end_date_formatted = '2024-07-30'
-
-    #total numbers make GSC API Call
-    dimensions = ['DATE']
-    dimensionFilterGroups = [{"filters": [
-        #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-    ]}]
-    
-    # start celery task
-    celery_test_gsc_data.delay(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
-
-    print('gsctest - celery task started')
-    return render_template('gsc-celery-test.html')
