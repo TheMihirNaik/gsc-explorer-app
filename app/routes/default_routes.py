@@ -17,9 +17,9 @@ def format_number(value):
 @app.route('/')
 def home():
     # celery task
-    add.delay(1, 2)
-    print("celery task done")
-
+    multiple = add.delay(1, 2)
+    print(multiple)
+    #print("celery task done")
     return render_template('/default/homepage.html')
 
 #Dashboard

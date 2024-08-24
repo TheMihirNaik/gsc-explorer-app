@@ -18,5 +18,6 @@ print("celery instance created")
 #define a dummy task for testing
 @celery.task
 def add(x, y):
+    print("celery task in progress")
     return x + y
 
