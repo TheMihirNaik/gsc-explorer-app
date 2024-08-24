@@ -27,8 +27,9 @@ def add(x, y):
 
 @celery.task
 def celery_test_gsc_data(selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups):
-    logger.info("celery task in progress")
+    logger.info("gscdata ------ celery task in progress")
     webmasters_service = build_gsc_service()
+    print('web master service built successfully')
     gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
     logger.info(f"GSC Data: {gsc_data}")
     return 'data fetched'
