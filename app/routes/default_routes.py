@@ -857,7 +857,8 @@ def gsc_celery_test():
 
     #print(flask.session['credentials'])
 
-    webmasters_service = build_gsc_service()
+    # Extract credentials from session
+    credentials_data = flask.session['credentials']
 
     selected_property = 'https://www.mihirnaik.com'
     start_date_formatted = '2024-01-01'
@@ -868,8 +869,9 @@ def gsc_celery_test():
         #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
     ]}]
     # start celery task
+    
     #gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
-    celery_test_gsc_data.delay(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+    celery_test_gsc_data.delay(credentials_data, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
     #print(gsc_data)
     print('gsctest - celery task started')
     return render_template('gsc-celery-test.html')
