@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, date
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
 import plotly.express as px
+from app.routes.celery import *
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -15,6 +16,10 @@ def format_number(value):
 # Homepage
 @app.route('/')
 def home():
+    # celery task
+    add.delay(1, 2)
+    print("celery task done")
+
     return render_template('/default/homepage.html')
 
 #Dashboard

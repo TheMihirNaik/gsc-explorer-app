@@ -161,8 +161,6 @@ def revoke_gsc_clear_session():
     return redirect(url_for('home'))
 
   
-
-
 def credentials_to_dict(credentials):
   return {'token': credentials.token,
           'refresh_token': credentials.refresh_token,
