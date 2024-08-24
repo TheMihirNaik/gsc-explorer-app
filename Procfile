@@ -1,2 +1,2 @@
 web: gunicorn run:app
-worker: celery -A run worker --loglevel=info
+celery -A app.routes.celery.celery worker --loglevel=info
