@@ -869,7 +869,7 @@ def gsc_celery_test():
     ]}]
     # start celery task
     #gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
-    celery_test_gsc_data.delay(selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+    celery_test_gsc_data.delay(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
     #print(gsc_data)
     print('gsctest - celery task started')
     return render_template('gsc-celery-test.html')

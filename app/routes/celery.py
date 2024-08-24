@@ -10,7 +10,7 @@ from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
 redis_url = os.environ.get('REDIS_URL')
-print(redis_url)
+#print(redis_url)
 
 # create the Celery instance
 celery = Celery(
@@ -26,9 +26,9 @@ def add(x, y):
     return x + y
 
 @celery.task
-def celery_test_gsc_data(selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups):
+def celery_test_gsc_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups):
     logger.info("gscdata ------ celery task in progress")
-    webmasters_service = build_gsc_service()
+    #webmasters_service = build_gsc_service()
     print('web master service built successfully')
     gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
     logger.info(f"GSC Data: {gsc_data}")
