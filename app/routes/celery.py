@@ -1,6 +1,9 @@
+
 from celery import Celery
 from app import redis_host
 import os
+from app.routes.gsc_api_auth import * 
+from app.routes.gsc_routes import *
 
 print('celery routes imported')
 
@@ -20,4 +23,12 @@ print("celery instance created")
 def add(x, y):
     print("celery task in progress")
     return x + y
+
+@celery.task
+def celery_test_gsc_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups):
+    print("celery task in progress")
+
+    gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+
+    return gsc_data
 

@@ -8,6 +8,8 @@ import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 
+from app.routes.celery import *
+
 # This variable specifies the name of a file that contains the OAuth 2.0
 # information for this application, including its client_id and client_secret.
 #CLIENT_SECRETS_FILE = "client_secrets.json"
@@ -76,8 +78,6 @@ def process_dates(start_date_str, end_date_str):
 
     return current_start_date, current_end_date, previous_period_start_date, previous_period_end_date, previous_year_start_date, previous_year_end_date
 
-    
-
 # Function to determine keyword type
 def keyword_type(query, brand_terms):
     if not brand_terms:  # If brand_terms is an empty list
@@ -88,7 +88,6 @@ def keyword_type(query, brand_terms):
             return 'Branded'
     
     return 'Non Branded'
-
 
 import re
 import os
@@ -109,3 +108,26 @@ def generate_regex_from_urls(urls):
             expression_string += url + "$|"
     
     return expression_string
+
+@app.route('/gsc-celery-test/')
+def gsc_celery_test():
+
+    webmasters_service = build_gsc_service()
+
+    selected_property = 'https://www.mihirnaik.com'
+
+    start_date_formatted = '2024-01-01'
+
+    end_date_formatted = '2024-07-30'
+
+    #total numbers make GSC API Call
+    dimensions = ['DATE']
+    dimensionFilterGroups = [{"filters": [
+        #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
+    ]}]
+    
+    # start celery task
+    celery_test_gsc_data.delay(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+
+    print('gsctest - celery task started')
+    return render_template('gsc-celery-test.html')
