@@ -1,4 +1,5 @@
 from app import app
+from app.routes.celery import *
 import os
 
 if __name__ == '__main__':
