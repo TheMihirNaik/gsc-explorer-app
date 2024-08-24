@@ -22,7 +22,7 @@ celery = Celery(
 #define a dummy task for testing
 @celery.task
 def add(x, y):
-    print("celery task in progress")
+    print("multiplication - celery task in progress")
     return x + y
 
 @celery.task
