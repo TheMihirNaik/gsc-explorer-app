@@ -5,6 +5,9 @@ import os
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
 import pandas as pd
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 redis_url = os.environ.get('REDIS_URL')
 print(redis_url)
@@ -24,9 +27,9 @@ def add(x, y):
 
 @celery.task
 def celery_test_gsc_data(selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups):
-    print("celery task in progress")
+    logger.info("celery task in progress")
     webmasters_service = build_gsc_service()
     gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
-    print(gsc_data)
+    logger.info(f"GSC Data: {gsc_data}")
     return 'data fetched'
 
