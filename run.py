@@ -1,5 +1,6 @@
 from app import app
 from app.tasks.celery_tasks import *
+from app.extensions import celery
 import os
 
 if __name__ == '__main__':

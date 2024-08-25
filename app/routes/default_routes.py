@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
 import plotly.express as px
-from app.tasks.celery_tasks import celery, add, celery_test_gsc_data
+from app.tasks.celery_tasks import *
 from app.tasks.task_status import task_status
 
 # Flask template filters

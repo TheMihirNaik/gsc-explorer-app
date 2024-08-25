@@ -9,8 +9,6 @@ from googleapiclient.discovery import build
 
 logger = get_task_logger(__name__)
 
-
-
 import gc
 
 @celery.task
