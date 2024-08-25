@@ -10,6 +10,9 @@ import googleapiclient.discovery
 
 from app.tasks.celery_tasks import *
 
+import re
+import os
+
 # This variable specifies the name of a file that contains the OAuth 2.0
 # information for this application, including its client_id and client_secret.
 #CLIENT_SECRETS_FILE = "client_secrets.json"
@@ -89,8 +92,7 @@ def keyword_type(query, brand_terms):
     
     return 'Non Branded'
 
-import re
-import os
+
 def escape_special_chars(url):
     return re.escape(url)
 
