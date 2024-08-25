@@ -875,6 +875,8 @@ def gsc_celery_test():
         
         # Track task status
         task_status[result.id] = {'status': 'pending'}
+
+        #print(task_status)
         
         return jsonify({'task_id': result.id})
 
@@ -899,6 +901,6 @@ def task_status_view(task_id):
     elif result.state == 'FAILURE':
         task_status[task_id] = {'status': 'failed', 'error': str(result.result)}
         print(result)
-    return jsonify(result.result)
-    #return jsonify(task_status.get(task_id, {'status': 'unknown'}))
+    #return jsonify(result.result)
+    return jsonify(task_status.get(task_id, {'status': 'unknown'}))
 
