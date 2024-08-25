@@ -9,6 +9,7 @@ from celery.utils.log import get_task_logger
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
+
 logger = get_task_logger(__name__)
 
 redis_url = os.environ.get('REDIS_URL')
@@ -27,6 +28,9 @@ def add(x, y):
     print("multiplication - celery task in progress")
     return x + y
 
+
+import gc
+
 @celery.task
 def celery_test_gsc_data(credentials_data, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups):
     logger.info("gscdata ------ celery task in progress")
@@ -35,9 +39,9 @@ def celery_test_gsc_data(credentials_data, selected_property, start_date_formatt
 
     # Rebuild the webmasters_service within the Celery task
     webmasters_service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
+    logger.info("web master service built successfully")
 
-    print('web master service built successfully')
     gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
     logger.info(f"GSC Data: {gsc_data}")
-    return 'data fetched'
-
+    gc.collect()
+    return gsc_data

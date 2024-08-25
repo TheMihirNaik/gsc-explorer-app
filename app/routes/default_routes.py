@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
 import plotly.express as px
-from app.routes.celery import *
+from app.routes.celery import celery, add, celery_test_gsc_data
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -848,32 +848,57 @@ def query_aggregate_report():
                         selected_property=selected_property,
                         brand_keywords=brand_keywords)
 
+import sys
+from celery.result import AsyncResult
 
-@app.route('/gsc-celery-test/')
+# In-memory task status storage
+task_status = {}
+
+@app.route('/gsc-celery-test/', methods=['GET', 'POST'])
 def gsc_celery_test():
     if 'credentials' not in session:
-        # GSC is not logged in.
         return redirect(url_for('gsc_authorize'))
 
-    #print(flask.session['credentials'])
+    if request.method == 'POST':
+        credentials_data = flask.session['credentials']
+        selected_property = session.get("selected_property", "default_value")
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
 
-    # Extract credentials from session
-    credentials_data = flask.session['credentials']
+        start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
 
-    selected_property = 'https://www.mihirnaik.com'
-    start_date_formatted = '2024-01-01'
-    end_date_formatted = '2024-07-30'
-    #total numbers make GSC API Call
-    dimensions = ['DATE']
-    dimensionFilterGroups = [{"filters": [
-        #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-    ]}]
-    # start celery task
+        dimensions = ['DATE', 'QUERY', 'PAGE']
+        dimensionFilterGroups = [{"filters": []}]
+        
+        # Start Celery task
+        result = celery_test_gsc_data.delay(credentials_data, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+        
+        # Track task status
+        task_status[result.id] = {'status': 'pending'}
+        
+        return jsonify({'task_id': result.id})
+
+    #get request
+    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+    return render_template('gsc-celery-test.html', 
+                           selected_property=selected_property,
+                           brand_keywords=brand_keywords)
+
+@app.route('/task-status/<task_id>')
+def task_status_view(task_id):
+    result = AsyncResult(task_id, app=celery)
     
-    #gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
-    celery_test_gsc_data.delay(credentials_data, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
-    #print(gsc_data)
-    print('gsctest - celery task started')
-    return render_template('gsc-celery-test.html')
-
+    if result.state == 'PENDING':
+        task_status[task_id] = {'status': 'pending'}
+        print(result)
+    elif result.state == 'SUCCESS':
+        task_status[task_id] = {'status': 'completed', 'data': result.result}
+        print(result.result)
+    elif result.state == 'FAILURE':
+        task_status[task_id] = {'status': 'failed', 'error': str(result.result)}
+        print(result)
+    return jsonify(result.result)
+    #return jsonify(task_status.get(task_id, {'status': 'unknown'}))
 
