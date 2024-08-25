@@ -45,7 +45,7 @@ def celery_test_gsc_data(credentials_data, selected_property, start_date_formatt
     #logger.info(f"GSC Data: {gsc_data}")
 
     # Generate HTML content from the fetched data
-    html_content = '<table><thead><tr><th>Date</th><th>Query</th><th>Page</th></tr></thead><tbody>'
+    html_content = '<table id="gsc-data-table" class="display"><thead><tr><th>Date</th><th>Query</th><th>Page</th></tr></thead><tbody>'
     
     for index, row in gsc_data.iterrows():
         html_content += f'<tr><td>{row["DATE"]}</td><td>{row["QUERY"]}</td><td>{row["PAGE"]}</td></tr>'

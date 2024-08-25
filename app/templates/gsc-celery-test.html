@@ -105,6 +105,7 @@
                 .then(status => {
                     if (status.status === 'completed') {
                         responseContainer.innerHTML = status.data; // Insert the HTML directly
+                        initializeDataTable(); // Initialize DataTable after loading the HTML
                         clearInterval(polling); // Stop polling
                     } else if (status.status === 'failed') {
                         responseContainer.innerHTML = `<p>Task failed: ${status.error}</p>`;
@@ -118,12 +119,19 @@
                 });
         }
 
+        function initializeDataTable() {
+            $('#gsc-data-table').DataTable({
+                dom: 'QtpRB',
+            });
+        }
+
         // Start polling
         const polling = setInterval(pollTaskStatus, pollingInterval);
         // Call immediately to fetch the status right away
         pollTaskStatus();
     }
 });
+
 </script>
     
   
@@ -160,6 +168,7 @@
   
   });
 </script>
+
 
 
 
