@@ -65,52 +65,71 @@
 
     <!-- Fetch Data from Celery Task -->
 
-    <div id="response-container">
-
+    <!-- Task Results -->
+    <div id="response-container" hx-get="/task-status/{{ task_id }}" hx-trigger="load" hx-swap="innerHTML" hx-indicator="#loading-spinner" hx-poll="5000">
+        <!-- Task results will be loaded here -->
     </div>
 
     
   </div>
 
  
-  <script>
-    // Function to check task status and update the frontend
-    function checkTaskStatus(taskId) {
-        const statusUrl = `/task-status/${taskId}`;
-  
-        fetch(statusUrl)
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle form submission
+        document.querySelector('#dateRangeForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
+    
+            // Extract the task ID from the response
+            const formData = new FormData(event.target);
+            fetch(event.target.action, {
+                method: 'POST',
+                body: formData
+            })
             .then(response => response.json())
             .then(data => {
-                console.log('Task status data:', data); // Log the data to console
-                if (data.status === 'completed') {
-                    console.log('Data fetched from task:', data.data); // Log the fetched data
-                    document.getElementById('response-container').innerHTML = `<p>Data fetched: ${data.data}</p>`;
-                } else if (data.status === 'failed') {
-                    document.getElementById('response-container').innerHTML = `<p>Task failed: ${data.error}</p>`;
+                if (data.task_id) {
+                    startPolling(data.task_id);
                 } else {
-                    // Poll again after a delay if the task is still pending
-                    setTimeout(() => checkTaskStatus(taskId), 5000); // Poll every 5 seconds
+                    console.error('Failed to get task ID');
                 }
-            })
-            .catch(error => {
-                console.error('Error fetching task status:', error);
             });
-    }
-  
-    // Listen for the HTMX event after form swap
-    document.addEventListener('htmx:afterSwap', function(event) {
-        if (event.detail.target.id === 'taskStatus') {
-            const taskId = event.detail.xhr.responseJSON.task_id;
-            if (taskId) {
-                // Start polling for task status
-                checkTaskStatus(taskId);
-            } else {
-                console.error('No task ID received from the server.');
+        });
+    
+        function startPolling(taskId) {
+            const responseContainer = document.getElementById('response-container');
+            const pollingInterval = 5000; // Poll every 5 seconds
+    
+            function pollTaskStatus() {
+                fetch(`/task-status/${taskId}`)
+                    .then(response => response.json())
+                    .then(status => {
+                        if (status.status === 'completed') {
+                            responseContainer.innerHTML = `<pre>${JSON.stringify(status.data, null, 2)}</pre>`;
+                            clearInterval(polling); // Stop polling
+                        } else if (status.status === 'failed') {
+                            responseContainer.innerHTML = `<p>Task failed: ${status.error}</p>`;
+                            clearInterval(polling); // Stop polling
+                        } else {
+                            responseContainer.innerHTML = `<p>Task status: ${status.status}. Polling again...</p>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching task status:', error);
+                    });
             }
+    
+            // Start polling
+            const polling = setInterval(pollTaskStatus, pollingInterval);
+            // Call immediately to fetch the status right away
+            pollTaskStatus();
         }
     });
-  </script>
+    </script>
+    
   
+  
+
 
 
 <script type="text/javascript">
