@@ -44,4 +44,4 @@ def celery_test_gsc_data(credentials_data, selected_property, start_date_formatt
     gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
     logger.info(f"GSC Data: {gsc_data}")
     gc.collect()
-    return gsc_data
+    return 'data fetched'
