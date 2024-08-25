@@ -5,7 +5,8 @@ from datetime import datetime, timedelta, date
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
 import plotly.express as px
-from app.routes.celery import celery, add, celery_test_gsc_data
+from app.tasks.celery_tasks import celery, add, celery_test_gsc_data
+from app.tasks.task_status import task_status
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -16,10 +17,6 @@ def format_number(value):
 # Homepage
 @app.route('/')
 def home():
-    # celery task
-    multiple = add.delay(1, 2)
-    print(multiple)
-    #print("celery task done")
     return render_template('/default/homepage.html')
 
 #Dashboard
@@ -848,12 +845,6 @@ def query_aggregate_report():
                         selected_property=selected_property,
                         brand_keywords=brand_keywords)
 
-import sys
-from celery.result import AsyncResult
-
-# In-memory task status storage
-task_status = {}
-
 @app.route('/gsc-celery-test/', methods=['GET', 'POST'])
 def gsc_celery_test():
     if 'credentials' not in session:
@@ -862,6 +853,7 @@ def gsc_celery_test():
     if request.method == 'POST':
         credentials_data = flask.session['credentials']
         selected_property = session.get("selected_property", "default_value")
+        
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
 
@@ -876,7 +868,6 @@ def gsc_celery_test():
         # Track task status
         task_status[result.id] = {'status': 'pending'}
 
-        #print(task_status)
         
         return jsonify({'task_id': result.id})
 
@@ -888,19 +879,5 @@ def gsc_celery_test():
                            selected_property=selected_property,
                            brand_keywords=brand_keywords)
 
-@app.route('/task-status/<task_id>')
-def task_status_view(task_id):
-    result = AsyncResult(task_id, app=celery)
-    
-    if result.state == 'PENDING':
-        task_status[task_id] = {'status': 'pending'}
-        #print(result)
-    elif result.state == 'SUCCESS':
-        task_status[task_id] = {'status': 'completed', 'data': result.result}
-        #print(result.result)
-    elif result.state == 'FAILURE':
-        task_status[task_id] = {'status': 'failed', 'error': str(result.result)}
-        #print(result)
-    #return jsonify(result.result)
-    return jsonify(task_status.get(task_id, {'status': 'unknown'}))
+
 

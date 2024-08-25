@@ -1,5 +1,5 @@
 from app import app
-from app.routes.celery import *
+from app.tasks.celery_tasks import *
 import os
 
 if __name__ == '__main__':

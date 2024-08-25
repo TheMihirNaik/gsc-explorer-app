@@ -1,7 +1,4 @@
-
-from celery import Celery
-from app import redis_host
-import os
+from app.extensions import celery
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
 import pandas as pd
@@ -12,21 +9,6 @@ from googleapiclient.discovery import build
 
 logger = get_task_logger(__name__)
 
-redis_url = os.environ.get('REDIS_URL')
-#print(redis_url)
-
-# create the Celery instance
-celery = Celery(
-    'tasks', 
-    broker=redis_url,
-    backend=redis_url
-    )
-
-#define a dummy task for testing
-@celery.task
-def add(x, y):
-    print("multiplication - celery task in progress")
-    return x + y
 
 
 import gc
