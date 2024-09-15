@@ -910,6 +910,10 @@ def sitewide_pages():
         merge_df['ctr_yoy'] = ((merge_df['ctr_prev_p'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
         merge_df['position_yoy'] = ((merge_df['position_prev_p'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
 
+
+        # add one column named "Optimize CTR" to merge_df and add a link to the "Optimize CTR" emoji column
+        merge_df['Actions'] = merge_df['PAGE'].apply(lambda x: f"<a href='/actionable-insights/optimize-ctr/?page={x}'> Optimize CTR </a>")
+
         merge_df = merge_df.rename(columns={
             'PAGE': 'PAGE',
             #'Query Type' : 'Query Type', 
@@ -925,36 +929,37 @@ def sitewide_pages():
             'impressions': 'Impressions (CP)',
             'position': 'Position (CP)',
             'ctr': 'CTR (CP)',
-            'clicks_pop': 'Clicks PoP',
-            'impressions_pop': 'Impressions PoP',
-            'position_pop': 'Position PoP',
-            'ctr_pop': 'CTR PoP',
-            'clicks_yoy': 'Clicks YoY',
-            'impressions_yoy': 'Impressions YoY',
-            'position_yoy': 'Position YoY',
-            'ctr_yoy': 'CTR YoY'
+            'clicks_pop': 'Clicks PoP %',
+            'impressions_pop': 'Impressions PoP %',
+            'position_pop': 'Position PoP %',
+            'ctr_pop': 'CTR PoP %',
+            'clicks_yoy': 'Clicks YoY %',
+            'impressions_yoy': 'Impressions YoY %',
+            'position_yoy': 'Position YoY %',
+            'ctr_yoy': 'CTR YoY %'
             })
         
         # Assuming your DataFrame is named df
         columns_order = [
             ('PAGE'),
+            ('Actions'),
             #('Query Type'),
             ('Clicks (CP)'),
             ('Impressions (CP)'),
             ('CTR (CP)'),
             ('Position (CP)'),
-            ('Clicks PoP'),
-            ('Impressions PoP'),
-            ('Position PoP'),
-            ('CTR PoP'),
+            ('Clicks PoP %'),
+            ('Impressions PoP %'),
+            ('Position PoP %'),
+            ('CTR PoP %'),
             ('Clicks (PP)'),
             ('Impressions (PP)'),
             ('CTR (PP)'),
             ('Position (PP)'),
-            ('Clicks YoY'),
-            ('Impressions YoY'),
-            ('Position YoY'),
-            ('CTR YoY'),
+            ('Clicks YoY %'),
+            ('Impressions YoY %'),
+            ('Position YoY %'),
+            ('CTR YoY %'),
             ('Clicks (PY)'),
             ('Impressions (PY)'),
             ('CTR (PY)'),
@@ -971,6 +976,8 @@ def sitewide_pages():
 
         merge_df['Position (PY)'] = merge_df['Position (PY)'].apply(lambda x: f"{x:.2f}")
         merge_df['CTR (PY)'] = (merge_df['CTR (PY)'] * 100).apply(lambda x: f"{x:.2f}")
+
+        
 
         data_json = merge_df.to_json(orient='split')
 
@@ -1022,5 +1029,20 @@ def gsc_celery_test():
                            selected_property=selected_property,
                            brand_keywords=brand_keywords)
 
+
+@app.route('/actionable-insights/optimize-ctr/?page=<page>', methods=['GET', 'POST'])
+def optimize_ctr(page):
+    if 'credentials' not in session:
+        return redirect(url_for('gsc_authorize'))
+    
+    if request.method == 'POST':
+        return  render_template('/optimize-ctr/partial.html', page=page)
+    
+    #get request
+    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+
+    return render_template('/actionable-insights/optimize-ctr/main.html', page=page)
 
 
