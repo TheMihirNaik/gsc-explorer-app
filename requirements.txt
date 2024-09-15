@@ -12,3 +12,4 @@ google-auth-httplib2
 python-dotenv==1.0.1
 celery
 redis
+beautifulsoup4==4.12.3
