@@ -1,0 +1,68 @@
+<div role="alert" class="alert max-w-fit">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <span>
+        ..</span>
+  </div>
+
+
+  <h2 class="text-3xl font-bold mt-10 mb-10"> Title</h2>
+
+  {{ title }}
+
+  Tokens: {{ title_tokens }}
+
+  <h2 class="text-3xl font-bold mt-10 mb-10"> Meta Descriptions</h2>
+
+  {{ meta_desc }}
+
+  Tokens: {{ meta_desc_tokens }}
+
+
+  <h2 class="text-3xl font-bold mt-10 mb-10"> Query List</h2>
+
+  {{ query_list }}
+
+  <h2 class="text-3xl font-bold mt-10 mb-10"> Query Tokens</h2>
+
+  {{ query_tokens }}
+
+  <!-- HTML Table -->
+<table id="byQuery" class="">
+    <!-- Table header will be populated dynamically -->
+    <thead>
+        <!-- Define your table headers here if known -->
+        <!-- Example: <th>Name</th><th>Age</th> -->
+    </thead>
+    <tbody>
+        <!-- Table body will be populated dynamically -->
+    </tbody>
+</table>
+
+
+
+<!-- DataTables initialization script -->
+<script>
+
+    var data_load = {{ data_json | tojson }};
+    // Retrieve data from local storage
+    var data = JSON.parse(data_load);
+
+    // Initialize DataTables with retrieved data
+    $('#byQuery').DataTable({
+        columnDefs: [{ width: 300, targets: 0 }],
+        ordering: true,
+        data: data.data, // Assuming the JSON data has a 'data' key
+        columns: data.columns.map(function(columnName) {
+            return { title: columnName }; // Creating column definition objects with 'title' property
+        }),
+        order: [[2, 'desc']], // Ordering by the 2nd column (index 1) in ascending order
+        dom: 'QtpRB',
+        fixedHeader: true,
+        fixedColumns: true,
+        scrollX: true,
+        scrollY: true
+    });
+
+</script>
+  

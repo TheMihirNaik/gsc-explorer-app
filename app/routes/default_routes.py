@@ -7,6 +7,8 @@ from app.routes.gsc_routes import *
 import plotly.express as px
 from app.tasks.celery_tasks import *
 from app.tasks.task_status import task_status
+from bs4 import BeautifulSoup
+from collections import Counter
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -912,7 +914,7 @@ def sitewide_pages():
 
 
         # add one column named "Optimize CTR" to merge_df and add a link to the "Optimize CTR" emoji column
-        merge_df['Actions'] = merge_df['PAGE'].apply(lambda x: f"<a href='/actionable-insights/optimize-ctr/?page={x}'> Optimize CTR </a>")
+        merge_df['Actions'] = merge_df['PAGE'].apply(lambda x: f"<a href='/actionable-insights/optimize-ctr?page={x}'> Optimize CTR </a>")
 
         merge_df = merge_df.rename(columns={
             'PAGE': 'PAGE',
@@ -942,7 +944,7 @@ def sitewide_pages():
         # Assuming your DataFrame is named df
         columns_order = [
             ('PAGE'),
-            ('Actions'),
+            
             #('Query Type'),
             ('Clicks (CP)'),
             ('Impressions (CP)'),
@@ -963,7 +965,8 @@ def sitewide_pages():
             ('Clicks (PY)'),
             ('Impressions (PY)'),
             ('CTR (PY)'),
-            ('Position (PY)')
+            ('Position (PY)'),
+            ('Actions')
         ]
 
         merge_df = merge_df.reindex(columns=columns_order)
@@ -1030,19 +1033,116 @@ def gsc_celery_test():
                            brand_keywords=brand_keywords)
 
 
-@app.route('/actionable-insights/optimize-ctr/?page=<page>', methods=['GET', 'POST'])
-def optimize_ctr(page):
+@app.route('/actionable-insights/optimize-ctr', methods=['GET', 'POST'])
+def optimize_ctr():
     if 'credentials' not in session:
         return redirect(url_for('gsc_authorize'))
     
     if request.method == 'POST':
-        return  render_template('/optimize-ctr/partial.html', page=page)
+
+        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+
+        #build gsc service
+        webmasters_service = build_gsc_service()
+
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+        page = request.form.get('page')
+
+        start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
+
+        #total numbers make GSC API Call
+        country = []
+        dimensions = ['DATE', 'QUERY']
+        dimensionFilterGroups = [{"filters": [
+            {"dimension": "PAGE", "expression": page, "operator": "equals"},
+        ]}]
+
+        #get gsc data
+        date_query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+
+        # only rows where position is less than 11
+        date_query_df = date_query_df.loc[date_query_df['position'] < 11]
+
+        # aggreate the dataframe by query
+        query_df = date_query_df.groupby('QUERY').agg({'clicks': 'sum', 'impressions': 'sum'}).reset_index()
+
+        data_json = query_df.to_json(orient='split')
+
+
+
+
+        # scrape current title & meta description of the URL using bs4
+        url = page
+
+        # Send a GET request to the URL
+        response = requests.get(url)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Parse the content using BeautifulSoup
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Get the title
+            title_tag = soup.title
+            title = title_tag.string if title_tag else 'No title found'
+            
+            # Get the meta description
+            meta_tag = soup.find('meta', attrs={'name': 'description'})
+            meta_desc = meta_tag.get('content', 'No description found')
+            
+        else:
+            title = 'No title found'
+            meta_desc = 'No description found'
+
+
+        # tokenize title and meta description - split with space
+        title_tokens = title.split()
+        meta_desc_tokens = meta_desc.split()
+
+        # sort query_df by clicks
+        query_df = query_df.sort_values(by='clicks', ascending=False)
+
+        # create a list of query_df['QUERY']
+        query_list = query_df['QUERY'].tolist()
+
+        # tokenize each item in query_list
+        query_tokens = [item.split(' ') for item in query_list]
+
+        query_tokens_flat = []
+        # flatten query_tokens
+        for each in query_tokens:
+            query_tokens_flat.extend(each)
+
+        # count the frequency of each token
+        
+        query_tokens_count = Counter(query_tokens_flat)
+
+        # sort query_tokens_count by frequency
+        query_tokens_count = sorted(query_tokens_count.items(), key=lambda x: x[1], reverse=True)
+
+        # get first 20 items
+        query_tokens_count = query_tokens_count[:20]
+
+        #get gsc metrics
+        return  render_template('/actionable-insights/optimize-ctr/partial.html', 
+                                data_json=data_json, title=title, meta_desc=meta_desc,
+                                title_tokens=title_tokens, meta_desc_tokens=meta_desc_tokens,
+                                query_tokens=query_tokens_count, 
+                                #query_list=query_list
+                                )
     
     #get request
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
+    #capture variable <page> from url path
+    page = request.args.get('page', default='')
 
-    return render_template('/actionable-insights/optimize-ctr/main.html', page=page)
+
+    return render_template('/actionable-insights/optimize-ctr/main.html', 
+                           page=page,
+                           selected_property=selected_property,
+                           brand_keywords=brand_keywords)
 
 
