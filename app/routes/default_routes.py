@@ -845,6 +845,149 @@ def query_aggregate_report():
                         selected_property=selected_property,
                         brand_keywords=brand_keywords)
 
+@app.route('/reports/sitewide-pages/', methods=['GET', 'POST'])
+def sitewide_pages():
+    if 'credentials' not in session:
+        return redirect(url_for('gsc_authorize'))
+    
+    if request.method == 'POST':
+
+        #get request
+        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+        webmasters_service = build_gsc_service()
+
+
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+
+        #check available dates
+        date_checher_start_date = "2020-01-01" 
+        date_checker_end_date = "2050-01-01"
+
+        date_checker_dimensions = ['DATE']
+        date_checker_dimensionFilterGroups = [{"filters": [
+            #{"dimension": "DATE", "operator": "between", "expressions": [date_checher_start_date, date_checker_end_date]}
+        ]}]
+
+        date_checker_df = fetch_search_console_data(webmasters_service, selected_property, date_checher_start_date, date_checker_end_date, date_checker_dimensions, date_checker_dimensionFilterGroups)
+        
+        date_checker_earliest_date = date_checker_df['DATE'].min()
+        date_checker_latest_date = date_checker_df['DATE'].max()
+
+        current_start_date, current_end_date, previous_period_start_date, previous_period_end_date, previous_year_start_date, previous_year_end_date = process_dates(start_date_str, end_date_str)
+
+        
+        #total numbers make GSC API Call
+        country = []
+        dimensions = ['PAGE']
+        dimensionFilterGroups = [{"filters": [
+            #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
+        ]}]
+        
+        current_period_df = fetch_search_console_data(webmasters_service, selected_property, current_start_date, current_end_date, dimensions, dimensionFilterGroups)
+
+        previous_period_df = fetch_search_console_data(webmasters_service, selected_property, previous_period_start_date, previous_period_end_date, dimensions, dimensionFilterGroups)
+
+        previous_year_df = fetch_search_console_data(webmasters_service, selected_property, previous_year_start_date, previous_year_end_date, dimensions, dimensionFilterGroups)
+        
+        #merge database
+        merge_df = previous_period_df.merge(previous_year_df, on='PAGE', suffixes=('_prev_p', '_prev_y'), how='outer')
+        merge_df = merge_df.merge(current_period_df, on='PAGE', how='outer')
+
+        #merge_df['Query Type'] = merge_df['PAGE'].apply(lambda x: keyword_type(x, brand_keywords))
+ 
+        merge_df.fillna(0, inplace=True)
+
+        merge_df['clicks_pop'] = ((merge_df['clicks'] - merge_df['clicks_prev_p']) / merge_df['clicks_prev_p'] * 100).round(2)
+        merge_df['impressions_pop'] = ((merge_df['impressions'] - merge_df['impressions_prev_p']) / merge_df['impressions_prev_p'] * 100).round(2)
+        merge_df['ctr_pop'] = ((merge_df['ctr'] - merge_df['ctr_prev_p']) / merge_df['ctr_prev_p'] * 100).round(2)
+        merge_df['position_pop'] = ((merge_df['position'] - merge_df['position_prev_p']) / merge_df['position_prev_p'] * 100).round(2)
+
+        merge_df['clicks_yoy'] = ((merge_df['clicks_prev_p'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
+        merge_df['impressions_yoy'] = ((merge_df['impressions_prev_p'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
+        merge_df['ctr_yoy'] = ((merge_df['ctr_prev_p'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
+        merge_df['position_yoy'] = ((merge_df['position_prev_p'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
+
+        merge_df = merge_df.rename(columns={
+            'PAGE': 'PAGE',
+            #'Query Type' : 'Query Type', 
+            'clicks_prev_p': 'Clicks (PP)',
+            'impressions_prev_p': 'Impressions (PP)',
+            'position_prev_p': 'Position (PP)',
+            'ctr_prev_p': 'CTR (PP)',
+            'clicks_prev_y': 'Clicks (PY)',
+            'impressions_prev_y': 'Impressions (PY)',
+            'position_prev_y': 'Position (PY)',
+            'ctr_prev_y': 'CTR (PY)',
+            'clicks': 'Clicks (CP)',
+            'impressions': 'Impressions (CP)',
+            'position': 'Position (CP)',
+            'ctr': 'CTR (CP)',
+            'clicks_pop': 'Clicks PoP',
+            'impressions_pop': 'Impressions PoP',
+            'position_pop': 'Position PoP',
+            'ctr_pop': 'CTR PoP',
+            'clicks_yoy': 'Clicks YoY',
+            'impressions_yoy': 'Impressions YoY',
+            'position_yoy': 'Position YoY',
+            'ctr_yoy': 'CTR YoY'
+            })
+        
+        # Assuming your DataFrame is named df
+        columns_order = [
+            ('PAGE'),
+            #('Query Type'),
+            ('Clicks (CP)'),
+            ('Impressions (CP)'),
+            ('CTR (CP)'),
+            ('Position (CP)'),
+            ('Clicks PoP'),
+            ('Impressions PoP'),
+            ('Position PoP'),
+            ('CTR PoP'),
+            ('Clicks (PP)'),
+            ('Impressions (PP)'),
+            ('CTR (PP)'),
+            ('Position (PP)'),
+            ('Clicks YoY'),
+            ('Impressions YoY'),
+            ('Position YoY'),
+            ('CTR YoY'),
+            ('Clicks (PY)'),
+            ('Impressions (PY)'),
+            ('CTR (PY)'),
+            ('Position (PY)')
+        ]
+
+        merge_df = merge_df.reindex(columns=columns_order)
+
+        merge_df['Position (CP)'] = merge_df['Position (CP)'].apply(lambda x: f"{x:.2f}")
+        merge_df['CTR (CP)'] = (merge_df['CTR (CP)'] * 100).apply(lambda x: f"{x:.2f}")
+
+        merge_df['Position (PP)'] = merge_df['Position (PP)'].apply(lambda x: f"{x:.2f}")
+        merge_df['CTR (PP)'] = (merge_df['CTR (PP)'] * 100).apply(lambda x: f"{x:.2f}")
+
+        merge_df['Position (PY)'] = merge_df['Position (PY)'].apply(lambda x: f"{x:.2f}")
+        merge_df['CTR (PY)'] = (merge_df['CTR (PY)'] * 100).apply(lambda x: f"{x:.2f}")
+
+        data_json = merge_df.to_json(orient='split')
+
+        return render_template('/sitewide-pages/partial.html', 
+                               date_checker_earliest_date=date_checker_earliest_date,
+                               date_checker_latest_date=date_checker_latest_date,
+                               data_json=data_json
+                               )
+    
+    # GET request
+    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+    return render_template('/sitewide-pages/main.html',
+                        selected_property=selected_property,
+                        brand_keywords=brand_keywords)
+
 @app.route('/gsc-celery-test/', methods=['GET', 'POST'])
 def gsc_celery_test():
     if 'credentials' not in session:
