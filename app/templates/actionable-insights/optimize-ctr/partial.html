@@ -10,22 +10,34 @@
 
   {{ title }}
 
+  <br>
+  <br>
+
   Tokens: {{ title_tokens }}
+
+  <br>
+  <br>
+
+  Missing Tokens : {{ missing_title_tokens }}
 
   <h2 class="text-3xl font-bold mt-10 mb-10"> Meta Descriptions</h2>
 
   {{ meta_desc }}
 
+  <br>
+  <br>
+
   Tokens: {{ meta_desc_tokens }}
+
+
+  <h2 class="text-3xl font-bold mt-10 mb-10"> Query Tokens</h2>
+
+  {{ query_tokens }}
 
 
   <h2 class="text-3xl font-bold mt-10 mb-10"> Query List</h2>
 
   {{ query_list }}
-
-  <h2 class="text-3xl font-bold mt-10 mb-10"> Query Tokens</h2>
-
-  {{ query_tokens }}
 
   <!-- HTML Table -->
 <table id="byQuery" class="">
