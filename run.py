@@ -8,4 +8,5 @@ if __name__ == '__main__':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     # run on a different port
     #app.run(host='0.0.0.0', port=6000, debug=True)
-    app.run(debug=True, port=5001)
+    #app.run(debug=True, port=5001)
+    app.run(debug=True)

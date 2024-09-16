@@ -1070,8 +1070,6 @@ def optimize_ctr():
         data_json = query_df.to_json(orient='split')
 
 
-
-
         # scrape current title & meta description of the URL using bs4
         url = page
 
@@ -1098,7 +1096,17 @@ def optimize_ctr():
 
         # tokenize title and meta description - split with space
         title_tokens = title.split()
+
+        # remove special characters from title_tokens
+        title_tokens = [re.sub(r'[^\w\s]', '', token) for token in title_tokens if re.sub(r'[^\w\s]', '', token)]
+
+        # convert all title_tokens to lowercase
+        title_tokens = [token.lower() for token in title_tokens]
+
         meta_desc_tokens = meta_desc.split()
+
+        # remove special characters from meta_desc_tokens
+        meta_desc_tokens = [re.sub(r'[^\w\s]', '', token) for token in meta_desc_tokens if re.sub(r'[^\w\s]', '', token)]
 
         # sort query_df by clicks
         query_df = query_df.sort_values(by='clicks', ascending=False)
@@ -1124,11 +1132,15 @@ def optimize_ctr():
         # get first 20 items
         query_tokens_count = query_tokens_count[:20]
 
+        # create a list of tokens from query_tokens_count that exist in title_tokens
+        missing_title_tokens = [token for token in query_tokens_count if token[0] not in title_tokens]
+
+
         #get gsc metrics
         return  render_template('/actionable-insights/optimize-ctr/partial.html', 
                                 data_json=data_json, title=title, meta_desc=meta_desc,
                                 title_tokens=title_tokens, meta_desc_tokens=meta_desc_tokens,
-                                query_tokens=query_tokens_count, 
+                                query_tokens=query_tokens_count, missing_title_tokens=missing_title_tokens
                                 #query_list=query_list
                                 )
     
