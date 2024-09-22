@@ -25,8 +25,33 @@
 
 <div class="row-auto">
   <!-- H1 Heading -->
-  <div class="row-auto p-2">
+  <div class="row-auto p-2 align-middle">
     <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">Sitewide Analysis</h1>
+
+
+    <div class="flex flex-row">
+        <!-- Date Range Picker -->
+        <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;" 
+        class="inline-block max-w-fit mr-5 align-middle">
+        <i class="fa fa-calendar"></i>&nbsp;
+        <span></span> <i class="fa fa-caret-down"></i>
+        </div>
+
+        <!-- Fetch Data Button -->
+
+        <form id="dateRangeForm" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis" class="inline-block">
+        <input type="hidden" name="start_date" id="start_date">
+        <input type="hidden" name="end_date" id="end_date">
+        <button type="submit" class="btn btn-primary">Fetch Data</button>
+        <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
+        </form>
+
+    </div>
+
+     
+
+    <br>
+
     <div role="alert" class="alert max-w-fit inline-block">
       <p class="text-lg mt-2">🔋 What's more than Google Search Console?</p>
       <p class="text-sm mt-2">
@@ -36,38 +61,15 @@
         <br>📈 Query Count by Position Bucket Charts by Brand vs Non Brand Queries
         <br>💡 No Limit of 1000 Rows of Data
     </div>
-  </div>
 
-  <!-- GSC Data Form -->
-  <div class="row-auto mt-4">
-    <!-- <form class="" id="sitewide-analysis-data" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis">
-      <div id="foo" class="">
-          <input placeholder="Start Date" type="text" name="start_date" class="border border-bg-accent rounded px-2 py-1 focus:outline-none focus:border-bg-accent">
-          <span class="text-gray-500">to</span>
-          <input placeholder="End Date" type="text" name="end_date" class="border border-bg-accent rounded px-2 py-1 focus:outline-none focus:border-bg-accent">
-          <button class="btn btn-primary" type="submit">Fetch</button>
-          <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
-        </div>
-    </form> -->
-
-    <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;" class="inline-block max-w-fit mr-5">
-      <i class="fa fa-calendar"></i>&nbsp;
-      <span></span> <i class="fa fa-caret-down"></i>
-    </div>
-    
-    <form id="dateRangeForm" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis" class="inline-block">
-      <input type="hidden" name="start_date" id="start_date">
-      <input type="hidden" name="end_date" id="end_date">
-      <button type="submit" class="btn btn-primary">Fetch Data</button>
-      <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
-    </form>
+   
 
   </div>
 
-  <!-- H1 Heading -->
 
+
+  <!-- Loading Spinner-->
   <div id="sitewide-analysis">
-    
     
     <!-- Explainer-->
     <div role="alert" class="alert mt-5 bg-primary-content">
@@ -116,16 +118,5 @@
   });
 </script>
 
-<!-- Date Picker Script-->
-<!-- <script>
-  const startInput = document.querySelector('input[name="start_date"]');
-  const endInput = document.querySelector('input[name="end_date"]');
-  const datepickerStart = new Datepicker(startInput, {
-    // options for start datepicker
-  });
-  const datepickerEnd = new Datepicker(endInput, {
-    // options for end datepicker
-  });
-</script> -->
 
 {% endblock %}
