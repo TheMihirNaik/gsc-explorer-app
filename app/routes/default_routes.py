@@ -1021,7 +1021,6 @@ def gsc_celery_test():
         # Track task status
         task_status[result.id] = {'status': 'pending'}
 
-        
         return jsonify({'task_id': result.id})
 
     #get request

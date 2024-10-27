@@ -24,16 +24,11 @@ def celery_test_gsc_data(credentials_data, selected_property, start_date_formatt
     gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
     #logger.info(f"GSC Data: {gsc_data}")
 
-    # Generate HTML content from the fetched data
-    html_content = '<table id="gsc-data-table" class="display"><thead><tr><th>Date</th><th>Query</th><th>Page</th></tr></thead><tbody>'
-    
-    for index, row in gsc_data.iterrows():
-        html_content += f'<tr><td>{row["DATE"]}</td><td>{row["QUERY"]}</td><td>{row["PAGE"]}</td></tr>'
-    
-    html_content += '</tbody></table>'
+    # transform gsc_data to json
+    json_content = gsc_data.to_json(orient='records')
 
     gc.collect()
-    return html_content
+    return json_content
 
     # gsc_data is a dataframe, convert it to json
     #gsc_data_json = gsc_data.to_json(orient='records')

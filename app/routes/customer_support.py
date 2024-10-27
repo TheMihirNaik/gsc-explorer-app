@@ -7,7 +7,9 @@ def recieve_feedback():
     if request.method == 'POST':
         customer_message = request.form.get('customer_message')
         print(customer_message)
-        return f'Thank you for your feedback!'
+        return 'Thank you for your feedback!'
     
     # GET request
     return redirect(url_for('signin'))
+
+# The issue with the code is that the return statement on the POST request is returning an f-string which is not valid. The return statement should return a string or a response object.
