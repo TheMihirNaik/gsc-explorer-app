@@ -93,6 +93,18 @@ def gsc_authorize():
 def gsc_oauth2callback():
   # Specify the state when creating the flow in the callback so that it can
   # verified in the authorization server response.
+  """
+  Handles the OAuth 2.0 callback from Google Search Console.
+
+  The state parameter from the session is used to create the flow instance
+  so that the authorization server response can be verified.
+
+  The authorization server's response is used to fetch the OAuth 2.0 tokens.
+
+  The credentials are stored in the session.
+
+  Redirects to the gsc property selection page.
+  """
   state = flask.session['state']
 
   flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
