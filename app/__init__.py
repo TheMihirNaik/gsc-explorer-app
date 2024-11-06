@@ -24,6 +24,9 @@ redis_host = os.getenv('REDIS_HOST')
 # Initialize Flask app
 app = Flask(__name__)
 
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+
+
 #app.config
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=300)
