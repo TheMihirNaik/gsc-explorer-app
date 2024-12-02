@@ -6,13 +6,28 @@
 
 <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">GSC Property Selection</h1>
 
-<p class="mb-0">Please select the property you want to analyze.</p>
-<p class="mb-5">If you don't select the property, the reports won't be generated.</p>
+<div role="alert m-5" class="alert">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      class="stroke-info h-6 w-6 shrink-0">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <span>Please select the property you want to analyze.</span>
+  </div>
 
-<form action="/gsc-property-selection/" method="POST">
+
+
+
+<form action="/gsc-property-selection/" method="POST" class="mt-5" required>
     
-    <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto">
-        <option disabled selected>Select your Website</option>
+    <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto" required>
+        <option disabled selected value="">Select your Website</option>
         {% for site in site_list%}
         <option>{{ site }}</option>
         {% endfor %}
@@ -27,9 +42,11 @@
         <br>If your brand name is Stripe, adding 'stripe' here will include all the Queries that has stripe in it.
         <br>Every Keyword you add here will work as "contains" while labelling them as "Brand".
     </p>
-    <textarea placeholder="keyword1, keyword2, keyword3" class="textarea textarea-bordered row-auto" name="brand_keywords" id="brand_keywords" rows="5" cols="40"></textarea>
+    <textarea placeholder="keyword1, keyword2, keyword3" 
+    class="textarea textarea-bordered row-auto" name="brand_keywords" 
+    id="brand_keywords" rows="5" cols="40" required></textarea>
     
-    
+    <br>
     <button type="submit" class="btn btn-accent m-4">Select</button>
 </form>
 
