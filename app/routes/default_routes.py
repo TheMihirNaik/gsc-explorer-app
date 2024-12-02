@@ -30,6 +30,12 @@ def dashboard():
     
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+    # if GSC property is not selected then send user to GSC property selection page
+    if selected_property == "You haven't selected a GSC Property yet":
+        # show a message
+        flash('Please Select your GSC Property.')
+        return redirect(url_for('gsc_property_selection'))
     
     return render_template('/default/dashboard.html', 
                            selected_property=selected_property,
@@ -367,6 +373,12 @@ def sitewide_analysis():
     #get request
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+    # if GSC property is not selected then send user to GSC property selection page
+    if selected_property == "You haven't selected a GSC Property yet":
+        # show a message
+        flash('Please Select your GSC Property.')
+        return redirect(url_for('gsc_property_selection'))
     
     return render_template('/sitewide-analysis/mainpage.html', 
                            selected_property=selected_property,
@@ -697,6 +709,12 @@ def sitewide_report():
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
+    # if GSC property is not selected then send user to GSC property selection page
+    if selected_property == "You haven't selected a GSC Property yet":
+        # show a message
+        flash('Please Select your GSC Property.')
+        return redirect(url_for('gsc_property_selection'))
+
     return render_template('/sitewide-report/main.html',
                            selected_property=selected_property,
                            brand_keywords=brand_keywords)
@@ -842,6 +860,12 @@ def query_aggregate_report():
     # GET request
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+    # if GSC property is not selected then send user to GSC property selection page
+    if selected_property == "You haven't selected a GSC Property yet":
+        # show a message
+        flash('Please Select your GSC Property.')
+        return redirect(url_for('gsc_property_selection'))
 
     return render_template('/query-aggregate-report/main.html',
                         selected_property=selected_property,
@@ -994,6 +1018,12 @@ def sitewide_pages():
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
+    # if GSC property is not selected then send user to GSC property selection page
+    if selected_property == "You haven't selected a GSC Property yet":
+        # show a message
+        flash('Please Select your GSC Property.')
+        return redirect(url_for('gsc_property_selection'))
+
     return render_template('/sitewide-pages/main.html',
                         selected_property=selected_property,
                         brand_keywords=brand_keywords)
@@ -1061,7 +1091,7 @@ def optimize_ctr():
         date_query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
 
         # only rows where position is less than 11
-        date_query_df = date_query_df.loc[date_query_df['position'] < 11]
+        date_query_df = date_query_df.loc[date_query_df['position'] < 4]
 
         # aggreate the dataframe by query
         query_df = date_query_df.groupby('QUERY').agg({'clicks': 'sum', 'impressions': 'sum'}).reset_index()
