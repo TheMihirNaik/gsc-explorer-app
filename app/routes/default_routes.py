@@ -15,13 +15,15 @@ import nltk
 from nltk.corpus import stopwords
 from openai import OpenAI
 
+import os
+from dotenv import load_dotenv
 #IMPORT environment variables
 from dotenv import load_dotenv
 load_dotenv()
 
 # Import OpenAI API key
 openai_api_key = os.getenv('OPENAI_API_KEY')
-print(openai_api_key)
+print("newapi - " + openai_api_key)
 
 # Flask template filters
 @app.template_filter('format_number')
