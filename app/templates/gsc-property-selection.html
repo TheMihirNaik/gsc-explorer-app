@@ -7,6 +7,7 @@
 <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">GSC Property Selection</h1>
 
 <div role="alert m-5" class="alert">
+    <!-- Notice -->
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -23,31 +24,53 @@
 
 
 
-
+<!--  GSC Property Selection -->
 <form action="/gsc-property-selection/" method="POST" class="mt-5" required>
+
+    <div class="max-w-xl p-6 mb-5 bg-neutral-100 rounded-lg shadow-lg">
+
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">1. Select the Property:</h2>
     
-    <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto" required>
-        <option disabled selected value="">Select your Website</option>
-        {% for site in site_list%}
-        <option>{{ site }}</option>
-        {% endfor %}
-    </select>
-    
-    <p class="text-3xl font-bold mt-5">Brand Variants:</p>
-    <p class="text-sm mb-5 mt-5">
-        Add keywords that represent your brand to label all relevant queries as "Brand". 
-        <br> Others will get labelled as "Non Brand". Separate each keyword with a comma. 
+        <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto" required>
+            <option disabled selected value="">Select your Website</option>
+            {% for site in site_list%}
+            <option>{{ site }}</option>
+            {% endfor %}
+        </select>
+
+    </div>
+
+
+    <div class="max-w-xl p-6 mb-5 bg-neutral-100 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">2. Define Your Brand Keywords</h2>
+        <p class="text-gray-600 mb-4">
+            Enter words or phrases that represent your brand. Any search query containing these will be labeled as 
+            <strong class="text-neutral-700">"Brand."</strong>
         </p>
-    <p class="text-xs mb-5"><b>Example:</b>   
-        <br>If your brand name is Stripe, adding 'stripe' here will include all the Queries that has stripe in it.
-        <br>Every Keyword you add here will work as "contains" while labelling them as "Brand".
+
+            <li>All other queries will automatically be categorized as "Non-Brand."</li>    
+            <li>Separate multiple keywords with a comma (e.g., stripe, payment, checkout).</li>
+
     </p>
+
+    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+        <p class="text-accent">
+          <strong>Example:</strong> If your brand name is <strong>Stripe</strong>, enter <em>stripe</em> as a keyword. This will label all queries containing <em>stripe</em> as <strong class="text-accent">"Brand."</strong>
+        </p>
+      </div>
+
+    <label for="brandKeywords" class="block text-gray-700 font-medium mb-2">
+        Brand Keywords:
+      </label>
+
     <textarea placeholder="keyword1, keyword2, keyword3" 
     class="textarea textarea-bordered row-auto" name="brand_keywords" 
     id="brand_keywords" rows="5" cols="40" required></textarea>
+
+    </div>
     
-    <br>
-    <button type="submit" class="btn btn-accent m-4">Select</button>
+
+    <button type="submit" class="btn btn-accent">Select</button>
 </form>
 
 {% endblock %}
