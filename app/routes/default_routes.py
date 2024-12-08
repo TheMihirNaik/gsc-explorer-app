@@ -11,10 +11,9 @@ from app.tasks.task_status import task_status
 from bs4 import BeautifulSoup
 from collections import Counter
 import nltk
-#import stopwords from nltk package
-from nltk.corpus import stopwords
 from openai import OpenAI
-
+# Download stopwords
+nltk.download('stopwords')
 
 # Flask template filters
 @app.template_filter('format_number')
