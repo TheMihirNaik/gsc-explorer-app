@@ -9,6 +9,14 @@ from app.tasks.celery_tasks import *
 from app.tasks.task_status import task_status
 from bs4 import BeautifulSoup
 from collections import Counter
+from openai import OpenAI
+
+#IMPORT environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+# Import OpenAI API key
+openai_api_key = os.getenv('OPENAI_API_KEY')
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -1187,3 +1195,182 @@ def optimize_ctr():
                            brand_keywords=brand_keywords)
 
 
+@app.route('/optimize-ctr/generate-ai-title/', methods=['POST', 'GET'])
+def generate_ai_title():
+    if 'credentials' not in session:
+        return redirect(url_for('gsc_authorize'))
+    else:
+        # POST request
+        if request.method == 'POST':
+            openai_api = openai_api_key
+            
+            # Capture the incoming JSON data from the request
+            data = request.get_json()
+
+
+            # Extract the data from the JSON
+            existing_title = data.get('existing_title')
+            page = data.get('page')
+            title_query_tokens_count = data.get('titleQueryTokensCount')
+            h1 = data.get('h1')
+
+            # Print or log the captured data for debugging
+            print('Existing Title:', existing_title)
+            print('Page:', page)
+            #print('Title Query Tokens Count:', title_query_tokens_count)
+
+            print(type(title_query_tokens_count))
+
+            # Format the information for the prompt
+            formatted_tokens = ""
+            for term, count, exists_in_title, examples in title_query_tokens_count:
+                formatted_tokens += f"Term: {term}\n"
+                formatted_tokens += f"Used {count} times in search queries.\n"
+                formatted_tokens += f"Exists in the current title: {'Yes' if exists_in_title else 'No'}\n"
+                formatted_tokens += f"Top 5 search queries: {', '.join(examples)}\n"
+                formatted_tokens += "\n"  # Adding a line break between entries
+
+            print(formatted_tokens)
+
+            # Here you can perform any operations, such as generating the AI title
+
+            client = OpenAI(
+                api_key=openai_api
+                )
+
+            system_prompt = """ You are an expert copywriter who writer very attractive SEO Titles for Higher and Improved CTR. 
+            Your task is to generate a new title for a website page using the data provided. Analyze the additional data while writing. """
+
+            task_prompt = f"""
+
+                Here is the Page URL: "{page}".
+                Here is the Existing Title of the Page: "{existing_title}".
+                Here is the Existing H1 of the Page: "{h1}"
+
+                Important things to keep in mind:
+                1) The new title should be in the same language as the existing title.
+                2) Only return the new title. Don't add anything else.
+                3) The new title should be at least 10 words long.
+
+                Use the following information to help generate the new title:
+                {formatted_tokens}
+
+                Focus on the terms that are not present in the existing title. Try to incorporate them into the new title.
+
+                """
+            
+            completion = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": task_prompt},
+                    ]
+                    )
+            ai_generated_title = completion.choices[0].message.content
+
+            ai_generated_title_html = f"""
+
+            <div class="card card-bordered shadow-lg">
+                <div class="card-body">
+                    <p class="text-s">
+                    {ai_generated_title}
+                    </p>
+                </div>
+                </div>
+            """
+            return ai_generated_title_html
+
+        
+        # GET request
+        return redirect(url_for('dashboard'))
+    
+
+@app.route('/optimize-ctr/generate-ai-meta-description/', methods=['POST', 'GET'])
+def generate_ai_meta_description():
+    if 'credentials' not in session:
+        return redirect(url_for('gsc_authorize'))
+    else:
+        # POST request
+        if request.method == 'POST':
+            
+            openai_api = openai_api_key
+            # Capture the incoming JSON data from the request
+            data = request.get_json()
+
+
+            # Extract the data from the JSON
+            existing_title = data.get('existing_title')
+            existing_meta_description = data.get('existingMetaDescriptionElement')
+            page = data.get('page')
+            metaDescQueryTokensCount = data.get('metaDescQueryTokensCount')
+            h1 = data.get('h1')
+
+            # Print or log the captured data for debugging
+            print('Existing Title:', existing_title)
+            print('Page:', page)
+            #print('Title Query Tokens Count:', title_query_tokens_count)
+
+            print(type(metaDescQueryTokensCount))
+
+            # Format the information for the prompt
+            formatted_tokens = ""
+            for term, count, exists_in_title, examples in metaDescQueryTokensCount:
+                formatted_tokens += f"Term: {term}\n"
+                formatted_tokens += f"Used {count} times in search queries.\n"
+                formatted_tokens += f"Exists in the current Meta Description: {'Yes' if exists_in_title else 'No'}\n"
+                formatted_tokens += f"Top 5 search queries: {', '.join(examples)}\n"
+                formatted_tokens += "\n"  # Adding a line break between entries
+
+            print(formatted_tokens)
+
+            # Here you can perform any operations, such as generating the AI title
+
+            client = OpenAI(
+                api_key=openai_api
+                )
+
+            system_prompt = """ You are an expert copywriter who writer very attractive SEO Meta Descriptions for Higher and Improved CTR. 
+            Your task is to generate a new SEO Meta Descriptions for a website page using the data provided. Analyze the additional data while writing. """
+
+            task_prompt = f"""
+
+                Here is the Page URL: "{page}".
+                Here is the Existing Title of the Page: "{existing_title}".
+                Here is the Existing Meta Description of the Page: "{existing_meta_description}".
+                Here is the Existing H1 of the Page: "{h1}"
+
+                Important things to keep in mind:
+                1) The new Meta Description should be in the same language as the existing title.
+                2) Only return the new Meta Description. Don't add anything else.
+
+                Use the following information to help generate the new Meta Description:
+                {formatted_tokens}
+
+                Focus on the terms that are not present in the existing title. Try to incorporate them into the new title.
+
+                """
+            
+            completion = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": task_prompt},
+                    ]
+                    )
+            ai_generated_meta_description = completion.choices[0].message.content
+
+            ai_generated_meta_description_html = f"""
+
+            <div class="card card-bordered shadow-lg">
+                <div class="card-body">
+                    <p class="text-s">
+                    {ai_generated_meta_description}
+                    </p>
+                </div>
+                </div>
+            """
+            return ai_generated_meta_description_html
+
+        
+        # GET request
+        return redirect(url_for('dashboard'))
