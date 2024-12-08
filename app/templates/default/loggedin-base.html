@@ -69,7 +69,7 @@
     <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
     
     <!-- Main Content -->
-    <div class="drawer-content p-10">
+    <div class="drawer-content p-5">
       
 
       <!-- Flash Messages -->
@@ -99,12 +99,12 @@
       <label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
 
       <!-- Side Bar Content -->
-      <div class="menu p-4 w-80 min-h-full bg-neutral text-neutral-content justify-between">
+      <div class="menu p-0 w-80 min-h-full bg-neutral text-neutral-content justify-between">
 
 
         <div class="flex flex-col">
             <!-- Main Logo -->
-          <div class="font-bold text-xl">
+          <div class="font-bold text-xl p-5">
             <a href="/" class="">✨GSC Explorer App</a>
           </div>
 
@@ -133,11 +133,11 @@
           <div class="">
             <ul class="menu p-4 bg-neutral text-neutral-content justify-between text-xl">
 
-              <div class="tooltip tooltip-accent" data-tip="Click here to choose a different Google Search Console property for your analysis. This allows you to analyze GSC data from different websites within your GSC account.">
-                <li class="m-2"><a href="/gsc-property-selection/">Select a GSC Property</a></li>
+              <div class="tooltip tooltip-accent" data-tip="Select a different Google Search Console property to analyze data from another website in your GSC account.">
+                <li class="m-2"><a href="/gsc-property-selection/" class="btn">Switch GSC Property</a></li>
               </div>
 
-              <div class="tooltip tooltip-primary" data-tip="Click this button to remove Google Search Console access and Clear Session Cookies to Log Out.">
+              <div class="tooltip tooltip-primary" data-tip="Remove Google Search Console access and clear session cookies to securely log out.">
                 <li class="m-2"><a href="/revoke-gsc-clear-session"><button class="btn btn-primary">Revoke GSC Access & Logout</button></a></li>
               </div>
               

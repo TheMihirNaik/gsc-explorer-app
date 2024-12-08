@@ -5,37 +5,123 @@
         ..</span>
   </div>
 
-
-  <h2 class="text-3xl font-bold mt-10 mb-10"> Title</h2>
-
-  {{ title }}
-
-  <br>
-  <br>
-
-  Tokens: {{ title_tokens }}
-
-  <br>
-  <br>
-
-  Missing Tokens : {{ missing_title_tokens }}
-
-  <h2 class="text-3xl font-bold mt-10 mb-10"> Meta Descriptions</h2>
-
-  {{ meta_desc }}
-
-  <br>
-  <br>
-
-  Tokens: {{ meta_desc_tokens }}
+  <p class="text-xs mb-3"> The terms highlighted in <span class="badge badge-accent">this color</span> are the most frequently searched keywords but are not currently included in the existing titles.</p>
 
 
-  <h2 class="text-3xl font-bold mt-10 mb-10"> Query Tokens</h2>
+  <!-- Two Column Grid -->
+  <div class="grid grid-cols-2 gap-4">
+    
+    <div class="card bg-base-300">
+        
+      <div class="card-body">
+        <h2 class="card-title">Existing Title</h2>
+        
+        <p id="existing_title">{{ title }}</p>
 
-  {{ query_tokens }}
+        <h2 class="card-title">Title Terms Analysis:</h2>
+        
+        <ul>
+        {% for token in title_query_tokens_count %}
+                    
+            <div class="tooltip" data-tip="{{ token[3] }}">
+
+            {% if token[2] %}
+                <span class="badge badge-primary">{{ token[0] }} ({{ token[1] }})</span>
+            {% else %}
+                <span class="badge badge-accent">{{ token[0] }} ({{ token[1] }})</span>
+            {% endif %}
+            </div>
+        {% endfor %}
+
+        </ul>
+
+        <!-- Hidden JSON data -->
+        <div id="hidden-json-data" style="display:none;">
+            {{ title_query_tokens_count | tojson }}
+        </div>
+
+        <div id="hidden-h1-data" style="display:none;">
+            {{ h1 }}
+        </div>
+        
+
+        <button onclick="generateAITitle()" class="btn btn-primary">Generate AI-assisted Title</button>
+
+      </div>
+    </div>
+
+    <div class="card bg-base-300">
+      <div class="card-body">
+        
+        <h2 class="card-title">Existing Meta Descriptions</h2>
+        
+        <p id="existing_meta_desc">{{ meta_desc }}</p>
+  
+        <h2 class="card-title">Meta Description Terms Analysis:</h2>
+
+        <ul>
+            {% for token in title_query_tokens_count %}
+
+            <div class="tooltip" data-tip="{{ token[3] }}">
+
+            {% if token[2] %}
+                <span class="badge badge-primary">{{ token[0] }} ({{ token[1] }})</span>
+            {% else %}
+                <span class="badge badge-accent">{{ token[0] }} ({{ token[1] }})</span>
+            {% endif %}
+            </div>
+        {% endfor %}
+        </ul>
+
+        <!-- Hidden JSON data -->
+        <div id="hidden-json-data-meta-desc" style="display:none;">
+            {{ meta_desc_query_tokens_count | tojson }}
+        </div>
+
+        <div id="hidden-h1-data" style="display:none;">
+            {{ h1 }}
+        </div>
+        
+
+        <button onclick="generateAIMetaDescription()" class="btn btn-primary">Generate AI-assisted Meta Description</button>
+
+      </div>
+        
+    </div>
+  </div>
 
 
-  <h2 class="text-3xl font-bold mt-10 mb-10"> Query List</h2>
+  <!-- Two Column Grid - AI Results -->
+  <div class="grid grid-cols-2 gap-4 mt-2">
+    <div class="card bg-base-300">
+      <div class="card-body">
+        <!-- AI Generated Title -->
+
+        <span class="loading loading-spinner text-primary" id="loading-indicator" style="display:none;"></span>
+        
+        <div id="ai-generated-title">
+            <p>AI-assisted Optimized Title will be here.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card bg-base-300">
+        <div class="card-body">
+        <!-- AI Generated Title -->
+
+        <span class="loading loading-spinner text-primary" id="loading-indicator-meta-desc" style="display:none;"></span>
+        
+
+        <!-- AI Generated Meta Description -->
+
+        <div id="ai-generated-meta-description">
+            <p>AI-assisted Optimized Meta Description will be here.</p>
+        </div>
+
+        </div>
+      </div>
+  </div>
+
+  <h2 class="text-3xl font-bold mt-10"> GSC Search Queries in Top 10 Positions</h2>
 
   {{ query_list }}
 
@@ -77,4 +163,6 @@
     });
 
 </script>
+
+
   

@@ -4,11 +4,15 @@ import bcrypt
 from datetime import datetime, timedelta, date
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
+#from app.routes.openai import *
 import plotly.express as px
 from app.tasks.celery_tasks import *
 from app.tasks.task_status import task_status
 from bs4 import BeautifulSoup
 from collections import Counter
+import nltk
+#import stopwords from nltk package
+from nltk.corpus import stopwords
 from openai import OpenAI
 
 #IMPORT environment variables
@@ -17,6 +21,7 @@ load_dotenv()
 
 # Import OpenAI API key
 openai_api_key = os.getenv('OPENAI_API_KEY')
+print(openai_api_key)
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -853,6 +858,9 @@ def query_aggregate_report():
         merge_df['Position (PY)'] = merge_df['Position (PY)'].apply(lambda x: f"{x:.2f}")
         merge_df['CTR (PY)'] = (merge_df['CTR (PY)'] * 100).apply(lambda x: f"{x:.2f}")
 
+        # remove rows containing # from merge_df
+        #merge_df = merge_df[~merge_df['PAGE'].str.contains('#')]
+
 
         data_json = merge_df.to_json(orient='split')
 
@@ -1012,7 +1020,9 @@ def sitewide_pages():
         merge_df['Position (PY)'] = merge_df['Position (PY)'].apply(lambda x: f"{x:.2f}")
         merge_df['CTR (PY)'] = (merge_df['CTR (PY)'] * 100).apply(lambda x: f"{x:.2f}")
 
-        
+        # remove # from PAGE
+        merge_df = merge_df[~merge_df['PAGE'].str.contains('#')]
+
 
         data_json = merge_df.to_json(orient='split')
 
@@ -1089,7 +1099,6 @@ def optimize_ctr():
         start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
 
         #total numbers make GSC API Call
-        country = []
         dimensions = ['DATE', 'QUERY']
         dimensionFilterGroups = [{"filters": [
             {"dimension": "PAGE", "expression": page, "operator": "equals"},
@@ -1099,19 +1108,34 @@ def optimize_ctr():
         date_query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
 
         # only rows where position is less than 11
-        date_query_df = date_query_df.loc[date_query_df['position'] < 4]
+        date_query_df = date_query_df.loc[date_query_df['position'] < 10]
+
+        # filter rows where impressions is greater than date_query_df['impressions'].mean(), but also include rows where click is greater than 0 irrepesctive of impressions
+        date_query_df = date_query_df.loc[(date_query_df['impressions'] > date_query_df['impressions'].mean()) | (date_query_df['clicks'] > 0)]
+
+        # calculate mean, mode, median for date_query_df['impressions']
+        mean_impressions = date_query_df['impressions'].mean()
+        print(mean_impressions)
 
         # aggreate the dataframe by query
         query_df = date_query_df.groupby('QUERY').agg({'clicks': 'sum', 'impressions': 'sum'}).reset_index()
 
-        data_json = query_df.to_json(orient='split')
+        # calculate CTR
+        query_df['CTR'] = round(query_df['clicks'] / query_df['impressions'] * 100, 2) 
 
+        # prepare data for DataTable
+        data_json = query_df.to_json(orient='split')
 
         # scrape current title & meta description of the URL using bs4
         url = page
 
+        # Define headers with a real User-Agent
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
         # Send a GET request to the URL
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)
 
         # Check if the request was successful
         if response.status_code == 200:
@@ -1125,6 +1149,13 @@ def optimize_ctr():
             # Get the meta description
             meta_tag = soup.find('meta', attrs={'name': 'description'})
             meta_desc = meta_tag.get('content', 'No description found')
+
+            # get H1 from the page
+            h1_tag = soup.find('h1')
+            h1 = h1_tag.string if h1_tag else 'No H1 found'
+
+            # scrape body text
+            body_text = soup.get_text()
             
         else:
             title = 'No title found'
@@ -1140,11 +1171,24 @@ def optimize_ctr():
         # convert all title_tokens to lowercase
         title_tokens = [token.lower() for token in title_tokens]
 
+        # remove stop words
+        title_tokens = [token for token in title_tokens if token not in stopwords.words('english')]
+
+        
         meta_desc_tokens = meta_desc.split()
 
         # remove special characters from meta_desc_tokens
         meta_desc_tokens = [re.sub(r'[^\w\s]', '', token) for token in meta_desc_tokens if re.sub(r'[^\w\s]', '', token)]
 
+        # convert all meta_desc_tokens to lowercase
+        meta_desc_tokens = [token.lower() for token in meta_desc_tokens]
+
+        # remove stop words from meta_desc_tokens
+        meta_desc_tokens = [token for token in meta_desc_tokens if token not in stopwords.words('english')]
+
+        
+        
+        
         # sort query_df by clicks
         query_df = query_df.sort_values(by='clicks', ascending=False)
 
@@ -1159,8 +1203,16 @@ def optimize_ctr():
         for each in query_tokens:
             query_tokens_flat.extend(each)
 
+        # remove special characters from query_tokens_flat
+        query_tokens_flat = [re.sub(r'[^\w\s]', '', token) for token in query_tokens_flat if re.sub(r'[^\w\s]', '', token)]
+
+        # convert all query_tokens_flat to lowercase
+        query_tokens_flat = [token.lower() for token in query_tokens_flat]
+
+        # remove stop words from query_tokens_flat
+        query_tokens_flat = [token for token in query_tokens_flat if token not in stopwords.words('english')]
+
         # count the frequency of each token
-        
         query_tokens_count = Counter(query_tokens_flat)
 
         # sort query_tokens_count by frequency
@@ -1169,16 +1221,45 @@ def optimize_ctr():
         # get first 20 items
         query_tokens_count = query_tokens_count[:20]
 
-        # create a list of tokens from query_tokens_count that exist in title_tokens
-        missing_title_tokens = [token for token in query_tokens_count if token[0] not in title_tokens]
+
+
+        # classify each token in query_tokens_count if it exist in title_tokens and keep the count numbers as well
+        title_query_tokens_count = []
+
+        for token, count in query_tokens_count:
+            if token in title_tokens:
+                title_query_tokens_count.append((token, count, True))
+            else:
+                title_query_tokens_count.append((token, count, False))
+
+        # for each token in title_query_tokens_count, get top 5 queries from query_df
+        title_query_tokens_count = [(token, count, exist, query_df[query_df['QUERY'].str.contains(token)]['QUERY'].tolist()[:5]) for token, count, exist in title_query_tokens_count]
+        
+
+        # classify each token in query_tokens_count if it exist in meta_desc_tokens and keep the count numbers as well
+        meta_desc_query_tokens_count = []
+
+        for token, count in query_tokens_count:
+            if token in meta_desc_tokens:
+                meta_desc_query_tokens_count.append((token, count, True))
+            else:
+                meta_desc_query_tokens_count.append((token, count, False))
+        
+        # for each token in meta_desc_query_tokens_count, get top 5 queries from query_df
+        meta_desc_query_tokens_count = [(token, count, exist, query_df[query_df['QUERY'].str.contains(token)]['QUERY'].tolist()[:5]) for token, count, exist in meta_desc_query_tokens_count]
 
 
         #get gsc metrics
         return  render_template('/actionable-insights/optimize-ctr/partial.html', 
                                 data_json=data_json, title=title, meta_desc=meta_desc,
                                 title_tokens=title_tokens, meta_desc_tokens=meta_desc_tokens,
-                                query_tokens=query_tokens_count, missing_title_tokens=missing_title_tokens
-                                #query_list=query_list
+                                query_tokens=query_tokens_count, 
+                                #missing_title_tokens=missing_title_tokens,
+                                #missing_meta_desc_tokens=missing_meta_desc_tokens,
+                                #query_list=query_list,
+                                title_query_tokens_count=title_query_tokens_count,
+                                meta_desc_query_tokens_count=meta_desc_query_tokens_count,
+                                h1=h1
                                 )
     
     #get request
@@ -1235,7 +1316,7 @@ def generate_ai_title():
             # Here you can perform any operations, such as generating the AI title
 
             client = OpenAI(
-                api_key=openai_api
+                api_key=openai_api_key
                 )
 
             system_prompt = """ You are an expert copywriter who writer very attractive SEO Titles for Higher and Improved CTR. 
@@ -1292,8 +1373,8 @@ def generate_ai_meta_description():
     else:
         # POST request
         if request.method == 'POST':
-            
             openai_api = openai_api_key
+            
             # Capture the incoming JSON data from the request
             data = request.get_json()
 
