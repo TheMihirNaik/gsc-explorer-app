@@ -133,6 +133,25 @@
           <div class="">
             <ul class="menu p-4 bg-neutral text-neutral-content justify-between text-xl">
 
+  
+              <div class="form-control w-full max-w-xs">
+                <div class="label">
+                  <span class="label-text">Enter Your OpenAI API Key</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <input 
+                    type="password"
+                    placeholder="sk-****-****" 
+                    id="openai_api_key" 
+                    class="input input-bordered w-full max-w-xs" 
+                  />
+                  <button class="btn btn-square" onclick="saveApiKey()">Save Key</button>
+                </div>
+                <div class="label">
+                  <span class="label-text-alt">The key is stored in your browser.</span>
+                </div>
+              </div>
+
               <div class="tooltip tooltip-accent" data-tip="Select a different Google Search Console property to analyze data from another website in your GSC account.">
                 <li class="m-2"><a href="/gsc-property-selection/" class="btn">Switch GSC Property</a></li>
               </div>
@@ -200,6 +219,28 @@
         });
     });
   </script>
+
+<script>
+  // Function to save the API key to local storage
+  function saveApiKey() {
+    const apiKey = document.getElementById('openai_api_key').value;
+    if (apiKey) {
+      // Save the API key to local storage
+      localStorage.setItem('openai_api_key', apiKey);
+      alert('API Key Saved');
+    } else {
+      alert('Please enter a valid API Key.');
+    }
+  }
+
+  // Check if the API key is in local storage on page load
+  window.onload = function() {
+    const savedApiKey = localStorage.getItem('openai_api_key');
+    if (savedApiKey) {
+      document.getElementById('openai_api_key').value = savedApiKey;
+    }
+  }
+</script>
 
 </body>
 </html>
