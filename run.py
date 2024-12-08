@@ -9,7 +9,7 @@ if os.getenv('FLASK_ENV') == 'development':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # Use ProxyFix to handle HTTPS forwarded headers
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+#app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 if __name__ == '__main__':
     #ssl_context = ('cert.pem', 'key.pem')
