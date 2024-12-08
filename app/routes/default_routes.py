@@ -15,15 +15,6 @@ import nltk
 from nltk.corpus import stopwords
 from openai import OpenAI
 
-import os
-from dotenv import load_dotenv
-#IMPORT environment variables
-from dotenv import load_dotenv
-load_dotenv()
-
-# Import OpenAI API key
-openai_api_key = os.getenv('OPENAI_API_KEY')
-print("newapi - " + openai_api_key)
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -1285,7 +1276,7 @@ def generate_ai_title():
     else:
         # POST request
         if request.method == 'POST':
-            openai_api = openai_api_key
+            
             
             # Capture the incoming JSON data from the request
             data = request.get_json()
@@ -1296,6 +1287,7 @@ def generate_ai_title():
             page = data.get('page')
             title_query_tokens_count = data.get('titleQueryTokensCount')
             h1 = data.get('h1')
+            openai_api_key = data.get('openai_api_key')
 
             # Print or log the captured data for debugging
             print('Existing Title:', existing_title)
@@ -1375,7 +1367,7 @@ def generate_ai_meta_description():
     else:
         # POST request
         if request.method == 'POST':
-            openai_api = openai_api_key
+
             
             # Capture the incoming JSON data from the request
             data = request.get_json()
@@ -1387,6 +1379,7 @@ def generate_ai_meta_description():
             page = data.get('page')
             metaDescQueryTokensCount = data.get('metaDescQueryTokensCount')
             h1 = data.get('h1')
+            openai_api_key = data.get('openai_api_key')
 
             # Print or log the captured data for debugging
             print('Existing Title:', existing_title)
@@ -1409,7 +1402,7 @@ def generate_ai_meta_description():
             # Here you can perform any operations, such as generating the AI title
 
             client = OpenAI(
-                api_key=openai_api
+                api_key=openai_api_key
                 )
 
             system_prompt = """ You are an expert copywriter who writer very attractive SEO Meta Descriptions for Higher and Improved CTR. 

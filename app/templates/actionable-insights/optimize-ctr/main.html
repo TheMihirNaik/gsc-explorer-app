@@ -131,8 +131,12 @@
     const loadingIndicator = document.getElementById('loading-indicator');
     loadingIndicator.style.display = 'inline-block'; // Show the spinner
 
+    // get openai api key from local storage
+    const openai_api_key = localStorage.getItem('openai_api_key');
+
     // Prepare the data to send in the POST request
     const postData = {
+      openai_api_key: openai_api_key,
       existing_title: existingTitleElement,
       page: page,
       titleQueryTokensCount: titleQueryTokensCount,
@@ -184,8 +188,12 @@
     const loadingIndicator = document.getElementById('loading-indicator-meta-desc');
     loadingIndicator.style.display = 'inline-block'; // Show the spinner
 
+    // get openai api key from local storage
+    const openai_api_key = localStorage.getItem('openai_api_key');
+
     // Prepare the data to send in the POST request
     const postData = {
+      openai_api_key: openai_api_key,
       existing_title: existingTitleElement,
       existingMetaDescriptionElement : existingMetaDescriptionElement,
       page: page,
