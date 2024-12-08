@@ -1277,10 +1277,8 @@ def generate_ai_title():
         # POST request
         if request.method == 'POST':
             
-            
             # Capture the incoming JSON data from the request
             data = request.get_json()
-
 
             # Extract the data from the JSON
             existing_title = data.get('existing_title')
@@ -1288,6 +1286,7 @@ def generate_ai_title():
             title_query_tokens_count = data.get('titleQueryTokensCount')
             h1 = data.get('h1')
             openai_api_key = data.get('openai_api_key')
+            print(openai_api_key)
 
             # Print or log the captured data for debugging
             print('Existing Title:', existing_title)
@@ -1309,9 +1308,7 @@ def generate_ai_title():
 
             # Here you can perform any operations, such as generating the AI title
 
-            client = OpenAI(
-                api_key=openai_api_key
-                )
+            client = OpenAI(api_key=openai_api_key)
 
             system_prompt = """ You are an expert copywriter who writer very attractive SEO Titles for Higher and Improved CTR. 
             Your task is to generate a new title for a website page using the data provided. Analyze the additional data while writing. """
@@ -1341,6 +1338,7 @@ def generate_ai_title():
                         {"role": "user", "content": task_prompt},
                     ]
                     )
+            
             ai_generated_title = completion.choices[0].message.content
 
             ai_generated_title_html = f"""
@@ -1355,7 +1353,6 @@ def generate_ai_title():
             """
             return ai_generated_title_html
 
-        
         # GET request
         return redirect(url_for('dashboard'))
     
