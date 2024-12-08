@@ -1,7 +1,7 @@
 from app import app
 from app.tasks.celery_tasks import *
 from app.extensions import celery
-from werkzeug.middleware.proxy_fix import ProxyFix
+#from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 
 # Set environment variable conditionally for development only
