@@ -10,10 +10,11 @@ from app.tasks.celery_tasks import *
 from app.tasks.task_status import task_status
 from bs4 import BeautifulSoup
 from collections import Counter
+from nltk.corpus import stopwords
 import nltk
-from openai import OpenAI
-# Download stopwords
 nltk.download('stopwords')
+from openai import OpenAI
+
 
 # Flask template filters
 @app.template_filter('format_number')
