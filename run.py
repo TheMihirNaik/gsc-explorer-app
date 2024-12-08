@@ -12,6 +12,6 @@ if os.getenv('FLASK_ENV') == 'development':
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 if __name__ == '__main__':
-    #ssl_context = ('cert.pem', 'key.pem')
-    #app.run(host='127.0.0.1', port=5000, ssl_context=ssl_context, debug=True)
-    app.run()
+    ssl_context = ('cert.pem', 'key.pem')
+    app.run(host='127.0.0.1', port=5000, ssl_context=ssl_context, debug=True)
+    #app.run()
