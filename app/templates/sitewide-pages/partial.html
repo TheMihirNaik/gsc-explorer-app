@@ -7,7 +7,7 @@
   </div>
 
 <!-- HTML Table -->
-<table id="byQuery" class="text-xs">
+<table id="byQuery" class="text-xs table table-xs">
     <!-- Table header will be populated dynamically -->
     <thead>
         <!-- Define your table headers here if known -->
@@ -23,22 +23,43 @@
 <!-- DataTables initialization script -->
 <script>
 
-    var data_load = {{ data_json | tojson }};
     // Retrieve data from local storage
+    var data_load = {{ data_json | tojson }};
+    
+    // Parse JSON data
     var data = JSON.parse(data_load);
 
     // Initialize DataTables with retrieved data
     $('#byQuery').DataTable({
-        columnDefs: [{ width: 300, targets: 0 }],
+
+        // Set the width of the first column to 300px
+        columnDefs: [
+            { width: 300, targets: 0 },
+            { width: 80, targets: 1 }
+        ],
+        
+        // Enable ordering
         ordering: true,
+        
+        // Set the data for the table
         data: data.data, // Assuming the JSON data has a 'data' key
+        
+        // Set the column titles
         columns: data.columns.map(function(columnName) {
             return { title: columnName }; // Creating column definition objects with 'title' property
         }),
+        
+        // Set the initial ordering
         order: [[2, 'desc']], // Ordering by the 2nd column (index 1) in ascending order
+        
+        // Set the layout of the table
         dom: 'QtpRB',
-        fixedHeader: true,
-        fixedColumns: true,
+        
+        // Set the scrolling options
+        //fixedHeader: true,
+        fixedColumns: {
+            leftColumns: 2
+        },
         scrollX: true,
         scrollY: true
     });
