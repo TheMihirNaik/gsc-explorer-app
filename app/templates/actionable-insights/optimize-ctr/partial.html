@@ -18,11 +18,11 @@
         
       <div class="card-body">
 
-        <h2 class="card-title">Existing Title</h2>
+        <h2 class="card-title text-base">Existing Title</h2>
         
-        <p id="existing_title">{{ title }}</p>
+        <p id="existing_title" class="text-sm">{{ title }}</p>
 
-        <h2 class="card-title mt-5">Title Terms Analysis:</h2>
+        <h2 class="card-title mt-5 text-base">Terms Analysis:</h2>
         
         <ul class="mt-2">
         {% for token in title_query_tokens_count %}
@@ -30,9 +30,9 @@
             <div class="tooltip" data-tip="{{ token[3] }}">
 
             {% if token[2] %}
-                <span class="badge badge-neutral">{{ token[0] }} ({{ token[1] }})</span>
+                <span class="badge badge-neutral p-3 m-1"><i class="fa-solid fa-circle-info"></i>  &nbsp;  {{ token[0] }} ({{ token[1] }})</span>
             {% else %}
-                <span class="badge badge-accent">{{ token[0] }} ({{ token[1] }})</span>
+                <span class="badge badge-accent p-3 m-1"><i class="fa-solid fa-circle-info"></i>  &nbsp;  {{ token[0] }} ({{ token[1] }})</span>
             {% endif %}
             </div>
         {% endfor %}
@@ -57,11 +57,11 @@
     <div class="card bg-neutral-content">
       <div class="card-body">
         
-        <h2 class="card-title">Existing Meta Descriptions</h2>
+        <h2 class="card-title text-base">Existing Meta Descriptions</h2>
         
-        <p id="existing_meta_desc">{{ meta_desc }}</p>
+        <p id="existing_meta_desc" class="text-sm">{{ meta_desc }}</p>
   
-        <h2 class="card-title mt-5">Meta Description Terms Analysis:</h2>
+        <h2 class="card-title mt-5 text-base">Terms Analysis:</h2>
 
         <ul class="mt-2">
             {% for token in title_query_tokens_count %}
@@ -69,9 +69,9 @@
             <div class="tooltip" data-tip="{{ token[3] }}">
 
             {% if token[2] %}
-                <span class="badge badge-neutral">{{ token[0] }} ({{ token[1] }})</span>
+                <span class="badge badge-neutral p-3 m-1"><i class="fa-solid fa-circle-info"></i>  &nbsp;  {{ token[0] }} ({{ token[1] }}) </span>
             {% else %}
-                <span class="badge badge-accent">{{ token[0] }} ({{ token[1] }})</span>
+                <span class="badge badge-accent p-3 m-1"><i class="fa-solid fa-circle-info"></i>   &nbsp; {{ token[0] }} ({{ token[1] }})</span>
             {% endif %}
             </div>
         {% endfor %}
@@ -122,7 +122,7 @@
   
     </div>
 
-  <h2 class="text-3xl font-bold mt-10"> GSC Search Queries in Top 10 Positions</h2>
+  <h2 class="text-2xl font-bold mt-10"> GSC Search Queries in Top 10 Positions</h2>
 
   {{ query_list }}
 

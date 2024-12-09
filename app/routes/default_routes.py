@@ -1081,6 +1081,7 @@ def optimize_ctr():
     if request.method == 'POST':
 
         selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
         #build gsc service
         webmasters_service = build_gsc_service()
@@ -1114,7 +1115,13 @@ def optimize_ctr():
         query_df = date_query_df.groupby('QUERY').agg({'clicks': 'sum', 'impressions': 'sum'}).reset_index()
 
         # calculate CTR
-        query_df['CTR'] = round(query_df['clicks'] / query_df['impressions'] * 100, 2) 
+        query_df['CTR'] = round(query_df['clicks'] / query_df['impressions'] * 100, 2)
+
+        # Applying the function to the DataFrame
+        query_df['Query Type'] = query_df['QUERY'].apply(lambda x: keyword_type(x, brand_keywords))
+
+        # create a query_df where query_df['Query Type'] is "Non Branded"
+        query_df = query_df[query_df['Query Type'] == 'Non Branded']
 
         # prepare data for DataTable
         data_json = query_df.to_json(orient='split')
