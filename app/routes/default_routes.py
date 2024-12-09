@@ -979,6 +979,7 @@ def sitewide_pages():
             ('PAGE'),
             
             #('Query Type'),
+            ('Actions'),
             ('Clicks (CP)'),
             ('Impressions (CP)'),
             ('CTR (CP)'),
@@ -998,8 +999,7 @@ def sitewide_pages():
             ('Clicks (PY)'),
             ('Impressions (PY)'),
             ('CTR (PY)'),
-            ('Position (PY)'),
-            ('Actions')
+            ('Position (PY)')
         ]
 
         merge_df = merge_df.reindex(columns=columns_order)
@@ -1130,29 +1130,54 @@ def optimize_ctr():
         # Send a GET request to the URL
         response = requests.get(url, headers=headers)
 
-        # Check if the request was successful
         if response.status_code == 200:
-            # Parse the content using BeautifulSoup
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Get the title
-            title_tag = soup.title
-            title = title_tag.string if title_tag else 'No title found'
-            
-            # Get the meta description
-            meta_tag = soup.find('meta', attrs={'name': 'description'})
-            meta_desc = meta_tag.get('content', 'No description found')
+            try:
+                # Parse the content using BeautifulSoup
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # Get the title
+                title_tag = soup.title
+                title = title_tag.string if title_tag else 'No title found'
+                
+                # Get the meta description
+                meta_desc = 'No description found'
+                try:
+                    meta_tag = soup.find('meta', attrs={'name': 'description'})
+                    if meta_tag and 'content' in meta_tag.attrs:
+                        meta_desc = meta_tag['content']
+                except Exception:
+                    pass  # Ensure no errors are raised during meta description extraction
 
-            # get H1 from the page
-            h1_tag = soup.find('h1')
-            h1 = h1_tag.string if h1_tag else 'No H1 found'
+                # Get H1 from the page
+                h1 = 'No H1 found'
+                try:
+                    h1_tag = soup.find('h1')
+                    if h1_tag:
+                        h1 = h1_tag.string.strip() if h1_tag.string else 'No H1 text found'
+                except Exception:
+                    pass  # Ensure no errors are raised during H1 extraction
 
-            # scrape body text
-            body_text = soup.get_text()
-            
+                # Scrape body text
+                body_text = ''
+                try:
+                    body_text = soup.get_text().strip() if soup else 'No body content found'
+                except Exception:
+                    pass  # Ensure no errors are raised during body text extraction
+
+            except Exception as e:
+                # Log the error if needed, but do not interrupt the app flow
+                print(f"Error during HTML parsing: {e}")
+                title = 'No title found'
+                meta_desc = 'No description found'
+                h1 = 'No H1 found'
+                body_text = 'No body content found'
         else:
+            # Default fallback for non-200 responses
             title = 'No title found'
             meta_desc = 'No description found'
+            h1 = 'No H1 found'
+            body_text = 'No body content found'
+
 
 
         # tokenize title and meta description - split with space
@@ -1342,7 +1367,7 @@ def generate_ai_title():
             ai_generated_title = completion.choices[0].message.content
 
             ai_generated_title_html = f"""
-            <div class="p-5 bg-primary-content">
+            <div class="p-5 bg-primary-content rounded-box">
                 <p class="text-s accent-content">
                 {ai_generated_title}
                 </p>
@@ -1432,7 +1457,7 @@ def generate_ai_meta_description():
 
             ai_generated_meta_description_html = f"""
 
-            <div class="p-5 bg-primary-content">
+            <div class="p-5 bg-primary-content rounded-box">
                 <p class="text-s accent-content">
                 {ai_generated_meta_description}
                 </p>

@@ -27,10 +27,8 @@
 
   <!-- H1 Heading -->
   <div class="row-auto p-2">
-    <h1 class="text-3xl font-bold mt-2 mb-2 justify-center flex-row">Optimize Title & Meta Descriptions : </h1>
+    <h1 class="text-2xl font-bold mt-2 mb-2 justify-center flex-row">Optimize Title & Meta Descriptions : </h1>
     <p>Selected Page : <a href="{{ page }}" target="_blank" class="link" id="page">{{ page }}</a></p>
-    
-
   </div>
 
   <!-- GSC Data Form -->
@@ -56,13 +54,13 @@
   <div id="pages-aggregate-data">
 
     <!-- Explainer-->
-    <div role="alert" class="alert mt-5 bg-primary-content">
+    <div role="alert" class="alert mt-2 bg-primary-content text-sm max-w-fit">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
       <span> 
           Once you hit "Fetch Data" button, depending on the size of your data, you will have to wait for a couple of mins on this page.
-          <p class="text-sm">
+          <!-- <p class="text-xs">
               If it's taking longer than 2 mins, try reducing the date range to 7 days.
-          </p>
+          </p>-->
           
       </span>
     </div>
@@ -119,101 +117,114 @@
 
 <script>
   function generateAITitle() {
-    // Get the values from the DOM
-    const existingTitleElement = document.querySelector('#existing_title').textContent;
-    const page = document.querySelector('#page').textContent;
-    const h1 = document.querySelector('#hidden-h1-data').textContent;
+  // Get OpenAI API key from local storage
+  const openai_api_key = localStorage.getItem('openai_api_key');
 
-    // Parse the JSON data into a JavaScript object
-    const titleQueryTokensCount = JSON.parse(document.getElementById('hidden-json-data').textContent);
+  // Check if the API key exists
+  if (!openai_api_key) {
+    alert('Please add your OpenAI API key to generate a Title.');
+    return; // Exit the function if API key is missing
+  }
 
-    // Show loading spinner
-    const loadingIndicator = document.getElementById('loading-indicator');
-    loadingIndicator.style.display = 'inline-block'; // Show the spinner
+  // Get the values from the DOM
+  const existingTitleElement = document.querySelector('#existing_title').textContent;
+  const page = document.querySelector('#page').textContent;
+  const h1 = document.querySelector('#hidden-h1-data').textContent;
 
-    // get openai api key from local storage
-    const openai_api_key = localStorage.getItem('openai_api_key');
+  // Parse the JSON data into a JavaScript object
+  const titleQueryTokensCount = JSON.parse(document.getElementById('hidden-json-data').textContent);
 
-    // Prepare the data to send in the POST request
-    const postData = {
-      openai_api_key: openai_api_key,
-      existing_title: existingTitleElement,
-      page: page,
-      titleQueryTokensCount: titleQueryTokensCount,
-      h1: h1
-    };
+  // Show loading spinner
+  const loadingIndicator = document.getElementById('loading-indicator');
+  loadingIndicator.style.display = 'inline-block'; // Show the spinner
 
-    // Send POST request to the server
-    fetch('/optimize-ctr/generate-ai-title/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(postData)
-    })
-    .then(response => response.text())  // Assuming the server returns just the HTML string
+  // Prepare the data to send in the POST request
+  const postData = {
+    openai_api_key: openai_api_key,
+    existing_title: existingTitleElement,
+    page: page,
+    titleQueryTokensCount: titleQueryTokensCount,
+    h1: h1
+  };
+
+  // Send POST request to the server
+  fetch('/optimize-ctr/generate-ai-title/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(postData)
+  })
+    .then(response => response.text()) // Assuming the server returns just the HTML string
     .then(data => {
       // Hide loading spinner
       loadingIndicator.style.display = 'none';
-      
+
       // Insert the rendered HTML into the DOM
       const aiGeneratedTitleDiv = document.getElementById('ai-generated-title');
-      aiGeneratedTitleDiv.innerHTML = data;  // Insert the HTML response from the server
+      aiGeneratedTitleDiv.innerHTML = data; // Insert the HTML response from the server
     })
     .catch(error => {
       // Hide loading spinner if error occurs
       loadingIndicator.style.display = 'none';
       console.error('Error:', error);
     });
-  }
+}
+
 </script>
 
 <script>
   function generateAIMetaDescription() {
-    // Get the values from the DOM
-    const existingTitleElement = document.querySelector('#existing_title').textContent;
-    console.log(existingTitleElement);
-    const existingMetaDescriptionElement = document.querySelector('#existing_meta_desc').textContent;
-    console.log(existingMetaDescriptionElement);
-    const page = document.querySelector('#page').textContent;
-    console.log(page);
-    const h1 = document.querySelector('#hidden-h1-data').textContent;
-    console.log(h1);
+  // Get OpenAI API key from local storage
+  const openai_api_key = localStorage.getItem('openai_api_key');
 
-    // Parse the JSON data into a JavaScript object
-    const metaDescQueryTokensCount = JSON.parse(document.getElementById('hidden-json-data-meta-desc').textContent);
-    console.log(metaDescQueryTokensCount);
+  // Check if the API key exists
+  if (!openai_api_key) {
+    alert('Please add your OpenAI API key to generate a meta description.');
+    return; // Exit the function if API key is missing
+  }
 
-    // Show loading spinner
-    const loadingIndicator = document.getElementById('loading-indicator-meta-desc');
-    loadingIndicator.style.display = 'inline-block'; // Show the spinner
+  // Get the values from the DOM
+  const existingTitleElement = document.querySelector('#existing_title').textContent;
+  console.log(existingTitleElement);
+  const existingMetaDescriptionElement = document.querySelector('#existing_meta_desc').textContent;
+  console.log(existingMetaDescriptionElement);
+  const page = document.querySelector('#page').textContent;
+  console.log(page);
+  const h1 = document.querySelector('#hidden-h1-data').textContent;
+  console.log(h1);
 
-    // get openai api key from local storage
-    const openai_api_key = localStorage.getItem('openai_api_key');
+  // Parse the JSON data into a JavaScript object
+  const metaDescQueryTokensCount = JSON.parse(document.getElementById('hidden-json-data-meta-desc').textContent);
+  console.log(metaDescQueryTokensCount);
 
-    // Prepare the data to send in the POST request
-    const postData = {
-      openai_api_key: openai_api_key,
-      existing_title: existingTitleElement,
-      existingMetaDescriptionElement : existingMetaDescriptionElement,
-      page: page,
-      metaDescQueryTokensCount: metaDescQueryTokensCount,
-      h1: h1
-    };
+  // Show loading spinner
+  const loadingIndicator = document.getElementById('loading-indicator-meta-desc');
+  loadingIndicator.style.display = 'inline-block'; // Show the spinner
 
-    // Send POST request to the server
-    fetch('/optimize-ctr/generate-ai-meta-description/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(postData)
-    })
+  // Prepare the data to send in the POST request
+  const postData = {
+    openai_api_key: openai_api_key,
+    existing_title: existingTitleElement,
+    existingMetaDescriptionElement: existingMetaDescriptionElement,
+    page: page,
+    metaDescQueryTokensCount: metaDescQueryTokensCount,
+    h1: h1
+  };
+
+  // Send POST request to the server
+  fetch('/optimize-ctr/generate-ai-meta-description/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(postData)
+  })
     .then(response => response.text())  // Assuming the server returns just the HTML string
     .then(data => {
       // Hide loading spinner
       loadingIndicator.style.display = 'none';
-      
+
       // Insert the rendered HTML into the DOM
       const aiGeneratedTitleDiv = document.getElementById('ai-generated-meta-description');
       aiGeneratedTitleDiv.innerHTML = data;  // Insert the HTML response from the server
@@ -223,7 +234,8 @@
       loadingIndicator.style.display = 'none';
       console.error('Error:', error);
     });
-  }
+}
+
 </script>
 
 

@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">GSC Property Selection</h1>
+<h1 class="text-4xl font-bold mt-2 mb-2 justify-center flex-row">GSC Property Selection</h1>
 <!-- 
 <div role="alert m-5" class="alert">
     
@@ -27,12 +27,9 @@ Notice -->
 <!--  GSC Property Selection -->
 <form action="/gsc-property-selection/" method="POST" class="mt-5" required>
 
-
-    
-
     <div class="max-w-fit p-3 mb-5 bg-neutral-100 rounded-lg shadow-lg">
 
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">1. Select the Property:</h2>
+        <h2 class="text-1xl font-bold text-gray-800 mb-4">1. Select the Property:</h2>
     
         <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto" required>
             <option disabled selected value="">Select your Website</option>
@@ -45,24 +42,25 @@ Notice -->
 
 
     <div class="max-w-fit p-3 mb-5 bg-neutral-100 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">2. Define Your Brand Keywords</h2>
-        <p class="text-gray-600 mb-4">
+        
+      <h2 class="text-1xl font-bold text-gray-800 mb-4">2. Define Your Brand Keywords</h2>
+        
+      <p class="text-gray-600 mb-4 text-sm">
             Enter words or phrases that represent your brand. Any search query containing these will be labeled as 
             <strong class="text-neutral-700">"Brand."</strong>
         </p>
 
-            <li>All other queries will automatically be categorized as "Non-Brand."</li>    
-            <li>Separate multiple keywords with a comma (e.g., stripe, payment, checkout).</li>
-
+            <li class="text-sm">All other queries will automatically be categorized as "Non-Brand."</li>    
+            <li class="text-sm">Separate multiple keywords with a comma (e.g., stripe, payment, checkout).</li>
     </p>
 
-    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+    <div class="bg-blue-50 p-4 rounded-lg mb-2 class="text-sm"">
         <p class="text-accent">
           <strong>Example:</strong> If your brand name is <strong>Stripe</strong>, enter <em>stripe</em> as a keyword. This will label all queries containing <em>stripe</em> as <strong class="text-accent">"Brand."</strong>
         </p>
       </div>
 
-    <label for="brandKeywords" class="block text-gray-700 font-medium mb-2">
+    <label for="brandKeywords" class="block text-gray-700 font-medium mb-2 class="text-sm">
         Brand Keywords:
       </label>
 
@@ -72,7 +70,7 @@ Notice -->
 
     </div>
     
-    <button type="submit" class="btn btn-accent">Select</button>
+    <button type="submit" class="btn btn-accent text-xl">Select</button>
 
     
 </form>
