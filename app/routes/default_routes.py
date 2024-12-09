@@ -947,7 +947,7 @@ def sitewide_pages():
 
 
         # add one column named "Optimize CTR" to merge_df and add a link to the "Optimize CTR" emoji column
-        merge_df['Actions'] = merge_df['PAGE'].apply(lambda x: f"<a href='/actionable-insights/optimize-ctr?page={x}'> Optimize CTR </a>")
+        merge_df['Actions'] = merge_df['PAGE'].apply(lambda x: f"<a href='/actionable-insights/optimize-ctr?page={x}' target='_blank'> <i class="fa-solid fa-wand-magic-sparkles"></i> Optimize CTR </a>")
 
         merge_df = merge_df.rename(columns={
             'PAGE': 'PAGE',
