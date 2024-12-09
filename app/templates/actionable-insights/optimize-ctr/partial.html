@@ -1,32 +1,34 @@
-<div role="alert" class="alert max-w-fit">
+<div role="alert" class="alert max-w-fit mb-2">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
     <span>
-        ..</span>
+        <p class="text-xs mb-3"> The terms highlighted in <span class="badge badge-accent">this color</span> are the most frequently searched keywords but are not currently included in the existing titles.</p>
+    </span>
   </div>
 
-  <p class="text-xs mb-3"> The terms highlighted in <span class="badge badge-accent">this color</span> are the most frequently searched keywords but are not currently included in the existing titles.</p>
-
+  
 
   <!-- Two Column Grid -->
   <div class="grid grid-cols-2 gap-4">
     
-    <div class="card bg-base-300">
+    <!-- Title Analysis -->
+    <div class="card bg-neutral-content">
         
       <div class="card-body">
+
         <h2 class="card-title">Existing Title</h2>
         
         <p id="existing_title">{{ title }}</p>
 
-        <h2 class="card-title">Title Terms Analysis:</h2>
+        <h2 class="card-title mt-5">Title Terms Analysis:</h2>
         
-        <ul>
+        <ul class="mt-2">
         {% for token in title_query_tokens_count %}
                     
             <div class="tooltip" data-tip="{{ token[3] }}">
 
             {% if token[2] %}
-                <span class="badge badge-primary">{{ token[0] }} ({{ token[1] }})</span>
+                <span class="badge badge-neutral">{{ token[0] }} ({{ token[1] }})</span>
             {% else %}
                 <span class="badge badge-accent">{{ token[0] }} ({{ token[1] }})</span>
             {% endif %}
@@ -44,28 +46,28 @@
             {{ h1 }}
         </div>
         
-
-        <button onclick="generateAITitle()" class="btn btn-primary">Generate AI-assisted Title</button>
+        <button onclick="generateAITitle()" class="btn btn-primary max-w-fit mt-5">Generate AI-assisted Title</button>
 
       </div>
     </div>
 
-    <div class="card bg-base-300">
+    <!-- Meta Description Analysis -->
+    <div class="card bg-neutral-content">
       <div class="card-body">
         
         <h2 class="card-title">Existing Meta Descriptions</h2>
         
         <p id="existing_meta_desc">{{ meta_desc }}</p>
   
-        <h2 class="card-title">Meta Description Terms Analysis:</h2>
+        <h2 class="card-title mt-5">Meta Description Terms Analysis:</h2>
 
-        <ul>
+        <ul class="mt-2">
             {% for token in title_query_tokens_count %}
 
             <div class="tooltip" data-tip="{{ token[3] }}">
 
             {% if token[2] %}
-                <span class="badge badge-primary">{{ token[0] }} ({{ token[1] }})</span>
+                <span class="badge badge-neutral">{{ token[0] }} ({{ token[1] }})</span>
             {% else %}
                 <span class="badge badge-accent">{{ token[0] }} ({{ token[1] }})</span>
             {% endif %}
@@ -82,8 +84,7 @@
             {{ h1 }}
         </div>
         
-
-        <button onclick="generateAIMetaDescription()" class="btn btn-primary">Generate AI-assisted Meta Description</button>
+        <button onclick="generateAIMetaDescription()" class="btn btn-primary max-w-fit mt-5">Generate AI-assisted Meta Description</button>
 
       </div>
         
@@ -93,31 +94,27 @@
 
   <!-- Two Column Grid - AI Results -->
   <div class="grid grid-cols-2 gap-4 mt-2">
-    <div class="card bg-base-300">
-      <div class="card-body">
-        <!-- AI Generated Title -->
+    <div class="p-5">
 
+        <!-- AI Generated Title -->
         <span class="loading loading-spinner text-primary" id="loading-indicator" style="display:none;"></span>
         
         <div id="ai-generated-title">
             <p>AI-assisted Optimized Title will be here.</p>
         </div>
-      </div>
+
     </div>
-    <div class="card bg-base-300">
-        <div class="card-body">
-        <!-- AI Generated Title -->
+
+    <div class="p-5">
 
         <span class="loading loading-spinner text-primary" id="loading-indicator-meta-desc" style="display:none;"></span>
         
-
         <!-- AI Generated Meta Description -->
 
         <div id="ai-generated-meta-description">
             <p>AI-assisted Optimized Meta Description will be here.</p>
         </div>
 
-        </div>
       </div>
   </div>
 

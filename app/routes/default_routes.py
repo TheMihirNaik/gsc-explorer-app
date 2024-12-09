@@ -1342,14 +1342,12 @@ def generate_ai_title():
             ai_generated_title = completion.choices[0].message.content
 
             ai_generated_title_html = f"""
+            <div class="p-5 bg-primary-content">
+                <p class="text-s accent-content">
+                {ai_generated_title}
+                </p>
 
-            <div class="card card-bordered shadow-lg">
-                <div class="card-body">
-                    <p class="text-s">
-                    {ai_generated_title}
-                    </p>
-                </div>
-                </div>
+            </div>
             """
             return ai_generated_title_html
 
@@ -1434,13 +1432,12 @@ def generate_ai_meta_description():
 
             ai_generated_meta_description_html = f"""
 
-            <div class="card card-bordered shadow-lg">
-                <div class="card-body">
-                    <p class="text-s">
-                    {ai_generated_meta_description}
-                    </p>
-                </div>
-                </div>
+            <div class="p-5 bg-primary-content">
+                <p class="text-s accent-content">
+                {ai_generated_meta_description}
+                </p>
+
+            </div>
             """
             return ai_generated_meta_description_html
 
