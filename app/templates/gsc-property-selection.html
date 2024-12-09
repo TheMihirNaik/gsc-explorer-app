@@ -5,9 +5,9 @@
 {% block content %}
 
 <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">GSC Property Selection</h1>
-
+<!-- 
 <div role="alert m-5" class="alert">
-    <!-- Notice -->
+    
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
@@ -21,13 +21,16 @@
     </svg>
     <span>Please select the property you want to analyze.</span>
   </div>
-
+Notice -->
 
 
 <!--  GSC Property Selection -->
 <form action="/gsc-property-selection/" method="POST" class="mt-5" required>
 
-    <div class="max-w-xl p-6 mb-5 bg-neutral-100 rounded-lg shadow-lg">
+
+    
+
+    <div class="max-w-fit p-3 mb-5 bg-neutral-100 rounded-lg shadow-lg">
 
         <h2 class="text-2xl font-bold text-gray-800 mb-4">1. Select the Property:</h2>
     
@@ -41,7 +44,7 @@
     </div>
 
 
-    <div class="max-w-xl p-6 mb-5 bg-neutral-100 rounded-lg shadow-lg">
+    <div class="max-w-fit p-3 mb-5 bg-neutral-100 rounded-lg shadow-lg">
         <h2 class="text-2xl font-bold text-gray-800 mb-4">2. Define Your Brand Keywords</h2>
         <p class="text-gray-600 mb-4">
             Enter words or phrases that represent your brand. Any search query containing these will be labeled as 
@@ -65,12 +68,13 @@
 
     <textarea placeholder="keyword1, keyword2, keyword3" 
     class="textarea textarea-bordered row-auto" name="brand_keywords" 
-    id="brand_keywords" rows="5" cols="40" required></textarea>
+    id="brand_keywords" rows="3" cols="60" required></textarea>
 
     </div>
     
-
     <button type="submit" class="btn btn-accent">Select</button>
+
+    
 </form>
 
 {% endblock %}
