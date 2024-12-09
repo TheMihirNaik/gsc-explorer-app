@@ -390,6 +390,83 @@ def sitewide_analysis():
                            selected_property=selected_property,
                            brand_keywords=brand_keywords)
 
+
+@app.route('/charts/organic-ctr/', methods=['GET', 'POST'])
+def organic_ctr():
+    if 'credentials' not in session:
+        return redirect(url_for('gsc_authorize'))
+    
+    if request.method == 'POST':
+        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+        webmasters_service = build_gsc_service()
+
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+
+        start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
+
+        dimensions = ['QUERY']
+        dimensionFilterGroups = [{"filters": []}]
+
+        query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+
+        # Calculate CTR
+        #query_df['CTR'] = query_df['clicks'] / query_df['impressions'] * 100
+
+        # Label queries
+        query_df['Query Type'] = query_df['QUERY'].apply(lambda x: keyword_type(x, brand_keywords))
+
+        # round the position number
+        query_df['round_position'] = round(query_df['position'], 0)
+
+        brand_query_df = query_df[query_df['Query Type'] == 'Branded']
+        non_brand_query_df = query_df[query_df['Query Type'] == 'Non Branded']
+
+        # grouping the data by position
+        brand_ctr_df = brand_query_df.groupby(['round_position']).agg(
+            clicks = ('clicks', 'sum'),
+            impressions = ('impressions', 'sum')
+            ).reset_index()
+        
+        # grouping data by position for non_brand
+        non_brand_ctr_df = non_brand_query_df.groupby(['round_position']).agg(
+            clicks = ('clicks', 'sum'),
+            impressions = ('impressions', 'sum')
+            ).reset_index()
+
+        # Calculate CTR
+        brand_ctr_df['CTR'] = round(brand_ctr_df['clicks'] / brand_ctr_df['impressions'] * 100, 2)
+        non_brand_ctr_df['CTR'] = round(non_brand_ctr_df['clicks'] / non_brand_ctr_df['impressions'] * 100, 2)
+
+        # Only Top 10 Positions
+        brand_ctr_df = brand_ctr_df[brand_ctr_df['round_position'] <= 10]
+        non_brand_ctr_df = non_brand_ctr_df[non_brand_ctr_df['round_position'] <= 10]
+
+        print(brand_ctr_df)
+        print(non_brand_ctr_df)
+
+        return render_template('/organic-ctr/partials.html', brand_ctr_df=brand_ctr_df, non_brand_ctr_df=non_brand_ctr_df)
+
+    # GET request
+    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+    # read country-codes.csv file, and pass the data to create select form
+    csv_file_path = os.path.join(os.path.dirname(__file__), '/static/country-codes.csv')
+    countries = pd.read_csv(csv_file_path)
+
+    # if GSC property is not selected then send user to GSC property selection page
+    if selected_property == "You haven't selected a GSC Property yet":
+        # show a message
+        flash('Please Select your GSC Property.')
+        return redirect(url_for('gsc_property_selection'))
+    
+    return render_template('/organic-ctr/main.html', selected_property=selected_property, 
+                           brand_keywords=brand_keywords, countries=countries)
+
+
 # Reports Routes
 @app.route('/reports/sitewide-overview/', methods=['GET', 'POST'])
 def sitewide_report():
@@ -1042,6 +1119,10 @@ def sitewide_pages():
     return render_template('/sitewide-pages/main.html',
                         selected_property=selected_property,
                         brand_keywords=brand_keywords)
+
+
+
+
 
 @app.route('/gsc-celery-test/', methods=['GET', 'POST'])
 def gsc_celery_test():
