@@ -2,6 +2,7 @@ from flask import render_template, request, url_for, redirect, flash, session, j
 from app import app
 import bcrypt
 from datetime import datetime, timedelta, date
+from dateutil.relativedelta import relativedelta
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
 #from app.routes.openai import *
@@ -76,6 +77,9 @@ def gsc_property_selection():
     site_list = search_console_service.sites().list().execute()
     
     site_list = site_list['siteEntry']
+
+    # exlude sites that are not verified
+    site_list = [s for s in site_list if s['permissionLevel'] != 'siteUnverifiedUser']
 
     site_list_sorted = []
 
@@ -404,14 +408,18 @@ def organic_ctr():
 
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
+        country = request.form.get('country')
 
         start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
 
         dimensions = ['QUERY']
-        dimensionFilterGroups = [{"filters": []}]
+        
+        dimensionFilterGroups = [{"filters": [
+            {"dimension": "COUNTRY", "expression": country, "operator": "equals"},
+        ]}]
 
         query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
-
+        
         # Calculate CTR
         #query_df['CTR'] = query_df['clicks'] / query_df['impressions'] * 100
 
@@ -424,17 +432,20 @@ def organic_ctr():
         brand_query_df = query_df[query_df['Query Type'] == 'Branded']
         non_brand_query_df = query_df[query_df['Query Type'] == 'Non Branded']
 
-        # grouping the data by position
+        # Ensure there is always a row for round_position between 1 to 10
+        all_positions = pd.DataFrame({'round_position': range(1, 11)})
+
+        # Grouping the data by position
         brand_ctr_df = brand_query_df.groupby(['round_position']).agg(
-            clicks = ('clicks', 'sum'),
-            impressions = ('impressions', 'sum')
-            ).reset_index()
-        
-        # grouping data by position for non_brand
+            clicks=('clicks', 'sum'),
+            impressions=('impressions', 'sum')
+        ).reset_index().merge(all_positions, on='round_position', how='right').fillna(0)
+
+        # Grouping data by position for non_brand
         non_brand_ctr_df = non_brand_query_df.groupby(['round_position']).agg(
-            clicks = ('clicks', 'sum'),
-            impressions = ('impressions', 'sum')
-            ).reset_index()
+            clicks=('clicks', 'sum'),
+            impressions=('impressions', 'sum')
+        ).reset_index().merge(all_positions, on='round_position', how='right').fillna(0)
 
         # Calculate CTR
         brand_ctr_df['CTR'] = round(brand_ctr_df['clicks'] / brand_ctr_df['impressions'] * 100, 2)
@@ -444,18 +455,81 @@ def organic_ctr():
         brand_ctr_df = brand_ctr_df[brand_ctr_df['round_position'] <= 10]
         non_brand_ctr_df = non_brand_ctr_df[non_brand_ctr_df['round_position'] <= 10]
 
-        print(brand_ctr_df)
-        print(non_brand_ctr_df)
+        # Create a bar chart
+        brand_ctr_fig = px.bar(brand_ctr_df, x='round_position', y='CTR',
+                    title='Google Organic CTR Breakdown By Position',
+                    labels={'Position': 'Position', 'CTR': 'Click Through Rate (%)'},
+                    text='CTR')
 
-        return render_template('/organic-ctr/partials.html', brand_ctr_df=brand_ctr_df, non_brand_ctr_df=non_brand_ctr_df)
+        # Update layout for better styling
+        brand_ctr_fig.update_traces(texttemplate='%{text}%', textposition='outside')
+        brand_ctr_fig.update_layout(yaxis_title='Click Through Rate (%)',
+                        xaxis_title='Position',
+                        uniformtext_minsize=8, uniformtext_mode='hide')
+        
+        brand_ctr_fig_html = brand_ctr_fig.to_html()
+
+        # Create a bar chart
+        non_brand_ctr_fig = px.bar(non_brand_ctr_df, x='round_position', y='CTR',
+                    title='Google Organic CTR Breakdown By Position',
+                    labels={'Position': 'Position', 'CTR': 'Click Through Rate (%)'},
+                    text='CTR')
+
+        # Update layout for better styling
+        non_brand_ctr_fig.update_traces(texttemplate='%{text}%', textposition='outside')
+        non_brand_ctr_fig.update_layout(yaxis_title='Click Through Rate (%)',
+                        xaxis_title='Position',
+                        uniformtext_minsize=8, uniformtext_mode='hide')
+        
+        non_brand_ctr_fig_html = non_brand_ctr_fig.to_html()
+
+
+
+        brand_ctr_df = brand_ctr_df.rename(columns={'round_position': 'Ranking Position'})
+        non_brand_ctr_df = non_brand_ctr_df.rename(columns={'round_position': 'Ranking Position'})
+
+        brand_ctr_html = brand_ctr_df.to_html(index=False, classes='table table-striped', border=0)
+        non_brand_ctr_html = non_brand_ctr_df.to_html(index=False, classes='table table-striped', border=0)
+        
+        return render_template('/organic-ctr/partials.html', brand_ctr_df=brand_ctr_df, non_brand_ctr_df=non_brand_ctr_df,
+                               brand_ctr_fig_html=brand_ctr_fig_html,non_brand_ctr_fig_html=non_brand_ctr_fig_html,
+                               brand_ctr_html=brand_ctr_html, non_brand_ctr_html=non_brand_ctr_html )
 
     # GET request
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
+    webmasters_service = build_gsc_service()
+    
+    # Calculate end_date
+    end_date = datetime.today()
+
+    # Calculate start_date (15 months before today)
+    start_date = end_date - relativedelta(months=15)
+
+    # Format the dates as YYYY-MM-DD
+    end_date_str = end_date.strftime('%Y-%m-%d')
+    start_date_str = start_date.strftime('%Y-%m-%d')
+
+    print("Start Date:", start_date_str)
+    print("End Date:", end_date_str)
+    
+    dimensions = ['COUNTRY']
+    
+    dimensionFilterGroups = [{"filters": [
+        #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
+    ]}]
+
+    country_df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
+    
+    print(country_df)
+
+    countries = [country.upper() for country in country_df['COUNTRY'].to_list()]
+    
     # read country-codes.csv file, and pass the data to create select form
-    csv_file_path = os.path.join(os.path.dirname(__file__), '/static/country-codes.csv')
-    countries = pd.read_csv(csv_file_path)
+    #countries = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'static', 'country-codes.csv'))
+
+    #countries = countries.to_dict('records')
 
     # if GSC property is not selected then send user to GSC property selection page
     if selected_property == "You haven't selected a GSC Property yet":
@@ -998,10 +1072,13 @@ def sitewide_pages():
             #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
         ]}]
         
+        print('Scraping current_period_df')
         current_period_df = fetch_search_console_data(webmasters_service, selected_property, current_start_date, current_end_date, dimensions, dimensionFilterGroups)
 
+        print('Scraping previous_period_df')
         previous_period_df = fetch_search_console_data(webmasters_service, selected_property, previous_period_start_date, previous_period_end_date, dimensions, dimensionFilterGroups)
 
+        print('Scraping previous_year_df')
         previous_year_df = fetch_search_console_data(webmasters_service, selected_property, previous_year_start_date, previous_year_end_date, dimensions, dimensionFilterGroups)
         
         #merge database

@@ -45,10 +45,10 @@
         <input type="hidden" name="start_date" id="start_date">
         <input type="hidden" name="end_date" id="end_date">
         
-        <select name="country" id="country" class="select select-bordered max-w-xs mr-5">
-          <option value="" disabled selected>Select Country</option>
+        <select name="country" id="country" class="select select-bordered w-200 mr-5" required>
+          <option value="" disabled selected class="w-200">Select Country</option>
           {% for country in countries %}
-            <option value="{{ country.code }}">{{ country.name }} ({{ country.code }})</option>
+            <option value="{{ country }}">{{country}}</option>
           {% endfor %}
         </select>
         
@@ -57,8 +57,10 @@
       </form>
 
     </div>
-    
-    <div role="alert" class="alert max-w-fit inline-block">
+
+
+    <!-- Hidden Alert -->
+    <div role="alert" class="alert max-w-fit inline-block hidden">
       <p class="text-sm mt-0">🔋 What's more than Google Search Console?</p>
       <p class="text-xs mt-2">
         💡 Period over Period and Year over Year Comparison %

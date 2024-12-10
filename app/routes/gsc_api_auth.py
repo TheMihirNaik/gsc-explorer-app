@@ -240,6 +240,13 @@ def fetch_search_console_data(webmasters_service, website_url, start_date, end_d
         # Call the API with the request body
         response_data = webmasters_service.searchanalytics().query(siteUrl=website_url, body=request_body).execute()
 
+        #print("Response Data")
+        #print(response_data)
+
+        # Check if 'rows' is in the response data
+        if 'rows' not in response_data:
+            break
+
         # Append the rows from the response to the all_responses list
         for row in response_data['rows']:
             # Create a temporary list to hold the values for the row

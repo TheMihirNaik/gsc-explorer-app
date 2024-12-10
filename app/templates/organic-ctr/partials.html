@@ -1,1 +1,32 @@
-{{ brand_ctr_df }}
+<div class="grid grid-cols-2 gap-5">
+  <div class="card bg-neutral-content">
+    <div class="card-body">
+      <h2 class="card-title">Brand CTR</h2>
+      {{ brand_ctr_fig_html | safe}}
+    </div>
+  </div>
+  <div class="card bg-neutral-content">
+    <div class="card-body">
+      <h2 class="card-title">Non Brand CTR</h2>
+      {{ non_brand_ctr_fig_html | safe}}
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 gap-5">
+    <div class="card bg-neutral-content">
+      <div class="card-body">
+        <h2 class="card-title">Brand CTR</h2>
+        {{ brand_ctr_html | safe}}
+      </div>
+    </div>
+    <div class="card bg-neutral-content">
+      <div class="card-body">
+        <h2 class="card-title">Non Brand CTR</h2>
+        {{ non_brand_ctr_html | safe}}
+      </div>
+    </div>
+  </div>
+  
+
+
