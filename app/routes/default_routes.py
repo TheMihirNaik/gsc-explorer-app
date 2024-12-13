@@ -1514,7 +1514,6 @@ def generate_ai_title():
             - Improve click-through rates (CTR).
             - Highlight the most relevant and high-performing keywords.
             - Maintain relevance to the webpage's content and intent.
-            - Adhere to Google’s character limits (50-60 characters).
             - Ensure clarity, readability, and compelling value propositions in titles.
             - If data is incomplete or unclear, suggest an alternative approach or prompt the user for clarification. 
             Your tone is professional, concise, and helpful.
