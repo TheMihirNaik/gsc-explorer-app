@@ -47,6 +47,7 @@
         
         <select name="country" id="country" class="select select-bordered w-200 mr-5" required>
           <option value="" disabled selected class="w-200">Select Country</option>
+          <option value="All">All Countries</option>
           {% for country in countries %}
             <option value="{{ country }}">{{country}}</option>
           {% endfor %}
@@ -60,7 +61,7 @@
 
 
     <!-- Hidden Alert -->
-    <div role="alert" class="alert max-w-fit inline-block hidden">
+    <div role="alert" class="alert max-w-fit hidden">
       <p class="text-sm mt-0">🔋 What's more than Google Search Console?</p>
       <p class="text-xs mt-2">
         💡 Period over Period and Year over Year Comparison %
@@ -72,11 +73,6 @@
   </div>
 
   <!-- Add a Two Column Grid using DaisyUi-->
-   
-
-  
-
-
   <div id="pages-aggregate-data">
 
     <!-- Explainer-->

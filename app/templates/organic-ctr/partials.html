@@ -1,30 +1,26 @@
 <div class="grid grid-cols-2 gap-5">
   <div class="card bg-neutral-content">
     <div class="card-body">
-      <h2 class="card-title">Brand CTR</h2>
+      <h2 class="card-title">Brand Click Through Rate</h2>
       {{ brand_ctr_fig_html | safe}}
     </div>
   </div>
   <div class="card bg-neutral-content">
     <div class="card-body">
-      <h2 class="card-title">Non Brand CTR</h2>
+      <h2 class="card-title">Non Brand Click Through Rate</h2>
       {{ non_brand_ctr_fig_html | safe}}
     </div>
   </div>
 </div>
 
-<div class="grid grid-cols-2 gap-5">
-    <div class="card bg-neutral-content">
-      <div class="card-body">
-        <h2 class="card-title">Brand CTR</h2>
+<div class="grid grid-cols-2 gap-5 mt-5 bg-neutral-content p-5">
+    <div class="overflow-x-auto">
+      <h2 class="">Brand CTR</h2>
         {{ brand_ctr_html | safe}}
-      </div>
     </div>
-    <div class="card bg-neutral-content">
-      <div class="card-body">
-        <h2 class="card-title">Non Brand CTR</h2>
+    <div>
+      <h2 class="overflow-x-auto">Non Brand CTR</h2>
         {{ non_brand_ctr_html | safe}}
-      </div>
     </div>
   </div>
   

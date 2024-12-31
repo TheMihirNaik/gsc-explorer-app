@@ -235,7 +235,7 @@ def fetch_search_console_data(webmasters_service, website_url, start_date, end_d
             "rowLimit": 25000,
             "dataState": "final",
             'startRow': start_row,
-            'aggregationType': 'byPage',
+            #'aggregationType': 'byPage',
         }
        
         # Call the API with the request body
@@ -262,6 +262,7 @@ def fetch_search_console_data(webmasters_service, website_url, start_date, end_d
             temp.append(row['position'])
             # Append the row to the all_responses list
             all_responses.append(temp)
+            #print(all_responses)
         
         # Update the start row to reflect the number of rows retrieved
         start_row += len(response_data['rows'])

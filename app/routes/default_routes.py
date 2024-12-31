@@ -408,26 +408,33 @@ def organic_ctr():
         webmasters_service = build_gsc_service()
 
         start_date_str = request.form.get('start_date')
+        #print(start_date_str)
         end_date_str = request.form.get('end_date')
+        #print(end_date_str)
         country = request.form.get('country')
-        print(country)
+        #print(country)
 
         start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
 
-        print(start_date_formatted)
-        print(end_date_formatted)
+        #print(start_date_formatted)
+        #print(end_date_formatted)
 
         dimensions = ['QUERY']
         
-        dimensionFilterGroups = [{"filters": [
-            #{"dimension": "COUNTRY", "expression": str(country), "operator": "equals"},
-        ]}]
-
-        print(dimensionFilterGroups)
+        dimensionFilterGroups = []
+       
+        if country != "All":
+                    dimensionFilterGroups = [
+            {"filters": [
+            {"dimension": "COUNTRY", "expression": str(country), "operator": "equals"},
+        ]}
+        ]
+                    
+        #print(dimensionFilterGroups)
         
         query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
         
-        print(query_df)
+        #print(query_df)
 
         # Calculate CTR
         #query_df['CTR'] = query_df['clicks'] / query_df['impressions'] * 100
@@ -438,10 +445,10 @@ def organic_ctr():
         # round the position number
         query_df['round_position'] = round(query_df['position'], 0)
 
-        print(query_df)
+        #print(query_df)
 
         brand_query_df = query_df[query_df['Query Type'] == 'Branded']
-        print(brand_query_df)
+        #print(brand_query_df)
         non_brand_query_df = query_df[query_df['Query Type'] == 'Non Branded']
 
         # Ensure there is always a row for round_position between 1 to 10
@@ -469,7 +476,7 @@ def organic_ctr():
 
         # Create a bar chart
         brand_ctr_fig = px.bar(brand_ctr_df, x='round_position', y='CTR',
-                    title='Google Organic CTR Breakdown By Position',
+                    #title='Google Organic CTR Breakdown By Position',
                     labels={'Position': 'Position', 'CTR': 'Click Through Rate (%)'},
                     text='CTR')
 
@@ -483,7 +490,7 @@ def organic_ctr():
 
         # Create a bar chart
         non_brand_ctr_fig = px.bar(non_brand_ctr_df, x='round_position', y='CTR',
-                    title='Google Organic CTR Breakdown By Position',
+                    #title='Google Organic CTR Breakdown By Position',
                     labels={'Position': 'Position', 'CTR': 'Click Through Rate (%)'},
                     text='CTR')
 
@@ -497,11 +504,11 @@ def organic_ctr():
 
 
 
-        brand_ctr_df = brand_ctr_df.rename(columns={'round_position': 'Ranking Position'})
-        non_brand_ctr_df = non_brand_ctr_df.rename(columns={'round_position': 'Ranking Position'})
+        brand_ctr_df = brand_ctr_df.rename(columns={'round_position': 'Position'})
+        non_brand_ctr_df = non_brand_ctr_df.rename(columns={'round_position': 'Position'})
 
-        brand_ctr_html = brand_ctr_df.to_html(index=False, classes='table table-striped', border=0)
-        non_brand_ctr_html = non_brand_ctr_df.to_html(index=False, classes='table table-striped', border=0)
+        brand_ctr_html = brand_ctr_df.to_html(index=False, classes='table', border=1, justify='left')
+        non_brand_ctr_html = non_brand_ctr_df.to_html(index=False, classes='table', border=1, justify='left')
         
         return render_template('/organic-ctr/partials.html', brand_ctr_df=brand_ctr_df, non_brand_ctr_df=non_brand_ctr_df,
                                brand_ctr_fig_html=brand_ctr_fig_html,non_brand_ctr_fig_html=non_brand_ctr_fig_html,
@@ -928,7 +935,7 @@ def query_aggregate_report():
         ]}]
         
         current_period_df = fetch_search_console_data(webmasters_service, selected_property, current_start_date, current_end_date, dimensions, dimensionFilterGroups)
-
+        #print(current_period_df)
         previous_period_df = fetch_search_console_data(webmasters_service, selected_property, previous_period_start_date, previous_period_end_date, dimensions, dimensionFilterGroups)
 
         previous_year_df = fetch_search_console_data(webmasters_service, selected_property, previous_year_start_date, previous_year_end_date, dimensions, dimensionFilterGroups)
