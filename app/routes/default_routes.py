@@ -400,6 +400,7 @@ def organic_ctr():
     if 'credentials' not in session:
         return redirect(url_for('gsc_authorize'))
     
+    
     if request.method == 'POST':
         selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
         brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
@@ -409,17 +410,25 @@ def organic_ctr():
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
         country = request.form.get('country')
+        print(country)
 
         start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
+
+        print(start_date_formatted)
+        print(end_date_formatted)
 
         dimensions = ['QUERY']
         
         dimensionFilterGroups = [{"filters": [
-            {"dimension": "COUNTRY", "expression": country, "operator": "equals"},
+            #{"dimension": "COUNTRY", "expression": str(country), "operator": "equals"},
         ]}]
 
+        print(dimensionFilterGroups)
+        
         query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
         
+        print(query_df)
+
         # Calculate CTR
         #query_df['CTR'] = query_df['clicks'] / query_df['impressions'] * 100
 
@@ -429,7 +438,10 @@ def organic_ctr():
         # round the position number
         query_df['round_position'] = round(query_df['position'], 0)
 
+        print(query_df)
+
         brand_query_df = query_df[query_df['Query Type'] == 'Branded']
+        print(brand_query_df)
         non_brand_query_df = query_df[query_df['Query Type'] == 'Non Branded']
 
         # Ensure there is always a row for round_position between 1 to 10
@@ -499,6 +511,12 @@ def organic_ctr():
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
+    # if GSC property is not selected then send user to GSC property selection page
+    if selected_property == "You haven't selected a GSC Property yet":
+        # show a message
+        flash('Please Select your GSC Property before clicking on Organic CTR Tab.')
+        return redirect(url_for('gsc_property_selection'))
+
     webmasters_service = build_gsc_service()
     
     # Calculate end_date
@@ -530,12 +548,6 @@ def organic_ctr():
     #countries = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'static', 'country-codes.csv'))
 
     #countries = countries.to_dict('records')
-
-    # if GSC property is not selected then send user to GSC property selection page
-    if selected_property == "You haven't selected a GSC Property yet":
-        # show a message
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
     
     return render_template('/organic-ctr/main.html', selected_property=selected_property, 
                            brand_keywords=brand_keywords, countries=countries)

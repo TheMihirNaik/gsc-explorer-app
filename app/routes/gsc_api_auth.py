@@ -227,6 +227,7 @@ def fetch_search_console_data(webmasters_service, website_url, start_date, end_d
     while True:
         # Build the request body for the API call
         request_body = {
+            "type" : "web",
             "startDate": start_date,
             "endDate": end_date,
             "dimensions": dimensions,
