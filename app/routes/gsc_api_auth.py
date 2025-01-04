@@ -120,6 +120,9 @@ def gsc_oauth2callback():
   # ACTION ITEM: In a production app, you likely want to save these
   #              credentials in a persistent database instead.
   credentials = flow.credentials
+  print("First time credentials")
+  print(flow.credentials)
+  print("----------")
   flask.session['credentials'] = credentials_to_dict(credentials)
 
   return flask.redirect(url_for('gsc_property_selection'))
@@ -206,11 +209,24 @@ def print_index_table():
           '</td></tr></table>')
 
 def build_gsc_service():
-  # Load credentials from the session.
+  # Load credentials from the session
   credentials = google.oauth2.credentials.Credentials(
       **flask.session['credentials'])
+  
+  print(flask.session['credentials'])
 
-  # Retrieve list of properties in account
+  # Check if the token is expired and refresh it if needed
+  if not credentials.valid and credentials.expired and credentials.refresh_token:
+      try:
+          credentials.refresh(google.auth.transport.requests.Request())
+      except Exception as e:
+          flash("Failed to refresh access token. Please reauthorize.")
+          return flask.redirect(url_for('gsc_authorize'))
+
+      # Save updated credentials back to session
+      flask.session['credentials'] = credentials_to_dict(credentials)
+
+  # Build the Google Search Console API service
   search_console_service = googleapiclient.discovery.build(
       API_SERVICE_NAME, API_VERSION, credentials=credentials)
   

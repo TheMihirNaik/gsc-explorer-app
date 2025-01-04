@@ -1119,8 +1119,15 @@ def sitewide_pages():
         merge_df['position_yoy'] = ((merge_df['position_prev_p'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
 
 
-        # add one column named "Optimize CTR" to merge_df and add a link to the "Optimize CTR" emoji column
-        merge_df['Actions'] = merge_df['PAGE'].apply(lambda x: f"<a href='/actionable-insights/optimize-ctr?page={x}' target='_blank'> <i class='fa-solid fa-wand-magic-sparkles'></i> Optimize CTR </a>")
+        # add one column named "Actions" to merge_df and add links to the "Optimize CTR" and "Another Action" in the column
+        merge_df['Actions'] = merge_df['PAGE'].apply(
+            lambda x: (
+                f"""<a href='/actionable-insights/optimize-ctr?page={x}' target='_blank' class='pt-2'>
+                <i class='fa-solid fa-wand-magic-sparkles'></i> CTR </a> <br>
+                <a href='/actionable-insights/optimize-page-content?page={x}' target='_blank' class='pt-2'>
+                <i class='fa-solid fa-file-pen'></i> Page Content </a>"""
+            )
+        )
 
         # remove selected_property from merge_df['PAGE'] and add ahref link to it using original merge_df['PAGE']
         #merge_df['PAGE'] = merge_df['PAGE'].str.replace(selected_property, '/')
@@ -1215,9 +1222,6 @@ def sitewide_pages():
     return render_template('/sitewide-pages/main.html',
                         selected_property=selected_property,
                         brand_keywords=brand_keywords)
-
-
-
 
 
 @app.route('/gsc-celery-test/', methods=['GET', 'POST'])
@@ -1706,3 +1710,133 @@ def generate_ai_meta_description():
         
         # GET request
         return redirect(url_for('dashboard'))
+    
+
+@app.route('/actionable-insights/optimize-page-content', methods=['GET', 'POST'])
+def optimize_page_content():
+    if 'credentials' not in session:
+        return redirect(url_for('gsc_authorize'))
+    
+    if request.method == 'POST':
+
+        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+        #capture variable <page> from url path
+        page = request.form.get('page')
+
+        # scrape current title & meta description of the URL using bs4
+        url = page
+
+        # Define headers with a real User-Agent
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
+        # Send a GET request to the URL
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            try:
+                # Parse the content using BeautifulSoup
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # Get the title
+                title_tag = soup.title
+                title = title_tag.string if title_tag else 'No title found'
+                
+                # Get the meta description
+                meta_desc = 'No description found'
+                try:
+                    meta_tag = soup.find('meta', attrs={'name': 'description'})
+                    if meta_tag and 'content' in meta_tag.attrs:
+                        meta_desc = meta_tag['content']
+                except Exception:
+                    pass  # Ensure no errors are raised during meta description extraction
+
+                # Get all content from the page
+                content_html = ''
+                for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'table']):
+                    content_html += str(tag)
+
+            except Exception as e:
+                # Log the error if needed, but do not interrupt the app flow
+                print(f"Error during HTML parsing: {e}")
+                title = 'No title found'
+                meta_desc = 'No description found'
+                content_html = 'No body content found'
+        else:
+            # Default fallback for non-200 responses
+            title = 'No title found'
+            meta_desc = 'No description found'
+            content_html = 'No body content found'
+
+
+        #build gsc service
+        webmasters_service = build_gsc_service()
+
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+
+        start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
+
+        #total numbers make GSC API Calls
+        dimensions = ['QUERY']
+        dimensionFilterGroups = [{"filters": [
+            {"dimension": "PAGE", "expression": page, "operator": "equals"},
+        ]}]
+
+        #get gsc data
+        query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+
+        # remove brand queries from query_df
+        query_df = query_df[~query_df['QUERY'].str.contains('|'.join(brand_keywords), case=False)]
+
+        # create a list of queries from query_df
+        queries = query_df['QUERY'].tolist()
+
+        # tokenize queries
+        tokenized_queries = [query.split() for query in queries]
+
+        # remove stop words from tokenized_queries
+        stop_words = set(stopwords.words('english'))
+        tokenized_queries = [[word for word in query if word.lower() not in stop_words] for query in tokenized_queries]
+
+        # create a dictionary to store query tokens and their counts and examples
+        query_tokens_count = {}
+
+        # count the occurrences of each token in the tokenized queries
+        for query in tokenized_queries:
+            for token in query:
+                if token not in query_tokens_count:
+                    query_tokens_count[token] = {'count': 0, 'examples': []}
+                query_tokens_count[token]['count'] += 1
+                # Store top 5 examples for each token
+                query_rows = query_df[query_df['QUERY'] == ' '.join(query)]
+                if not query_rows.empty:
+                    example = query_rows.sort_values(by=['impressions'], ascending=False).head(1)['QUERY'].iloc[0]
+                    if len(query_tokens_count[token]['examples']) < 5:
+                        query_tokens_count[token]['examples'].append(example)
+
+        # sort the query tokens by count in descending order
+        sorted_query_tokens_count = sorted(query_tokens_count.items(), key=lambda x: x[1]['count'], reverse=True)
+
+        print(type(sorted_query_tokens_count))
+
+        return render_template('/actionable-insights/optimize-page-content/partial.html', 
+                               title=title, meta_desc=meta_desc, content_html=content_html,
+                               query_tokens=sorted_query_tokens_count
+                               )
+    
+    #get request
+    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+
+    #capture variable <page> from url path
+    page = request.args.get('page', default='')
+
+    return render_template('/actionable-insights/optimize-page-content/main.html', 
+                           page=page,
+                           selected_property=selected_property,
+                           brand_keywords=brand_keywords)
+

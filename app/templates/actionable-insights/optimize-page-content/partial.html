@@ -1,0 +1,96 @@
+<div id="pages-aggregate-data">
+    
+    <!-- Create the editor container -->
+    <div class="grid grid-cols-6 gap-4">
+        <!-- First Section -->
+        <div class="col-span-4">
+            <div id="editor" class="ql-container ql-snow">
+                <div class="ql-editor" style="height: 300px;">
+                    {{ content_html | safe }}
+                </div>
+            </div>
+        
+        </div>
+
+        <!-- Second Section -->
+        <div class="col-span-2">
+            <h2 class="text-2xl font-bold mb-4">Content Analysis</h2>
+            <!-- Your other content here -->
+            <p class="text-sm mt-2" id="character-count"></p>
+            <p class="text-sm mt-2" id="word-count"></p>
+            <p class="text-sm mt-2" id="sentence-count"></p>
+
+            <div id="query-tokens">
+                <ul>
+                    {% for token, details in query_tokens %}
+                        <li id="token-{{token}}">
+                            <strong>{{ token }}</strong>:
+                            <span class="badge badge-info">{{ details.count }} in search queries</span>
+                            <span class="badge badge-info" id="token-{{token}}-content-count">0 in content</span>
+                            <div class="tooltip" data-tip="{% for example in details.examples %}{{ example }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                                <span class="badge badge-info cursor-pointer">View Examples</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+<script>
+    // Initialize Quill editor
+    var quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'header': 1 }, { 'header': 2 }],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                [{ 'script': 'sub' }, { 'script': 'super' }],
+                [{ 'indent': '-1' }, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'font': [] }],
+                [{ 'align': [] }],
+                ['clean']
+            ]
+        }
+    });
+
+    function updateCounts() {
+        var editorContent = quill.getText().toLowerCase().trim();
+        var wordCount = editorContent.split(/\s+/).filter(function(n) { return n != '' }).length;
+        var sentenceCount = editorContent.split('.').filter(function(n) { return n != '' }).length;
+        var characterCount = editorContent.length;
+        document.getElementById('word-count').innerHTML = `Words: ${wordCount}`;
+        document.getElementById('sentence-count').innerHTML = `Sentences: ${sentenceCount}`;
+        document.getElementById('character-count').innerHTML = `Characters: ${characterCount}`;
+        
+        // update the color of query-tokens
+        {% for token, details in query_tokens %}
+            var tokenCount = (editorContent.match(new RegExp('\\b{{token | lower}}\\b', 'gi')) || []).length;
+            document.getElementById('token-{{token}}-content-count').innerHTML = `${tokenCount} in content`;
+            if (tokenCount > 0) {
+                document.querySelector('#token-{{token}} .badge-info').style.backgroundColor = '#34D399';
+            } else {
+                document.querySelector('#token-{{token}} .badge-info').style.backgroundColor = '#E2E8F0';
+            }
+        {% endfor %}
+    }
+
+    quill.on('text-change', updateCounts);
+
+    // Set initial counts
+    updateCounts();
+
+</script>
+
+</div>
+
