@@ -59,6 +59,8 @@ def format_dates(start_date_str, end_date_str):
     except ValueError:
         return None, None  # Return None if there's an error in date conversion
 
+from dateutil.relativedelta import relativedelta
+
 def process_dates(start_date_str, end_date_str):
     current_period_start_date = start_date_str
     current_period_end_date = end_date_str
@@ -71,13 +73,16 @@ def process_dates(start_date_str, end_date_str):
     current_start_date_obj = datetime.strptime(current_start_date, '%Y-%m-%d')
     current_end_date_obj = datetime.strptime(current_end_date, '%Y-%m-%d')
 
+    # Calculate duration of the current period
+    current_period_duration = (current_end_date_obj - current_start_date_obj).days + 1
+
     # Previous period start date and end date
-    previous_period_start_date = (current_start_date_obj - timedelta(days=1)).strftime('%Y-%m-%d')
-    previous_period_end_date = (current_end_date_obj - timedelta(days=1)).strftime('%Y-%m-%d')
+    previous_period_start_date = (current_start_date_obj - timedelta(days=current_period_duration)).strftime('%Y-%m-%d')
+    previous_period_end_date = (current_end_date_obj - timedelta(days=current_period_duration)).strftime('%Y-%m-%d')
 
     # Previous year start date and end date
-    previous_year_start_date = (current_start_date_obj - timedelta(days=365)).strftime('%Y-%m-%d')
-    previous_year_end_date = (current_end_date_obj - timedelta(days=365)).strftime('%Y-%m-%d')
+    previous_year_start_date = (current_start_date_obj - relativedelta(years=1)).strftime('%Y-%m-%d')
+    previous_year_end_date = (current_end_date_obj - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     return current_start_date, current_end_date, previous_period_start_date, previous_period_end_date, previous_year_start_date, previous_year_end_date
 

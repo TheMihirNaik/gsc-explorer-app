@@ -927,6 +927,8 @@ def query_aggregate_report():
 
         current_start_date, current_end_date, previous_period_start_date, previous_period_end_date, previous_year_start_date, previous_year_end_date = process_dates(start_date_str, end_date_str)
 
+        all_dates = [current_start_date, current_end_date, previous_period_start_date, previous_period_end_date, previous_year_start_date, previous_year_end_date]
+       
         #total numbers make GSC API Call
         country = []
         dimensions = ['QUERY']
@@ -1033,6 +1035,7 @@ def query_aggregate_report():
                                data_json=data_json,
                                date_checker_earliest_date=date_checker_earliest_date,
                                date_checker_latest_date=date_checker_latest_date,
+                               all_dates=all_dates
                                #current_period_df_html=current_period_df_html
                                )
     
