@@ -5,74 +5,53 @@
 {% block content %}
 
 <h1 class="text-4xl font-bold mt-2 mb-2 justify-center flex-row">GSC Property Selection</h1>
-<!-- 
-<div role="alert m-5" class="alert">
-    
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      class="stroke-info h-6 w-6 shrink-0">
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-    </svg>
-    <span>Please select the property you want to analyze.</span>
-  </div>
-Notice -->
 
+<!-- Alert for user feedback -->
+<div role="alert" class="alert alert-info m-5 w-fit">
+  <span>Please select the property you want to analyze.</span>
+</div>
 
-<!--  GSC Property Selection -->
+<!-- GSC Property Selection -->
 <form action="/gsc-property-selection/" method="POST" class="mt-5" required>
 
-    <div class="max-w-fit p-3 mb-5 bg-neutral-100 rounded-lg shadow-lg">
-
+    <div class="max-w-fit p-3 mb-5 bg-base-200 rounded-lg shadow-lg">
         <h2 class="text-1xl font-bold text-gray-800 mb-4">1. Select the Property:</h2>
     
-        <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5  row-auto" required>
+        <select name="selected_property" class="select select-bordered w-full max-w-xs mb-5" required>
             <option disabled selected value="">Select your Website</option>
-            {% for site in site_list%}
+            {% for site in site_list %}
             <option>{{ site }}</option>
             {% endfor %}
         </select>
-
     </div>
 
-
-    <div class="max-w-fit p-3 mb-5 bg-neutral-100 rounded-lg shadow-lg">
+    <div class="max-w-fit p-3 mb-5 bg-base-200 rounded-lg shadow-lg">
+        <h2 class="text-1xl font-bold text-gray-800 mb-4">2. Define Your Brand Keywords</h2>
         
-      <h2 class="text-1xl font-bold text-gray-800 mb-4">2. Define Your Brand Keywords</h2>
-        
-      <p class="text-gray-600 mb-4 text-sm">
+        <p class="text-gray-600 mb-4 text-sm">
             Enter words or phrases that represent your brand. Any search query containing these will be labeled as 
             <strong class="text-neutral-700">"Brand."</strong>
         </p>
 
-            <li class="text-sm">All other queries will automatically be categorized as "Non-Brand."</li>    
-            <li class="text-sm">Separate multiple keywords with a comma (e.g., stripe, payment, checkout).</li>
-    </p>
+        <li class="text-sm">All other queries will automatically be categorized as "Non-Brand."</li>    
+        <li class="text-sm">Separate multiple keywords with a comma (e.g., stripe, payment, checkout).</li>
 
-    <div class="bg-blue-50 p-4 rounded-lg mb-2 class="text-sm"">
-        <p class="text-accent">
-          <strong>Example:</strong> If your brand name is <strong>Stripe</strong>, enter <em>stripe</em> as a keyword. This will label all queries containing <em>stripe</em> as <strong class="text-accent">"Brand."</strong>
-        </p>
-      </div>
+        <div class="bg-blue-50 p-4 rounded-lg mb-2">
+            <p class="text-accent">
+              <strong>Example:</strong> If your brand name is <strong>Stripe</strong>, enter <em>stripe</em> as a keyword. This will label all queries containing <em>stripe</em> as <strong class="text-accent">"Brand."</strong>
+            </p>
+        </div>
 
-    <label for="brandKeywords" class="block text-gray-700 font-medium mb-2 class="text-sm">
-        Brand Keywords:
-      </label>
+        <label for="brand_keywords" class="block text-gray-700 font-medium mb-2">
+            Brand Keywords:
+        </label>
 
-    <textarea placeholder="keyword1, keyword2, keyword3" 
-    class="textarea textarea-bordered row-auto" name="brand_keywords" 
-    id="brand_keywords" rows="3" cols="60" required></textarea>
-
+        <textarea placeholder="Enter keywords separated by commas (e.g., stripe, payment, checkout)" 
+        class="textarea textarea-bordered row-auto" name="brand_keywords" 
+        id="brand_keywords" rows="3" cols="60" required></textarea>
     </div>
     
     <button type="submit" class="btn btn-accent text-xl">Select</button>
-
-    
 </form>
 
 {% endblock %}
