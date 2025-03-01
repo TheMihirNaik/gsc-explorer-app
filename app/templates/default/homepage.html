@@ -6,52 +6,54 @@
 Explore GSCExplorer.app, a completely free tool to analyze your Google Search Console data with prebuilt charts and reports. Join us in enhancing your SEO workflow with open-source contributions and insightful analytics. 
 {% endblock %}
 
-
-
 {% block content %}
 
 <!-- Start of Selection -->
 <div role="alert" class="alert alert-warning">
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-  </svg>
-  <span>If you're getting an error when clicking "Continue to Dashboard", please clear your session first:</span>
-  <div class="flex-none">
-    <a href="/revoke-gsc-clear-session" class="btn btn-sm btn-warning">Clear Session</a>
+  <div class="flex justify-between items-center">
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span class="ml-2">If you're getting an error when clicking "Continue to Dashboard", please clear your session first:</span>
+    </div>
+    <button class="btn btn-sm btn-warning ml-4" onclick="this.parentElement.parentElement.remove();">✖</button>
+  </div>
+  <div class="flex justify-end mt-2">
+    <a href="/revoke-gsc-clear-session" class="btn btn-sm btn-primary">Clear Session</a>
   </div>
 </div>
 <!-- End of Selection -->
 
 <!-- Hero Banner -->
 <div class="text-center pt-16">
-  <h1 class="text-4xl lg:text-6xl font-bold text-primary pb-2">✨ Welcome to GSCExplorer.app!</h1>
-  <h2 class="lg:text-2xl mt-2 mb-4 pb-2 text-secondary">🔥 Unlock the Full Potential of Your GSC Data.</h2>
+  <h1 class="text-3xl md:text-4xl lg:text-6xl font-bold text-base-content pb-2">✨ Welcome to GSCExplorer.app!</h1>
+  <h2 class="text-lg md:text-xl lg:text-2xl mt-2 mb-4 pb-2 text-base-content">🔥 Unlock the Full Potential of Your GSC Data.</h2>
 </div>
 
 <div class="hero bg-neutral-content lg:p-4 pb-16">
   <div class="hero-content flex-col lg:flex-row">
     <!-- Hero Content -->
-    <div class="lg:w-1/2">
+    <div class="lg:w-1/2 w-full">
       <ul class="mb-4 mt-4 pb-2 text-left">
-        <li class="mt-2 text-success">💰 Completely FREE! No strings attached.</li>
-        <li class="mt-2 text-success">⚒️ Prebuilt Charts & Reports for Google Search Console Data</li>
-        <li class="mt-2 text-success">⚒️ <a href="https://github.com/TheMihirNaik/gsc-explorer-app" class="link" target="_blank">Open Source GSC Web Application</a> - Contribute and Collaborate!</li>
+        <li class="mt-2 text-base-content">💰 Enjoy unlimited access to your Google Search Console data, completely FREE!</li>
+        <li class="mt-2 text-base-content">⚒️ Leverage prebuilt charts and insightful reports to enhance your data analysis.</li>
       </ul>
+      
       <a href="/dashboard/" class="pb-2">
-        <button class="btn btn-active btn-primary m-0">🚀 Continue to Dashboard</button>
+        <button class="btn btn-active btn-primary m-0">🚀 Dive into Your Dashboard</button>
       </a>
 
       <div class="mt-6">
         <p>
           Crafted with ❤️ by <a href="https://www.mihirnaik.com/" class="link" target="_blank">Mihir Naik</a> in Toronto, Canada
         </p>
-        <br> Join our <a href="https://mihirnaik.substack.com/" class="link" target="_blank">SEO Workflow Automation</a> Newsletter for updates! 
       </div>
     </div>
 
     <!-- Video - Border -->
-    <div class="lg:w-1/2 p-0 lg:border border-base-500 rounded-box p-2">
-      <iframe width="500" height="300" 
+    <div class="lg:w-1/2 w-full p-0 lg:border border-base-500 rounded-box p-2">
+      <iframe class="w-full h-64 md:h-80" 
       src="https://www.youtube-nocookie.com/embed/5-zfPmm8HKw?si=AIlk8AdyEpbhAhZf&amp;start=5" 
       title="YouTube video player" frameborder="0" 
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
@@ -61,15 +63,21 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
   </div>
 </div>
 
+<!-- Start of Selection -->
+<div class="mt-10 max-w-full animate-slide-up">
+  <iframe src="https://mihirnaik.substack.com/embed" class="w-full rounded-lg" height="320"></iframe>
+</div>
+<!-- End of Selection -->
+
 <div class="bg-neutral-content py-16">
   <div class="container mx-auto px-4">
-    <h2 class="text-4xl font-bold text-center mb-12">Benefits of GSC Explorer App</h2>
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Benefits of GSC Explorer App</h2>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Unlimited Data Access -->
       <div class="card bg-neutral-100 shadow-xl">
         <div class="card-body">
-          <h3 class="card-title text-xl mb-2">
+          <h3 class="card-title text-lg md:text-xl mb-2">
             <i class="fas fa-infinity mr-2"></i>
             Unlimited Data Access 💰
           </h3>
@@ -79,9 +87,9 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
       </div>
 
       <!-- Brand vs Non-Brand -->
-      <div class="card  bg-neutral-100 shadow-xl">
+      <div class="card bg-neutral-100 shadow-xl">
         <div class="card-body">
-          <h3 class="card-title text-xl mb-2">
+          <h3 class="card-title text-lg md:text-xl mb-2">
             <i class="fas fa-tags mr-2"></i>
             Brand vs Non-Brand Query Labeling ⚒️
           </h3>
@@ -93,7 +101,7 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
       <!-- Pre-built Reports -->
       <div class="card bg-neutral-100 shadow-xl">
         <div class="card-body">
-          <h3 class="card-title text-xl mb-2">
+          <h3 class="card-title text-lg md:text-xl mb-2">
             <i class="fas fa-chart-line mr-2"></i>
             Pre-built Reports and Visualizations 📊
           </h3>
@@ -105,7 +113,7 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
       <!-- AI Tools -->
       <div class="card bg-neutral-100 shadow-xl">
         <div class="card-body">
-          <h3 class="card-title text-xl mb-2">
+          <h3 class="card-title text-lg md:text-xl mb-2">
             <i class="fas fa-robot mr-2"></i>
             AI-Powered Optimization Tools 🤖
           </h3>
@@ -117,7 +125,7 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
       <!-- User-Friendly Interface -->
       <div class="card bg-neutral-100 shadow-xl">
         <div class="card-body">
-          <h3 class="card-title text-xl mb-2">
+          <h3 class="card-title text-lg md:text-xl mb-2">
             <i class="fas fa-user-friends mr-2"></i>
             User-Friendly Interface 🌟
           </h3>
@@ -129,7 +137,7 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
       <!-- Real-Time Data Fetching -->
       <div class="card bg-neutral-100 shadow-xl">
         <div class="card-body">
-          <h3 class="card-title text-xl mb-2">
+          <h3 class="card-title text-lg md:text-xl mb-2">
             <i class="fas fa-clock mr-2"></i>
             Real-Time Data Fetching ⏱️
           </h3>
@@ -141,7 +149,7 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
       <!-- Comprehensive Metrics Analysis -->
       <div class="card bg-neutral-100 shadow-xl">
         <div class="card-body">
-          <h3 class="card-title text-xl mb-2">
+          <h3 class="card-title text-lg md:text-xl mb-2">
             <i class="fas fa-chart-pie mr-2"></i>
             Comprehensive Metrics Analysis 📈
           </h3>
@@ -153,7 +161,7 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
       <!-- Open Source Contribution -->
       <div class="card bg-neutral-100 shadow-xl">
         <div class="card-body">
-          <h3 class="card-title text-xl mb-2">
+          <h3 class="card-title text-lg md:text-xl mb-2">
             <i class="fas fa-code-branch mr-2"></i>
             Open Source Contribution 🌍
           </h3>
@@ -165,16 +173,15 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
   </div>
 </div>
 
-
 <!-- FAQs-->
 <div class="pb-10 bg-neutral-content items-center justify-center">
 
-  <h2 class="text-4xl font-bold mx-auto text-center mb-6">Expected Questions</h2>
+  <h2 class="text-3xl md:text-4xl font-bold mx-auto text-center mb-6">Expected Questions</h2>
 
   <div class="pt-4 pb-4">
     <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md">
       <input type="radio" name="my-accordion-2" checked="checked" /> 
-      <div class="collapse-title text-xl font-medium">
+      <div class="collapse-title text-lg md:text-xl font-medium">
         Why GSC Explorer is FREE?
       </div>
       <div class="collapse-content p-4"> 
@@ -184,7 +191,7 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
     </div>
     <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md mt-4">
       <input type="radio" name="my-accordion-2" /> 
-      <div class="collapse-title text-xl font-medium">
+      <div class="collapse-title text-lg md:text-xl font-medium">
         Do you store any data?
       </div>
       <div class="collapse-content p-4"> 
@@ -194,7 +201,7 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
     </div>
     <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md mt-4">
       <input type="radio" name="my-accordion-2" /> 
-      <div class="collapse-title text-xl font-medium">
+      <div class="collapse-title text-lg md:text-xl font-medium">
         What's worth knowing?
       </div>
       <div class="collapse-content p-4"> 
@@ -209,7 +216,5 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
   </div>
 
 </div>
-
-
 
 {% endblock %}
