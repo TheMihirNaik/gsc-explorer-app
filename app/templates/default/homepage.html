@@ -1,335 +1,177 @@
 {% extends "/default/loggedout-base.html" %}
 
-{% block title %} GSC Explorer {% endblock %}
+{% block title %} Free GSC Data Analysis Tool {% endblock %}
+
+{% block meta_description %} 
+Explore GSCExplorer.app, a completely free tool to analyze your Google Search Console data with prebuilt charts and reports. Join us in enhancing your SEO workflow with open-source contributions and insightful analytics. 
+{% endblock %}
+
+
 
 {% block content %}
 
-<!-- Add Google Fonts for Montserrat and Material Icons -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<!-- Hero Banner -->
+ <div class="text-center pt-16">
+  <h1 class="text-4xl lg:text-6xl font-bold pb-2">✨ GSCExplorer.app </h1>
+  <h2 class="lg:text-2xl mt-2 mb-2 pb-2">🔥 Explore your GSC Data in Meaningful ways.</h2>
+ </div>
 
-<style>
-body {
-  font-family: 'Montserrat', sans-serif;
-  background-color: #ffffff !important;
-}
+<div class="hero bg-neutral-content lg:p-4 pb-16">
+  <div class="hero-content flex-col lg:flex-row">
+    <!-- Hero Content -->
+    <div>
+      <ul class="mb-4 mt-4 pb-2">
+        <li class="mt-2">💰 Completely FREE! No strings attached.</li>
+        <li class="mt-2">⚒️ Prebuilt Charts & Reports for Google Search Console Data</li>
+        <li class="mt-2">⚒️ <a href="https://github.com/TheMihirNaik/gsc-explorer-app" class="link" target="_blank">OpenSource GSC Web Application</a> anyone can contribute to!</li>
+      </ul>
+      <a href="/dashboard/" class="pb-2"><button class="btn btn-active btn-primary m-0">Continue to Dashboard</button></a>
 
-.material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24
-}
-
-.sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background-color: #fafcff;
-  border-bottom: 3px solid #f0f4f9;
-}
-
-.section-padding {
-  padding: 3rem 5%;
-}
-
-.header-padding {
-  padding-left: 5%;
-  padding-right: 5%;
-}
-
-.bg-white {
-  background-color: white;
-}
-
-.bg-gray {
-  background-color: #f0f4f9;
-}
-
-.btn-primary {
-  background-color: #4285f4;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
-  text-decoration: none;
-  display: inline-block;
-  transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-  background-color: #5e35b1;
-}
-
-.icon-bg {
-  background-color: #4285f4;
-  color: white;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.icon-bg:hover {
-  background-color: #5e35b1;
-}
-
-.heart-icon {
-  color: #4285f4;
-  font-size: 24px;
-  vertical-align: middle;
-  transition: color 0.3s ease;
-}
-
-.heart-icon:hover {
-  color: #5e35b1;
-}
-
-/* YouTube play button color change attempt */
-.ytp-large-play-button-red-bg .ytp-large-play-button-bg {
-  fill: #4285f4 !important;
-}
-
-/* Styles for the Expected Questions section */
-.question-item {
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.question-toggle {
-  display: none;
-}
-
-.question-label {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.plus-icon {
-  margin-right: 1rem;
-  font-size: 1.5rem;
-  transition: transform 0.3s ease;
-}
-
-.question-toggle:checked + .question-label .plus-icon {
-  transform: rotate(45deg);
-}
-
-.question-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-  padding: 0 1rem;
-}
-
-.question-toggle:checked + .question-label + .question-content {
-  max-height: 1000px;
-  padding-bottom: 1rem;
-}
-
-/* Updated styles for the newsletter section */
-.newsletter-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.newsletter-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.newsletter-form {
-  display: flex;
-  align-items: center;
-  background-color: #ffffff;
-  border-radius: 9999px;
-  overflow: hidden;
-  padding: 0.5rem;
-  border: 1px solid #e5e5e5;
-  width: 100%;
-  max-width: 400px;
-}
-
-.newsletter-input {
-  flex-grow: 1;
-  border: none;
-  background: transparent;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  outline: none;
-}
-
-.newsletter-button {
-  background-color: #4285f4;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.newsletter-button:hover {
-  background-color: #5e35b1;
-}
-
-.newsletter-button svg {
-  width: 20px;
-  height: 20px;
-  stroke: #ffffff;
-}
-
-.newsletter-footer {
-  margin-top: 1rem;
-  text-align: center;
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-@media (min-width: 640px) {
-  .newsletter-section {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .newsletter-title {
-    margin-bottom: 0;
-    margin-right: 2rem;
-    text-align: left;
-  }
-
-  .newsletter-form {
-    width: 50%;
-  }
-}
-</style>
-
-<div class="container mx-auto">
-  <!-- Sticky Header -->
-  <header class="sticky-header">
-    <div class="flex justify-between items-center py-4 header-padding">
-      <h1 class="text-2xl font-bold">GSC Explorer</h1>
-      <a href="/dashboard/" class="btn-primary">Try, It's Free</a>
-    </div>
-  </header>
-
-  <!-- Hero Section -->
-  <section class="flex flex-col md:flex-row items-center justify-between bg-white section-padding">
-    <div class="md:w-1/2 mb-8 md:mb-0 pr-8">
-      <h2 class="text-4xl font-bold mb-4">GSCExplorer.app</h2>
-      <p class="mb-6">Analyze and visualize your Google Search Console data with intuitive charts and reports. Gain valuable insights into your website's search performance.</p>
-      <a href="/dashboard/" class="btn-primary">Continue to Dashboard</a>
-    </div>
-    <div class="md:w-1/2">
-      <div class="aspect-w-16 aspect-h-9 bg-gray-200 rounded-lg overflow-hidden">
-        <iframe width="460" height="315"
-        src="https://www.youtube-nocookie.com/embed/5-zfPmm8HKw?si=AIlk8AdyEpbhAhZf&amp;start=5"
-        title="YouTube video player" frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-        </iframe>
+      <div class="mt-6">
+        <p>
+          Built by <a href="https://www.mihirnaik.com/" class="link" target="_blank">Mihir Naik</a>  with ❤️ in Toronto, Canada
+        </p>
+        <br> Join <a href="https://www.mihirnaik.com/newsletter/" class="link" target="_blank">SEO Workflow Automation</a> Newsletter! 
       </div>
-    </div>
-  </section>
 
-  <!-- Key Benefits Section -->
-  <section class="bg-gray section-padding">
-    <h2 class="text-3xl font-bold text-center mb-12">Why Choose GSC Explorer?</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="text-center">
-        <div class="icon-bg">
-          <span class="material-symbols-outlined" style="font-size: 32px;">money_off</span>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Completely Free</h3>
-        <p>No strings attached. Explore your GSC data without any cost.</p>
-      </div>
-      <div class="text-center">
-        <div class="icon-bg">
-          <span class="material-symbols-outlined" style="font-size: 32px;">bar_chart</span>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Prebuilt Reports</h3>
-        <p>Ready-made charts and reports for Google Search Console Data</p>
-      </div>
-      <div class="text-center">
-        <div class="icon-bg">
-          <span class="material-symbols-outlined" style="font-size: 32px;">code</span>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Opensource</h3>
-        <p>An open-source GSC Web Application that anyone can contribute to</p>
-      </div>
     </div>
-  </section>
 
-  <!-- Updated Expected Questions Section -->
-  <section class="bg-white section-padding">
-    <h2 class="text-3xl font-bold text-center mb-12">Expected Questions</h2>
-    <div class="space-y-4 max-w-3xl mx-auto">
-      <div class="question-item">
-        <input type="checkbox" id="question1" class="question-toggle">
-        <label for="question1" class="question-label">
-          <span class="plus-icon">+</span>
-          Why GSC Explorer is FREE?
-        </label>
-        <div class="question-content">
-          <p>This is my learning project. I know I don't have skills to release a product where I can charge yet, but I want to learn.
-          I just expect this to be useful in your workflow, and you put in more feature requests so I can learn more. Since, GSC API is free, the cost of running this project is just $7 per month.</p>
-        </div>
-      </div>
-      <div class="question-item">
-        <input type="checkbox" id="question2" class="question-toggle">
-        <label for="question2" class="question-label">
-          <span class="plus-icon">+</span>
-          Do you store any data?
-        </label>
-        <div class="question-content">
-          <p>This tool calls GSC API when you hit "Fetch" button. All the data and credentials are stored locally, and gets removed once you exit the session.
-          There are no database connections in the code. Refer to the <a href="https://github.com/TheMihirNaik/gsc-explorer-app" target="_blank" class="text-blue-600 hover:underline">public codebase</a> to verify.</p>
-        </div>
-      </div>
-      <div class="question-item">
-        <input type="checkbox" id="question3" class="question-toggle">
-        <label for="question3" class="question-label">
-          <span class="plus-icon">+</span>
-          What's worth knowing?
-        </label>
-        <div class="question-content">
-          <p>I've installed Google Analytics 4 (GA4) to help me understand how our products are being used and to learn more about user behavior.
-          This information will help us improve your experience with our products. Personally, I want to learn more about product analytics as well.</p>
-          <p>Additionally, I've installed Microsoft Clarity to get insights through heatmaps and session recordings.
-          This means I might be able to see recordings of how you interact with our site.
-          I'm doing this to identify areas for improvement and to make our features even better for you.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    <!-- Video - Border -->
+    <div class="p-0 lg:border border-base-500 rounded-box p-2">
+      <iframe width="500" height="300" 
+      src="https://www.youtube-nocookie.com/embed/5-zfPmm8HKw?si=AIlk8AdyEpbhAhZf&amp;start=5" 
+      title="YouTube video player" frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
 
-  <!-- Updated Newsletter Section -->
-  <section class="bg-gray section-padding">
-    <div class="newsletter-section">
-      
-      <h2 class="newsletter-title">Subscribe to my SEO Newsletter</h2>
-      <p><a href="https://www.mihirnaik.com/newsletter/" class="btn-primary">Signup Here</a></p>
-      
+      </iframe>
     </div>
-    <div class="newsletter-footer">
-      <p>Built by <a href="https://www.mihirnaik.com/" class="text-blue-600 hover:underline" target="_blank">Mihir Naik</a> with <span class="material-symbols-outlined heart-icon">favorite_border</span> in Toronto, Canada</p>
-    </div>
-  </section>
+  
+  </div>
 </div>
+
+<!-- FAQs-->
+<div class="pb-10 bg-neutral-content items-center justify-center">
+
+  <h2 class="text-4xl font-bold mx-auto text-center">Expected Questions</h2>
+
+  <div class="pt-4 pb-4">
+    <div class="collapse collapse-arrow bg-neutral-content">
+      <input type="radio" name="my-accordion-2" checked="checked" /> 
+      <div class="collapse-title text-xl font-medium">
+        Why GSC Explorer is FREE?
+      </div>
+      <div class="collapse-content"> 
+        <p>This is my learning project. I know I don't have skills to release a product where I can charge yet, but I want to learn. 
+          I just expect this to be useful in your worklow, and you put in more feature request so I can learn more. Since, GSC API is free, the cost of running this project is just $7 per month. </p>
+      </div>
+    </div>
+    <div class="collapse collapse-arrow bg-neutral-content">
+      <input type="radio" name="my-accordion-2" /> 
+      <div class="collapse-title text-xl font-medium">
+        Do you store any data?
+      </div>
+      <div class="collapse-content"> 
+        This tool calls GSC API when you hit "Fetch" button. All the data and credentials are store locally, and gets removed once you exit the session. 
+        There are no database connections in the code. Refer to the <a href="https://github.com/TheMihirNaik/gsc-explorer-app" target="_blank" class="link">public codebase</a> to verify.
+      </div>
+    </div>
+    <div class="collapse collapse-arrow bg-neutral-content">
+      <input type="radio" name="my-accordion-2" /> 
+      <div class="collapse-title text-xl font-medium">
+        What's worth knowing?
+      </div>
+      <div class="collapse-content"> 
+        <p>i've installed Google Analytics 4 (GA4) to help me understand how our products are being used and to learn more about user behavior. 
+          This information will help us improve your experience with our products. Personally, I want to learn more about product analytics as well.
+          <br>
+          <br>
+          Additionally, I've installed Microsoft Clarity to get insights through heatmaps and session recordings. 
+          This means I might be able to see recordings of how you interact with our site. 
+          I'm doing this to identify areas for improvement and to make our features even better for you.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Choices -->
+<div class="mt-20 mb-20 hidden">
+  <h2 class="text-3xl font-bold text-center m-10">What are the choices in Flask Boilerplate? </h2>
+
+  <div class="grid grid-cols-3 gap-4 m-10">
+    <div >
+      <h3 class="text-2xl font-bold">DaisyUI on TailwindCSS</h3>
+      <p>Very flexible TailwindCSS with DaisyUI for quick builds.</p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">MongoDB Connection</h3>
+      <p>Using pymongo to connect to MongoDB database.</p>
+      Here is an <a href="/dashboard/" class="link">example</a> of how I'm using it.</p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">HTMX</h3>
+      <p>HTMX for interactivity. Use click and buttons to trigger GET and POST requests. 
+        The server will send HTML fragments that will get relace a part of the HTML.
+        Here is an <a href="/openai/" class="link">example</a> of how I'm using it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="mt-20 mb-20 hidden">
+  <h2 class="text-3xl font-bold text-center m-10">Ready to Use Integrations</h2>
+
+  <div class="grid grid-cols-3 gap-4 m-10">
+    <div>
+      <h3 class="text-2xl font-bold">Google Search Console API</h3>
+      <p>For SEO tasks, GSC data is important. Here is authentication and authorization for GSC.
+        Here is an <a href="/google-search-console/" class="link">example</a> of how I'm using it.</p>
+      </p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">DataTables</h3>
+      <p>To show tables, using DataTables as it comes packed with features.
+        Here is an <a href="/datatables/" class="link">example</a> of how I'm using it.</p>
+      </p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Plotly</h3>
+      <p>To visulize data, using Plotly Express. Here is an <a href="/plotly-graphs/" class="link">example</a> of how I'm using it.</p>
+    </div>
+  </div>
+  <div class="grid grid-cols-3 gap-4 m-10">
+    <div>
+      <h3 class="text-2xl font-bold">ValueSERP API</h3>
+      <p>For SEO tasks, scraping real-time SERP is important so I have integrated with ValueSERP
+        Here is an <a href="/valueserp-api/" class="link">example</a> of how I'm using it.</p>
+      </p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Customer Feedback</h3>
+      <p>For any web application, getting user feedback or suggestion is important so I have built native way to collect it.
+        You can click on bottom right corner comment icon and check
+      </p>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Stripe Payments (Coming soon)</h3>
+  
+    </div>
+  </div>
+  <div class="grid grid-cols-3 gap-4 m-10">
+    <div>
+      <h3 class="text-2xl font-bold">Transactional Emails (Coming soon)</h3>
+      
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Product Analytics (Coming Soon)</h3>
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold">Suggest Feature</h3>
+    </div>
+  </div>
+
+</div>
+
 
 {% endblock %}
