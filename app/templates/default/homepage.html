@@ -10,82 +10,197 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
 
 {% block content %}
 
+<!-- Start of Selection -->
+<div role="alert" class="alert alert-warning">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+  </svg>
+  <span>If you're getting an error when clicking "Continue to Dashboard", please clear your session first:</span>
+  <div class="flex-none">
+    <a href="/revoke-gsc-clear-session" class="btn btn-sm btn-warning">Clear Session</a>
+  </div>
+</div>
+<!-- End of Selection -->
+
 <!-- Hero Banner -->
- <div class="text-center pt-16">
-  <h1 class="text-4xl lg:text-6xl font-bold pb-2">✨ GSCExplorer.app </h1>
-  <h2 class="lg:text-2xl mt-2 mb-2 pb-2">🔥 Explore your GSC Data in Meaningful ways.</h2>
- </div>
+<div class="text-center pt-16">
+  <h1 class="text-4xl lg:text-6xl font-bold text-primary pb-2">✨ Welcome to GSCExplorer.app!</h1>
+  <h2 class="lg:text-2xl mt-2 mb-4 pb-2 text-secondary">🔥 Unlock the Full Potential of Your GSC Data.</h2>
+</div>
 
 <div class="hero bg-neutral-content lg:p-4 pb-16">
   <div class="hero-content flex-col lg:flex-row">
     <!-- Hero Content -->
-    <div>
-      <ul class="mb-4 mt-4 pb-2">
-        <li class="mt-2">💰 Completely FREE! No strings attached.</li>
-        <li class="mt-2">⚒️ Prebuilt Charts & Reports for Google Search Console Data</li>
-        <li class="mt-2">⚒️ <a href="https://github.com/TheMihirNaik/gsc-explorer-app" class="link" target="_blank">OpenSource GSC Web Application</a> anyone can contribute to!</li>
+    <div class="lg:w-1/2">
+      <ul class="mb-4 mt-4 pb-2 text-left">
+        <li class="mt-2 text-success">💰 Completely FREE! No strings attached.</li>
+        <li class="mt-2 text-success">⚒️ Prebuilt Charts & Reports for Google Search Console Data</li>
+        <li class="mt-2 text-success">⚒️ <a href="https://github.com/TheMihirNaik/gsc-explorer-app" class="link" target="_blank">Open Source GSC Web Application</a> - Contribute and Collaborate!</li>
       </ul>
-      <a href="/dashboard/" class="pb-2"><button class="btn btn-active btn-primary m-0">Continue to Dashboard</button></a>
+      <a href="/dashboard/" class="pb-2">
+        <button class="btn btn-active btn-primary m-0">🚀 Continue to Dashboard</button>
+      </a>
 
       <div class="mt-6">
         <p>
-          Built by <a href="https://www.mihirnaik.com/" class="link" target="_blank">Mihir Naik</a>  with ❤️ in Toronto, Canada
+          Crafted with ❤️ by <a href="https://www.mihirnaik.com/" class="link" target="_blank">Mihir Naik</a> in Toronto, Canada
         </p>
-        <br> Join <a href="https://www.mihirnaik.com/newsletter/" class="link" target="_blank">SEO Workflow Automation</a> Newsletter! 
+        <br> Join our <a href="https://mihirnaik.substack.com/" class="link" target="_blank">SEO Workflow Automation</a> Newsletter for updates! 
       </div>
-
     </div>
 
     <!-- Video - Border -->
-    <div class="p-0 lg:border border-base-500 rounded-box p-2">
+    <div class="lg:w-1/2 p-0 lg:border border-base-500 rounded-box p-2">
       <iframe width="500" height="300" 
       src="https://www.youtube-nocookie.com/embed/5-zfPmm8HKw?si=AIlk8AdyEpbhAhZf&amp;start=5" 
       title="YouTube video player" frameborder="0" 
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
       referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-
       </iframe>
     </div>
-  
   </div>
 </div>
+
+<div class="bg-neutral-content py-16">
+  <div class="container mx-auto px-4">
+    <h2 class="text-4xl font-bold text-center mb-12">Benefits of GSC Explorer App</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Unlimited Data Access -->
+      <div class="card bg-neutral-100 shadow-xl">
+        <div class="card-body">
+          <h3 class="card-title text-xl mb-2">
+            <i class="fas fa-infinity mr-2"></i>
+            Unlimited Data Access 💰
+          </h3>
+          <p><strong>Pain Point:</strong> Google Search Console limits users to 1000 rows of data, which can restrict analysis and insights.</p>
+          <p><strong>Solution:</strong> GSC Explorer allows users to analyze their complete dataset, providing a comprehensive view of website performance.</p>
+        </div>
+      </div>
+
+      <!-- Brand vs Non-Brand -->
+      <div class="card  bg-neutral-100 shadow-xl">
+        <div class="card-body">
+          <h3 class="card-title text-xl mb-2">
+            <i class="fas fa-tags mr-2"></i>
+            Brand vs Non-Brand Query Labeling ⚒️
+          </h3>
+          <p><strong>Pain Point:</strong> Understanding traffic sources can be challenging without clear categorization of queries.</p>
+          <p><strong>Solution:</strong> The app automatically categorizes search queries into brand and non-brand labels, helping users optimize their strategies based on traffic sources.</p>
+        </div>
+      </div>
+
+      <!-- Pre-built Reports -->
+      <div class="card bg-neutral-100 shadow-xl">
+        <div class="card-body">
+          <h3 class="card-title text-xl mb-2">
+            <i class="fas fa-chart-line mr-2"></i>
+            Pre-built Reports and Visualizations 📊
+          </h3>
+          <p><strong>Pain Point:</strong> Manually creating reports and visualizations can be time-consuming and complex.</p>
+          <p><strong>Solution:</strong> GSC Explorer offers pre-built reports and charts for easy data visualization, making it simpler for users to interpret data and derive actionable insights.</p>
+        </div>
+      </div>
+
+      <!-- AI Tools -->
+      <div class="card bg-neutral-100 shadow-xl">
+        <div class="card-body">
+          <h3 class="card-title text-xl mb-2">
+            <i class="fas fa-robot mr-2"></i>
+            AI-Powered Optimization Tools 🤖
+          </h3>
+          <p><strong>Pain Point:</strong> Crafting effective titles and meta descriptions can be difficult without data-driven insights.</p>
+          <p><strong>Solution:</strong> The app includes features for generating AI-assisted titles and meta descriptions, helping users improve their click-through rates (CTR) by optimizing on-page SEO elements.</p>
+        </div>
+      </div>
+
+      <!-- User-Friendly Interface -->
+      <div class="card bg-neutral-100 shadow-xl">
+        <div class="card-body">
+          <h3 class="card-title text-xl mb-2">
+            <i class="fas fa-user-friends mr-2"></i>
+            User-Friendly Interface 🌟
+          </h3>
+          <p><strong>Pain Point:</strong> Many analytics tools can be overwhelming and difficult to navigate.</p>
+          <p><strong>Solution:</strong> GSC Explorer provides a responsive and user-friendly interface, making it accessible for users of all skill levels.</p>
+        </div>
+      </div>
+
+      <!-- Real-Time Data Fetching -->
+      <div class="card bg-neutral-100 shadow-xl">
+        <div class="card-body">
+          <h3 class="card-title text-xl mb-2">
+            <i class="fas fa-clock mr-2"></i>
+            Real-Time Data Fetching ⏱️
+          </h3>
+          <p><strong>Pain Point:</strong> Delays in data retrieval can hinder timely decision-making.</p>
+          <p><strong>Solution:</strong> The app fetches data in real-time from Google Search Console, allowing users to make informed decisions quickly.</p>
+        </div>
+      </div>
+
+      <!-- Comprehensive Metrics Analysis -->
+      <div class="card bg-neutral-100 shadow-xl">
+        <div class="card-body">
+          <h3 class="card-title text-xl mb-2">
+            <i class="fas fa-chart-pie mr-2"></i>
+            Comprehensive Metrics Analysis 📈
+          </h3>
+          <p><strong>Pain Point:</strong> Analyzing multiple metrics across different dimensions can be cumbersome.</p>
+          <p><strong>Solution:</strong> GSC Explorer provides detailed metrics analysis, including clicks, impressions, CTR, and positions, aggregated by various dimensions like country and device.</p>
+        </div>
+      </div>
+
+      <!-- Open Source Contribution -->
+      <div class="card bg-neutral-100 shadow-xl">
+        <div class="card-body">
+          <h3 class="card-title text-xl mb-2">
+            <i class="fas fa-code-branch mr-2"></i>
+            Open Source Contribution 🌍
+          </h3>
+          <p><strong>Pain Point:</strong> Users often seek transparency and the ability to customize tools.</p>
+          <p><strong>Solution:</strong> Being an open-source application, GSC Explorer allows users to contribute to its development and customize it according to their needs.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- FAQs-->
 <div class="pb-10 bg-neutral-content items-center justify-center">
 
-  <h2 class="text-4xl font-bold mx-auto text-center">Expected Questions</h2>
+  <h2 class="text-4xl font-bold mx-auto text-center mb-6">Expected Questions</h2>
 
   <div class="pt-4 pb-4">
-    <div class="collapse collapse-arrow bg-neutral-content">
+    <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md">
       <input type="radio" name="my-accordion-2" checked="checked" /> 
       <div class="collapse-title text-xl font-medium">
         Why GSC Explorer is FREE?
       </div>
-      <div class="collapse-content"> 
+      <div class="collapse-content p-4"> 
         <p>This is my learning project. I know I don't have skills to release a product where I can charge yet, but I want to learn. 
-          I just expect this to be useful in your worklow, and you put in more feature request so I can learn more. Since, GSC API is free, the cost of running this project is just $7 per month. </p>
+          I just expect this to be useful in your workflow, and you put in more feature requests so I can learn more. Since GSC API is free, the cost of running this project is just $7 per month.</p>
       </div>
     </div>
-    <div class="collapse collapse-arrow bg-neutral-content">
+    <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md mt-4">
       <input type="radio" name="my-accordion-2" /> 
       <div class="collapse-title text-xl font-medium">
         Do you store any data?
       </div>
-      <div class="collapse-content"> 
-        This tool calls GSC API when you hit "Fetch" button. All the data and credentials are store locally, and gets removed once you exit the session. 
+      <div class="collapse-content p-4"> 
+        This tool calls GSC API when you hit the "Fetch" button. All the data and credentials are stored locally and get removed once you exit the session. 
         There are no database connections in the code. Refer to the <a href="https://github.com/TheMihirNaik/gsc-explorer-app" target="_blank" class="link">public codebase</a> to verify.
       </div>
     </div>
-    <div class="collapse collapse-arrow bg-neutral-content">
+    <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md mt-4">
       <input type="radio" name="my-accordion-2" /> 
       <div class="collapse-title text-xl font-medium">
         What's worth knowing?
       </div>
-      <div class="collapse-content"> 
-        <p>i've installed Google Analytics 4 (GA4) to help me understand how our products are being used and to learn more about user behavior. 
+      <div class="collapse-content p-4"> 
+        <p>I've installed Google Analytics 4 (GA4) to help me understand how our products are being used and to learn more about user behavior. 
           This information will help us improve your experience with our products. Personally, I want to learn more about product analytics as well.
-          <br>
-          <br>
+          <br><br>
           Additionally, I've installed Microsoft Clarity to get insights through heatmaps and session recordings. 
           This means I might be able to see recordings of how you interact with our site. 
           I'm doing this to identify areas for improvement and to make our features even better for you.</p>
@@ -95,83 +210,6 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
 
 </div>
 
-
-<!-- Choices -->
-<div class="mt-20 mb-20 hidden">
-  <h2 class="text-3xl font-bold text-center m-10">What are the choices in Flask Boilerplate? </h2>
-
-  <div class="grid grid-cols-3 gap-4 m-10">
-    <div >
-      <h3 class="text-2xl font-bold">DaisyUI on TailwindCSS</h3>
-      <p>Very flexible TailwindCSS with DaisyUI for quick builds.</p>
-    </div>
-    <div>
-      <h3 class="text-2xl font-bold">MongoDB Connection</h3>
-      <p>Using pymongo to connect to MongoDB database.</p>
-      Here is an <a href="/dashboard/" class="link">example</a> of how I'm using it.</p>
-    </div>
-    <div>
-      <h3 class="text-2xl font-bold">HTMX</h3>
-      <p>HTMX for interactivity. Use click and buttons to trigger GET and POST requests. 
-        The server will send HTML fragments that will get relace a part of the HTML.
-        Here is an <a href="/openai/" class="link">example</a> of how I'm using it.</p>
-    </div>
-  </div>
-</div>
-
-<div class="mt-20 mb-20 hidden">
-  <h2 class="text-3xl font-bold text-center m-10">Ready to Use Integrations</h2>
-
-  <div class="grid grid-cols-3 gap-4 m-10">
-    <div>
-      <h3 class="text-2xl font-bold">Google Search Console API</h3>
-      <p>For SEO tasks, GSC data is important. Here is authentication and authorization for GSC.
-        Here is an <a href="/google-search-console/" class="link">example</a> of how I'm using it.</p>
-      </p>
-    </div>
-    <div>
-      <h3 class="text-2xl font-bold">DataTables</h3>
-      <p>To show tables, using DataTables as it comes packed with features.
-        Here is an <a href="/datatables/" class="link">example</a> of how I'm using it.</p>
-      </p>
-    </div>
-    <div>
-      <h3 class="text-2xl font-bold">Plotly</h3>
-      <p>To visulize data, using Plotly Express. Here is an <a href="/plotly-graphs/" class="link">example</a> of how I'm using it.</p>
-    </div>
-  </div>
-  <div class="grid grid-cols-3 gap-4 m-10">
-    <div>
-      <h3 class="text-2xl font-bold">ValueSERP API</h3>
-      <p>For SEO tasks, scraping real-time SERP is important so I have integrated with ValueSERP
-        Here is an <a href="/valueserp-api/" class="link">example</a> of how I'm using it.</p>
-      </p>
-    </div>
-    <div>
-      <h3 class="text-2xl font-bold">Customer Feedback</h3>
-      <p>For any web application, getting user feedback or suggestion is important so I have built native way to collect it.
-        You can click on bottom right corner comment icon and check
-      </p>
-    </div>
-    <div>
-      <h3 class="text-2xl font-bold">Stripe Payments (Coming soon)</h3>
-  
-    </div>
-  </div>
-  <div class="grid grid-cols-3 gap-4 m-10">
-    <div>
-      <h3 class="text-2xl font-bold">Transactional Emails (Coming soon)</h3>
-      
-    </div>
-    <div>
-      <h3 class="text-2xl font-bold">Product Analytics (Coming Soon)</h3>
-    </div>
-    <div>
-      <h3 class="text-2xl font-bold">Suggest Feature</h3>
-    </div>
-  </div>
-
-</div>
 
 
 {% endblock %}

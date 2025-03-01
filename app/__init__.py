@@ -19,7 +19,6 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 #OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 #print(OPENAI_API_KEY)
 
-
 redis_host = os.getenv('REDIS_HOST')
 
 # Initialize Flask app

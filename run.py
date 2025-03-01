@@ -4,7 +4,6 @@ from app.extensions import celery
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 
-
 # Use ProxyFix to handle HTTPS forwarded headers
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
