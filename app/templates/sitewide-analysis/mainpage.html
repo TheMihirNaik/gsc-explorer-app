@@ -7,20 +7,29 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
 
-<!-- Website Name & Brand Term Section-->
-<div class="flex flex-row">
+<div class="container px-4 max-w-7xl">
+  <!-- Property Info Cards -->
+  <div class="flex flex-col sm:flex-row gap-4 mb-8">
+    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+            <div class="text-sm opacity-75">GSC Property</div>
+            <div class="font-bold">{{ selected_property}}</div>
+        </div>
+    </div>
 
-  <div role="alert" class="alert alert-success max-w-fit	 pr-10">
-    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-    <b>GSC Property : </b>
-    <span>{{ selected_property}}</span>
+    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+            <div class="text-sm opacity-75">Brand Terms</div>
+            <div class="font-bold">{{ brand_keywords }}</div>
+        </div>
+    </div>
   </div>
-
-  <div role="alert" class="alert alert-success max-w-fit	 pr-10 ml-10">
-    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-    <span><b>Brand Terms :</b>  {{ brand_keywords }}</span>
-  </div>
-
 </div>
 
 <div class="row-auto">

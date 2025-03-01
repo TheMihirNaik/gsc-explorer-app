@@ -112,24 +112,45 @@
           <div class="">
             <ul class="menu p-4 bg-neutral text-neutral-content text-xl">
               <li class="m-2">
-                <a href="/dashboard/"><i class="fa-solid fa-gauge"></i>Dashboard</a>
+                <a href="/dashboard/"><i class="fa-solid fa-tachometer-alt"></i>Dashboard</a>
               </li>
               
               <b><li class="m-2 text-lg">Charts/Visualizations</li></b>
               <li class="m-2 text-sm">
-                <a href="/charts/sitewide-brand-vs-non-brand/"><i class="fa-solid fa-chart-line"></i>Sitewide BR vs NB</a>
-                <a href="/charts/organic-ctr/"><i class="fa-solid fa-chart-line"></i>Organic CTR Analysis</a>
+                <a href="/charts/sitewide-brand-vs-non-brand/"><i class="fa-solid fa-chart-pie"></i>Sitewide BR vs NB</a>
+                <a href="/charts/organic-ctr/"><i class="fa-solid fa-chart-bar"></i>Organic CTR Analysis</a>
               </li>
               
               <b><li class="m-2 text-lg">Reports/Tables</li></b>
-              <li class="m-2 text-sm"><a href="/reports/sitewide-overview/"><i class="fa-solid fa-table-cells"></i>Sitewide Overview</a></li>
-              <li class="m-2 text-sm"><a href="/reports/sitewide-queries/"><i class="fa-solid fa-table-cells"></i>Sitewide Queries</a></li>
-              <li class="m-2 text-sm"><a href="/reports/sitewide-pages/"><i class="fa-solid fa-table-cells"></i>Sitewide Pages</a></li>
+              <li class="m-2 text-sm"><a href="/reports/sitewide-overview/"><i class="fa-solid fa-file-alt"></i>Sitewide Overview</a></li>
+              <li class="m-2 text-sm"><a href="/reports/sitewide-queries/"><i class="fa-solid fa-file-alt"></i>Sitewide Queries</a></li>
+              <li class="m-2 text-sm"><a href="/reports/sitewide-pages/"><i class="fa-solid fa-file-alt"></i>Sitewide Pages</a></li>
               
-              <!-- The following isn't built yet, they are coming soon.-->
+              <div hidden>
+                <!-- The following isn't built yet, they are coming soon.-->
               <b><li class="m-2 text-lg">Coming Soon</li></b>
-              <li class="m-2 text-sm"><a href="#"><i class="fa-solid fa-spinner"></i>Keyword Discovery</a></li>
-              <li class="m-2 text-sm"><a href="#"><i class="fa-solid fa-spinner"></i>Content Optimization</a></li>
+              
+              <li class="m-2 text-sm flex items-center">
+                <a href="#" onclick="incrementCount('keywordDiscoveryCount')" class="flex items-center">
+                  <i class="fa-solid fa-spinner"></i>
+                  <span class="ml-2">Keyword Discovery</span>
+                  <i class="fa-solid fa-thumbs-up ml-2"></i>
+                  <span id="keywordDiscoveryCount" class="ml-2">0</span>
+                </a>
+              </li>
+
+              <li class="m-2 text-sm flex items-center">
+                <a href="#" onclick="incrementCount('contentOptimizationCount')" class="flex items-center">
+                  <i class="fa-solid fa-spinner"></i>
+                  <span class="ml-2">Content Optimization</span>
+                  <i class="fa-solid fa-thumbs-up ml-2"></i>
+                  <span id="contentOptimizationCount" class="ml-2">0</span>
+                </a>
+              </li>
+
+              </div>
+              
+              
             </ul>
           </div>
 
@@ -279,6 +300,15 @@
     updateButtonState();
   };
 
+</script>
+
+<script>
+  function incrementCount(elementId) {
+    const countElement = document.getElementById(elementId);
+    let count = parseInt(countElement.textContent) || 0;
+    count++;
+    countElement.textContent = count;
+  }
 </script>
 
 </body>

@@ -1126,10 +1126,18 @@ def sitewide_pages():
         # add one column named "Actions" to merge_df and add links to the "Optimize CTR" and "Another Action" in the column
         merge_df['Actions'] = merge_df['PAGE'].apply(
             lambda x: (
-                f"""<a href='/actionable-insights/optimize-ctr?page={x}' target='_blank' class='pt-2'>
-                <i class='fa-solid fa-wand-magic-sparkles'></i> CTR </a> <br>
-                <a href='/actionable-insights/optimize-page-content?page={x}' target='_blank' class='pt-2'>
-                <i class='fa-solid fa-file-pen'></i> Page Content </a>"""
+                f"""
+                    
+                        <a href='/actionable-insights/optimize-ctr?page={x}' target='_blank' class='badge badge-primary'>
+                            <i class='fa-solid fa-wand-magic-sparkles'></i>  CTR
+                        </a>
+                        <!-- 
+                        <div class="flex space-x-2" hidden>
+                        <a href='/actionable-insights/optimize-page-content?page={x}' target='_blank' class='badge badge-secondary'>
+                            <i class='fa-solid fa-file-pen'></i> Content 
+                        </a>
+                        </div> -->
+                """
             )
         )
 

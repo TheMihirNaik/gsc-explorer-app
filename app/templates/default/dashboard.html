@@ -3,78 +3,112 @@
 {% block title %} Dashboard : {{ selected_property}}  {% endblock %}
 
 {% block content %}
+<div class="container mx-auto px-4">
+    <!-- Property Info Cards -->
+    <div class="flex flex-col sm:flex-row gap-4 mb-8">
+        <div role="alert" class="alert alert-success shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+                <div class="text-sm opacity-75">GSC Property</div>
+                <div class="font-bold">{{ selected_property}}</div>
+            </div>
+        </div>
 
-<div class="flex flex-row">
-
-    <div role="alert" class="alert alert-success max-w-fit	 pr-10">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-      <b>GSC Property : </b>
-      <span>{{ selected_property}}</span>
+        <div role="alert" class="alert alert-success shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+                <div class="text-sm opacity-75">Brand Terms</div>
+                <div class="font-bold">{{ brand_keywords }}</div>
+            </div>
+        </div>
     </div>
-  
-    <div role="alert" class="alert alert-success max-w-fit pr-10 ml-10">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-      <span><b>Brand Terms :</b>  {{ brand_keywords }}</span>
+
+    <!-- New Feature Alert -->
+    <div role="alert" class="alert alert-info shadow-lg mb-12">
+        <div class="flex items-center gap-4">
+            <div class="badge badge-primary badge-outline">New Feature!</div>
+            <span>For AI Optimized Title & Meta Description, go to <a href="/reports/sitewide-pages" class="link link-primary">Sitewide Pages</a>, Click on "Fetch Data" button, and click on "Optimize CTR" in the table.</span>
+        </div>
     </div>
-  
+
+    <!-- Reports Section -->
+    <section class="mb-16">
+        <h2 class="text-4xl font-bold mb-8">📊 Reports</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Report Cards -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title text-2xl">🌐 Sitewide Overview</h3>
+                    <p class="font-bold">Comprehensive Performance Insights</p>
+                    <p class="text-sm opacity-75">Explore a detailed overview of your site's performance across different periods, including comparisons by country and device.</p>
+                    <div class="card-actions justify-end mt-4">
+                        <a href="/reports/sitewide-overview/" class="btn btn-primary">View Detailed Metrics</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title text-2xl">🔍 Sitewide Queries</h3>
+                    <p class="font-bold">Analyze Brand vs Non-Brand Queries</p>
+                    <p class="text-sm opacity-75">Dive into the performance of your search queries, distinguishing between branded and non-branded terms over various periods.</p>
+                    <div class="card-actions justify-end mt-4">
+                        <a href="/reports/sitewide-queries/" class="btn btn-primary">Explore Search Queries</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title text-2xl">📄 Sitewide Pages</h3>
+                    <p class="font-bold">Performance Overview of Your Pages</p>
+                    <p class="text-sm opacity-75">Review the performance metrics of your site's pages, comparing current, previous, and year-over-year data. 
+                    <span class="badge badge-info tooltip" data-tip="Accessing the Sitewide Pages report enables you to utilize powerful tools for CTR Optimization and Page Content Optimization, enhancing your overall strategy">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Advance Features
+                    </span>
+                    </p>
+                    <div class="card-actions justify-end mt-4">
+                        <a href="/reports/sitewide-pages/" class="btn btn-primary">Assess Page Performance</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section>
+        <h2 class="text-4xl font-bold mb-8">📈 Charts</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title text-2xl">📊 Organic Search CTR</h3>
+                    <p class="font-bold">CTR Analysis by Brand & Non-Brand</p>
+                    <p class="text-sm opacity-75">Visualize the click-through rates for both branded and non-branded search queries across different countries.</p>
+                    <div class="card-actions justify-end mt-4">
+                        <a href="/charts/organic-ctr/" class="btn btn-primary">View CTR Insights</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title text-2xl">📉 Sitewide Analysis</h3>
+                    <p class="font-bold">Comparative Metrics for Queries</p>
+                    <p class="text-sm opacity-75">Examine GSC metrics through charts that compare brand, non-brand, and anonymized queries for deeper insights.</p>
+                    <div class="card-actions justify-end mt-4">
+                        <a href="/charts/sitewide-brand-vs-non-brand/" class="btn btn-primary">Analyze Brand Metrics</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
 </div>
-
-<div role="alert" class="alert alert-info max-w-fit mt-5">
-
-  <div class="badge badge-primary badge-outline">New Feature!</div>
-  <span>For AI Optimized Title & Meta Description, go to <a href="/reports/sitewide-pages" class="link">Sitewide Pages</a>, Click on "Fetch Data" button, and click on "Optimize CTR" in the table.</span>
-</div>
-
-<h2 class="text-4xl font-bold m-10">Reports</h2>
-
-<div class="grid grid-cols-3 gap-5 m-10">
-  <div>
-    <h2 class="text-2xl">Sitewide Overview</h3>
-      <p class="text-l mt-2 font-bold">Aggregate, By Country, By Device</p>
-      <p class="text-sm mt-2">Table with Data showing Current Period, Previous Period & Previous Year GSC Metrics</p>
-      <a href="/reports/sitewide-overview/"><button class="btn btn-neutral mt-5">Explore</button></a>
-      
-  </div>
-  <div>
-    <h2 class="text-2xl">Sitewide Queries</h3>
-    <p class="text-l mt-2 font-bold">Queries by Brand vs Non Brand Labels</p>
-    <p class="text-sm mt-2">Table with Queries showing Current Period, Previous Period & Previous Year GSC Metrics</p>
-    <a href="/reports/sitewide-queries/"><button class="btn btn-neutral mt-5">Explore</button></a>
-  </div>
-  <div>
-    <h2 class="text-2xl">Sitewide Pages</h3>
-    <p class="text-l mt-2 font-bold">List of Pages</p>
-    <p class="text-sm mt-2">Table with Pages showing Current Period, Previous Period & Previous Year GSC Metrics</p>
-    <a href="/reports/sitewide-pages/"><button class="btn btn-neutral mt-5">Explore</button></a>
-  </div>
-</div>
-
-<h2 class="text-4xl font-bold m-10">Charts</h2>
-
-<div class="grid grid-cols-3 gap-5 m-10">
-
-  <div>
-    <h2 class="text-2xl">Organic Search CTR</h3>
-      <p class="text-l mt-2 font-bold">Brand & Non Brand by Country</p>
-      <p class="text-sm mt-2">This chart shows Organic Search CTR for Branded and Non Branded Search Queries for each country.</p>
-      <a href="/charts/organic-ctr/"><button class="btn btn-neutral mt-5">Explore</button></a>      
-  </div>
-
-
-  <div>
-    <h2 class="text-2xl">Sitewide Analysis</h3>
-      <p class="text-l mt-2 font-bold">By Brand, Non Brand & Anonymized Queries</p>
-      <p class="text-sm mt-2">GSC Metrics Charts by Brand vs Non Brand Queries</p>
-      <a href="/charts/sitewide-brand-vs-non-brand/"><button class="btn btn-neutral mt-5">Explore</button></a>      
-  </div>
-
-  
-
-</div>
-
-
-
-
-
-
 {% endblock %}

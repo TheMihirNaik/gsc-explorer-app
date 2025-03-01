@@ -6,6 +6,7 @@
         In the Table, (CP) stands for Current Period. (PP) for Previous Period. (PY) for Previous Year. </span>
   </div>
 
+
 <!-- HTML Table -->
 <table id="byQuery" class="text-xs table table-xs">
     <!-- Table header will be populated dynamically -->
@@ -35,7 +36,7 @@
         // Set the width of the first column to 300px
         columnDefs: [
             { width: 300, targets: 0 },
-            { width: 80, targets: 1 }
+            { width: 100, targets: 1 }
         ],
         
         // Enable ordering
@@ -58,7 +59,7 @@
         // Set the scrolling options
         //fixedHeader: true,
         fixedColumns: {
-            leftColumns: 2
+            leftColumns: 1
         },
         scrollX: true,
         scrollY: true
