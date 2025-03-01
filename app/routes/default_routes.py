@@ -54,7 +54,8 @@ def gsc_property_selection():
         #save the selected website and country in session
         selected_property = request.form.get('selected_property')
         brand_keywords_list_input = request.form.get('brand_keywords')
-        brand_keywords = brand_keywords_list_input.split(",")
+        # Trim whitespace and remove any trailing commas
+        brand_keywords = [kw.strip() for kw in brand_keywords_list_input.split(",") if kw.strip()]
 
         session['selected_property'] = selected_property
         session['brand_keywords'] = brand_keywords
