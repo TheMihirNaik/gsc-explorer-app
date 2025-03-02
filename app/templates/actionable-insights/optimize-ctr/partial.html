@@ -48,7 +48,9 @@
             {{ h1 }}
         </div>
         
-        <button onclick="generateAITitle()" class="btn btn-primary max-w-fit mt-5">Generate AI-assisted Title</button>
+        <button id="generate-title-btn" onclick="generateAITitle()" class="btn btn-primary max-w-fit mt-5">
+            <i class="fa-solid fa-robot"></i> Generate AI-assisted Title
+        </button>
 
       </div>
     </div>
@@ -86,7 +88,9 @@
             {{ h1 }}
         </div>
         
-        <button onclick="generateAIMetaDescription()" class="btn btn-primary max-w-fit mt-5">Generate AI-assisted Meta Description</button>
+        <button id="generate-meta-desc-btn" onclick="generateAIMetaDescription()" class="btn btn-primary max-w-fit mt-5">
+            <i class="fa-solid fa-robot"></i> Generate AI-assisted Meta Description
+        </button>
 
       </div>
         
@@ -95,48 +99,47 @@
 
 
   <!-- AI Results -->
-  <div class="grid grid-cols-2 gap-4 mt-2">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
     
-    <div class="p-5">
-
-        <!-- AI Generated Title -->
-        <span class="loading loading-spinner text-primary" id="loading-indicator" style="display:none;"></span>
-        
-        <div id="ai-generated-title">
-            <p>AI-assisted Optimized Title will be here.</p>
+    <div class="card bg-base-200 shadow-lg p-5">
+        <div class="flex items-center mb-3">
+            <span class="loading loading-spinner text-primary" id="loading-indicator" style="display:none;"></span>
+            <h3 class="text-lg font-semibold ml-2">AI Generated Title</h3>
         </div>
-
+        
+        <div id="ai-generated-title" class="text-center">
+            <p class="text-sm text-neutral-content">AI-assisted Optimized Title will be here.</p>
+        </div>
     </div>
 
-    <div class="p-5">
-
-        <span class="loading loading-spinner text-primary" id="loading-indicator-meta-desc" style="display:none;"></span>
-        
-        <!-- AI Generated Meta Description -->
-
-        <div id="ai-generated-meta-description">
-            <p>AI-assisted Optimized Meta Description will be here.</p>
+    <div class="card bg-base-200 shadow-lg p-5">
+        <div class="flex items-center mb-3">
+            <span class="loading loading-spinner text-primary" id="loading-indicator-meta-desc" style="display:none;"></span>
+            <h3 class="text-lg font-semibold ml-2">AI Generated Meta Description</h3>
         </div>
-
-      </div>
-  
+        
+        <div id="ai-generated-meta-description" class="text-center">
+            <p class="text-sm text-neutral-content">AI-assisted Optimized Meta Description will be here.</p>
+        </div>
     </div>
+    
+  </div>
 
   <h2 class="text-2xl font-bold mt-10"> GSC Search Queries in Top 10 Positions</h2>
 
   {{ query_list }}
 
   <!-- HTML Table -->
-<table id="byQuery" class="table table-xs">
-    <!-- Table header will be populated dynamically -->
-    <thead>
-        <!-- Define your table headers here if known -->
-        <!-- Example: <th>Name</th><th>Age</th> -->
-    </thead>
-    <tbody>
-        <!-- Table body will be populated dynamically -->
-    </tbody>
-</table>
+    <table id="byQuery" class="table table-xs">
+        <!-- Table header will be populated dynamically -->
+        <thead>
+            <!-- Define your table headers here if known -->
+            <!-- Example: <th>Name</th><th>Age</th> -->
+        </thead>
+        <tbody>
+            <!-- Table body will be populated dynamically -->
+        </tbody>
+    </table>
 
 
 
@@ -163,7 +166,14 @@
         //scrollY: true
     });
 
+    // Change button text after first click for Title
+    document.getElementById('generate-title-btn').addEventListener('click', function() {
+        this.textContent = '<i class="fa-solid fa-robot"></i> Regenerate AI Title';
+    });
+
+    // Change button text after first click for Meta Description
+    document.getElementById('generate-meta-desc-btn').addEventListener('click', function() {
+        this.textContent = '<i class="fa-solid fa-robot"></i> Regenerate AI Meta Description';
+    });
+
 </script>
-
-
-  
