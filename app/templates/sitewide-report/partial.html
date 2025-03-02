@@ -4,152 +4,106 @@
     <span> 
         The data from Google Search Console covers the following dates:
         <p class="text-sm">
-            <b>Current Period :</b> {{ cp_earliest_date }} <> {{ cp_latest_date }}
-            <br/> <b>Previous Period :</b> {{ pp_earliest_date }} <> {{ pp_latest_date }}
-            <br/> <b>Previous Year : </b>{{ py_earliest_date }} <> {{ py_latest_date }}
+            <b>Current Reporting Period:</b> {{ cp_earliest_date }} <> {{ cp_latest_date }}
+            <br/> <b>Previous Reporting Period:</b> {{ pp_earliest_date }} <> {{ pp_latest_date }}
+            <br/> <b>Previous Year Reporting Period:</b> {{ py_earliest_date }} <> {{ py_latest_date }}
         </p>
         
     </span>
-  </div>
-
+</div>
 
 <div class="mt-5 mb-5 border rounded max-w-max p-5 hidden">
-    <p class="text-lg mb-2">GSC Data is for the following periods:</p>
+    <p class="text-lg mb-2">GSC Data Overview for Selected Periods:</p>
 
     <p class="text-sm">
-        <b>Current Period :: </b>{{ current_start_date }} <> {{ current_end_date }}
-        <br/> <b>Previous Period ::  </b> {{ previous_period_start_date }} <> {{ previous_period_end_date }}
-        <br/><b>Previous Year  ::</b> {{ previous_year_start_date }} <> {{ previous_year_end_date }}<br>
+        <b>Current Period Range:</b> {{ current_start_date }} <> {{ current_end_date }}
+        <br/> <b>Previous Period Range:</b> {{ previous_period_start_date }} <> {{ previous_period_end_date }}
+        <br/><b>Previous Year Range:</b> {{ previous_year_start_date }} <> {{ previous_year_end_date }}<br>
     </p>
     
 </div>
 
+<h2 class="text-4xl font-bold mb-10 mt-10">Performance Metrics Overview</h2>
 
+<div class="overflow-x-auto">
+  <table class="table table-zebra bg-base-100 w-fit">
+    <thead>
+      <tr class="text-lg bg-base-200">
+        <th class="text-left">Metrics</th>
+        <th class="text-right">Current Period</th>
+        <th class="text-right">Period over Period (%)</th>
+        <th class="text-right">Previous Period</th>
+        <th class="text-right">Year over Year (%)</th>
+        <th class="text-right">Previous Year</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="font-medium">Clicks</td>
+        <td class="text-right font-bold">{{current_period_df['clicks'].sum()|round|int}}</td>
+        {% set clicks_pop = ((current_period_df['clicks'].sum() - previous_period_df['clicks'].sum())/previous_period_df['clicks'].sum()* 100)|round(2) %}
+        <td class="text-right {% if clicks_pop > 0 %}text-success{% else %}text-error{% endif %}">
+          {{clicks_pop}}%
+        </td>
+        <td class="text-right">{{previous_period_df['clicks'].sum()|round|int}}</td>
+        {% set clicks_yoy = ((previous_period_df['clicks'].sum() - previous_year_df['clicks'].sum())/previous_year_df['clicks'].sum()* 100)|round(2) %}
+        <td class="text-right {% if clicks_yoy > 0 %}text-success{% else %}text-error{% endif %}">
+          {{clicks_yoy}}%
+        </td>
+        <td class="text-right">{{previous_year_df['clicks'].sum()|round|int}}</td>
+      </tr>
 
+      <tr>
+        <td class="font-medium">Impressions</td>
+        <td class="text-right font-bold">{{current_period_df['impressions'].sum()|round|int}}</td>
+        {% set imp_pop = ((current_period_df['impressions'].sum() - previous_period_df['impressions'].sum())/previous_period_df['impressions'].sum()* 100)|round(2) %}
+        <td class="text-right {% if imp_pop > 0 %}text-success{% else %}text-error{% endif %}">
+          {{imp_pop}}%
+        </td>
+        <td class="text-right">{{previous_period_df['impressions'].sum()|round|int}}</td>
+        {% set imp_yoy = ((previous_period_df['impressions'].sum() - previous_year_df['impressions'].sum())/previous_year_df['impressions'].sum()* 100)|round(2) %}
+        <td class="text-right {% if imp_yoy > 0 %}text-success{% else %}text-error{% endif %}">
+          {{imp_yoy}}%
+        </td>
+        <td class="text-right">{{previous_year_df['impressions'].sum()|round|int}}</td>
+      </tr>
 
-<h2 class="text-4xl font-bold mb-10 mt-10 ">Aggregate</h2>
-<!-- hidden table-->
-<div class="hidden">
-    <table class="table bg-neutral-content text-right w-fit">
-        <tbody>
-            <thead class="text-xl">
-                <td></td>
-                <td>Clicks</td>
-                <td>Impressions</td>
-                <td>CTR</td>
-                <td>Position</td>
-            </thead>
-            <tr>
-                <td>Current Period</td>
-                <td>{{current_period_df['clicks'].sum()}}</td>
-                <td>{{current_period_df['impressions'].sum()}}</td>
-                <td>{{ (current_period_df['clicks'].sum() / current_period_df['impressions'].sum() * 100)|round(2) }}%</td>
-                <td>{{current_period_df['position'].mean()|round(2)}}</td>
-            </tr>
-            <tr>
-                <td>Previous Period</td>
-                <td>{{previous_period_df['clicks'].sum()}}</td>
-                <td>{{previous_period_df['impressions'].sum()}}</td>
-                <td>{{ (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100)|round(2) }}%</td>
-                <td>{{previous_period_df['position'].mean()|round(2)}}</td>
-            </tr>
-            <tr>
-    
-                <td>Previous Year</td>
-                <td>{{previous_year_df['clicks'].sum()}}</td>
-                <td>{{previous_year_df['impressions'].sum()}}</td>
-                <td>{{ (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100)|round(2) }}%</td>
-                <td>{{previous_year_df['position'].mean()|round(2)}}</td>
-    
-            </tr>
-            <tr>
-                <td>PoP (%)</td>
-                <td>{{ ((current_period_df['clicks'].sum() - previous_period_df['clicks'].sum())/previous_period_df['clicks'].sum()* 100)|round(2) }}%</td>
-                <td>{{ ((current_period_df['impressions'].sum() - previous_period_df['impressions'].sum())/previous_period_df['impressions'].sum()* 100)|round(2) }}%</td>
-                <td>{{ ((current_period_df['ctr'].sum() - previous_period_df['ctr'].sum())/previous_period_df['ctr'].sum()* 100)|round(2) }}%</td>
-                <td>{{ ((previous_period_df['ctr'].sum() - current_period_df['ctr'].sum())/previous_period_df['ctr'].sum()* 100)|round(2) }}%</td>
-    
-            </tr>
-            <tr>
-    
-                <td>YoY (%)</td>
-                <td>{{ ((previous_period_df['clicks'].sum() - previous_year_df['clicks'].sum())/previous_year_df['clicks'].sum()* 100)|round(2) }}%</td>
-                <td>{{ ((previous_period_df['impressions'].sum() - previous_year_df['impressions'].sum())/previous_year_df['impressions'].sum()* 100)|round(2) }}%</td>
-                <td>{{ ((previous_period_df['ctr'].sum() - previous_year_df['ctr'].sum())/previous_year_df['ctr'].sum()* 100)|round(2) }}%</td>
-                <td>{{ ((previous_year_df['ctr'].sum() - previous_period_df['ctr'].sum())/previous_year_df['ctr'].sum()* 100)|round(2) }}%</td>
-            </tr>
-        </tbody>
-    </table>
+      <tr>
+        <td class="font-medium">Click-Through Rate (CTR)</td>
+        {% set current_ctr = (current_period_df['clicks'].sum() / current_period_df['impressions'].sum() * 100)|round(2) %}
+        <td class="text-right font-bold">{{current_ctr}}%</td>
+        {% set ctr_pop = ((current_ctr - (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100)) / (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100) * 100)|round(2) %}
+        <td class="text-right {% if ctr_pop > 0 %}text-success{% else %}text-error{% endif %}">
+          {{ctr_pop}}%
+        </td>
+        {% set prev_ctr = (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100)|round(2) %}
+        <td class="text-right">{{prev_ctr}}%</td>
+        {% set ctr_yoy = ((prev_ctr - (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100)) / (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100) * 100)|round(2) %}
+        <td class="text-right {% if ctr_yoy > 0 %}text-success{% else %}text-error{% endif %}">
+          {{ctr_yoy}}%
+        </td>
+        <td class="text-right">{{(previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100)|round(2)}}%</td>
+      </tr>
+
+      <tr>
+        <td class="font-medium">Average Position</td>
+        <td class="text-right font-bold">{{current_period_df['position'].mean()|round(2)}}</td>
+        {% set pos_pop = (((current_period_df['position'].mean() - previous_period_df['position'].mean()) / previous_period_df['position'].mean()) * 100)|round(2) * -1 %}
+        <td class="text-right {% if pos_pop > 0 %}text-success{% else %}text-error{% endif %}">
+          {{pos_pop}}%
+        </td>
+        <td class="text-right">{{previous_period_df['position'].mean()|round(2)}}</td>
+        {% set pos_yoy = (((previous_period_df['position'].mean() - previous_year_df['position'].mean()) / previous_year_df['position'].mean()) * 100)|round(2) * -1 %}
+        <td class="text-right {% if pos_yoy > 0 %}text-success{% else %}text-error{% endif %}">
+          {{pos_yoy}}%
+        </td>
+        <td class="text-right">{{previous_year_df['position'].mean()|round(2)}}</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
-
-<table class="table bg-neutral-content text-right w-fit">
-    <tbody>
-        <thead class="text-xl">
-            <td>Metrics</td>
-            <td>Current Period</td>
-            <td>PoP (%)</td>
-            <td>Previous Period</td>
-            <td>YoY (%)</td>
-            <td>Previous Year</td>
-        </thead>
-        <tr>
-            <td>Clicks</td>
-            <td>{{current_period_df['clicks'].sum()}}</td>
-            <td>{{ ((current_period_df['clicks'].sum() - previous_period_df['clicks'].sum())/previous_period_df['clicks'].sum()* 100)|round(2) }}%</td>
-            <td>{{previous_period_df['clicks'].sum()}}</td>
-            <td>{{ ((previous_period_df['clicks'].sum() - previous_year_df['clicks'].sum())/previous_year_df['clicks'].sum()* 100)|round(2) }}%</td>
-            <td>{{previous_year_df['clicks'].sum()}}</td>
-            
-        </tr>
-        <tr>
-            <td>Impressions</td>
-            <td>{{current_period_df['impressions'].sum()}}</td>
-            <td>{{ ((current_period_df['impressions'].sum() - previous_period_df['impressions'].sum())/previous_period_df['impressions'].sum()* 100)|round(2) }}%</td>
-            <td>{{previous_period_df['impressions'].sum()}}</td>
-            <td>{{ ((previous_period_df['impressions'].sum() - previous_year_df['impressions'].sum())/previous_year_df['impressions'].sum()* 100)|round(2) }}%</td>
-            <td>{{previous_year_df['impressions'].sum()}}</td>
-            
-            
-        </tr>
-        <tr>
-
-            <td>CTR</td>
-            <td>{{ (current_period_df['clicks'].sum() / current_period_df['impressions'].sum() * 100)|round(2) }}%</td>
-
-            <td>{{
-                
-                (( (current_period_df['clicks'].sum() / current_period_df['impressions'].sum() * 100) 
-                -  (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100) ) /  
-                (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100) * 100)|round(2) 
-            }}%</td>
-
-            <td>{{ (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100)|round(2) }}%</td>
-
-            <td>{{
-                
-                (( (previous_period_df['clicks'].sum() / previous_period_df['impressions'].sum() * 100) 
-                -  (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100) ) /  
-                (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100) * 100)|round(2) 
-            }}%</td>
-
-            <td>{{ (previous_year_df['clicks'].sum() / previous_year_df['impressions'].sum() * 100)|round(2) }}%</td>
-
-        </tr>
-        <tr>
-            <td>Position</td>
-            <td>{{current_period_df['position'].mean()|round(2)}}</td>
-            <td>{{ (((current_period_df['position'].mean() - previous_period_df['position'].mean()) / previous_period_df['position'].mean()) * 100)|round(2) * -1 }}%</td> 
-    
-            <td>{{previous_period_df['position'].mean()|round(2)}}</td>
-            <td>{{ (((previous_period_df['position'].mean() - previous_year_df['position'].mean()) / previous_year_df['position'].mean()) * 100)|round(2) * -1}}%</td>
-            <td>{{previous_year_df['position'].mean()|round(2)}}</td>
-        </tr>
-
-    </tbody>
-</table>
-
-<h2 class="text-4xl font-bold mb-10 mt-10">By Country</h2>
+<h2 class="text-4xl font-bold mb-10 mt-10">Performance by Country</h2>
 
 {{ merge_df_html|safe }}
 
@@ -167,7 +121,7 @@
         });
 </script>
 
-<h2 class="text-4xl font-bold mb-10 mt-10">By Device</h2>
+<h2 class="text-4xl font-bold mb-10 mt-10">Performance by Device</h2>
 
 {{ merge_df_html_by_device|safe }}
 
@@ -179,4 +133,3 @@
         });
     });
 </script>
-

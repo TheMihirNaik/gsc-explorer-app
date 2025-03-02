@@ -132,9 +132,11 @@ def sitewide_analysis():
         #total numbers make GSC API Call
         country = []
         dimensions = ['DATE']
-        dimensionFilterGroups = [{"filters": [
+        dimensionFilterGroups = [
+            #{"filters": [
             #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-        ]}]
+        #]}
+        ]
         
         gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
         
@@ -152,7 +154,9 @@ def sitewide_analysis():
 
         #total numbers make GSC API Call
         q_dimensions = ['date', 'query'] 
-        query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, q_dimensions, dimensionFilterGroups)
+
+        query_df = fetch_search_console_data(
+            webmasters_service, selected_property, start_date_formatted, end_date_formatted, q_dimensions, dimensionFilterGroups)
 
         #print(query_df)
 
@@ -711,14 +715,14 @@ def sitewide_report():
         merge_df = merge_df.reindex(columns=columns_order)
 
 
-        merge_df[('Current Period', 'Clicks')] = merge_df[('Current Period', 'Clicks')].astype(int)
-        merge_df[('Current Period', 'Impressions')] = merge_df[('Current Period', 'Impressions')].astype(int)
+        merge_df[('Current Period', 'Clicks')] = merge_df[('Current Period', 'Clicks')].astype(int).map('{:,.0f}'.format)
+        merge_df[('Current Period', 'Impressions')] = merge_df[('Current Period', 'Impressions')].astype(int).map('{:,.0f}'.format)
 
-        merge_df[('Previous Period', 'Clicks')] = merge_df[('Previous Period', 'Clicks')].astype(int)
-        merge_df[('Previous Period', 'Impressions')] = merge_df[('Previous Period', 'Impressions')].astype(int)
+        merge_df[('Previous Period', 'Clicks')] = merge_df[('Previous Period', 'Clicks')].astype(int).map('{:,.0f}'.format)
+        merge_df[('Previous Period', 'Impressions')] = merge_df[('Previous Period', 'Impressions')].astype(int).map('{:,.0f}'.format)
 
-        merge_df[('Previous Year', 'Clicks')] = merge_df[('Previous Year', 'Clicks')].astype(int)
-        merge_df[('Previous Year', 'Impressions')] = merge_df[('Previous Year', 'Impressions')].astype(int)
+        merge_df[('Previous Year', 'Clicks')] = merge_df[('Previous Year', 'Clicks')].astype(int).map('{:,.0f}'.format)
+        merge_df[('Previous Year', 'Impressions')] = merge_df[('Previous Year', 'Impressions')].astype(int).map('{:,.0f}'.format)
     
 
         #print(new_df['(Previous Period, Clicks)'][0])
@@ -833,14 +837,14 @@ def sitewide_report():
         merge_df_by_device = merge_df_by_device.reindex(columns=columns_order)
 
 
-        merge_df_by_device[('Current Period', 'Clicks')] = merge_df_by_device[('Current Period', 'Clicks')].astype(int)
-        merge_df_by_device[('Current Period', 'Impressions')] = merge_df_by_device[('Current Period', 'Impressions')].astype(int)
+        merge_df_by_device[('Current Period', 'Clicks')] = merge_df_by_device[('Current Period', 'Clicks')].astype(int).map('{:,}'.format)
+        merge_df_by_device[('Current Period', 'Impressions')] = merge_df_by_device[('Current Period', 'Impressions')].astype(int).map('{:,}'.format)
 
-        merge_df_by_device[('Previous Period', 'Clicks')] = merge_df_by_device[('Previous Period', 'Clicks')].astype(int)
-        merge_df_by_device[('Previous Period', 'Impressions')] = merge_df_by_device[('Previous Period', 'Impressions')].astype(int)
+        merge_df_by_device[('Previous Period', 'Clicks')] = merge_df_by_device[('Previous Period', 'Clicks')].astype(int).map('{:,}'.format)
+        merge_df_by_device[('Previous Period', 'Impressions')] = merge_df_by_device[('Previous Period', 'Impressions')].astype(int).map('{:,}'.format)
 
-        merge_df_by_device[('Previous Year', 'Clicks')] = merge_df_by_device[('Previous Year', 'Clicks')].astype(int)
-        merge_df_by_device[('Previous Year', 'Impressions')] = merge_df_by_device[('Previous Year', 'Impressions')].astype(int)
+        merge_df_by_device[('Previous Year', 'Clicks')] = merge_df_by_device[('Previous Year', 'Clicks')].astype(int).map('{:,}'.format)
+        merge_df_by_device[('Previous Year', 'Impressions')] = merge_df_by_device[('Previous Year', 'Impressions')].astype(int).map('{:,}'.format)
     
 
         #print(new_df['(Previous Period, Clicks)'][0])
