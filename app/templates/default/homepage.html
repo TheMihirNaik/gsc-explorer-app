@@ -6,18 +6,18 @@
 Explore GSCExplorer.app, a completely free tool to analyze your Google Search Console data with prebuilt charts and reports. Join us in enhancing your SEO workflow with open-source contributions and insightful analytics. 
 {% endblock %}
 
-{% block content %}
+{% block content %} 
 
 <!-- Start of Selection -->
-<div role="alert" class="alert alert-warning">
-  <div class="flex justify-between items-center">
+<div role="alert" class="alert alert-warning p-2">
+  <div class="flex flex-col sm:flex-row justify-between items-center">
     <div class="flex items-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
       </svg>
-      <span class="ml-2">If you're getting an error when clicking "Continue to Dashboard", please clear your session first:</span>
+      <span class="ml-2 text-sm">If you're getting an error when clicking "Continue to Dashboard", please clear your session first:</span>
     </div>
-    <button class="btn btn-sm btn-warning ml-4" onclick="this.parentElement.parentElement.remove();">✖</button>
+    <button class="btn btn-sm btn-warning mt-2 sm:mt-0 sm:ml-4" onclick="this.parentElement.parentElement.remove();">✖</button>
   </div>
   <div class="flex justify-end mt-2">
     <a href="/revoke-gsc-clear-session" class="btn btn-sm btn-primary">Clear Session</a>
@@ -31,36 +31,37 @@ Explore GSCExplorer.app, a completely free tool to analyze your Google Search Co
   <h2 class="text-lg md:text-xl lg:text-2xl mt-2 mb-4 pb-2 text-base-content">🔥 Unlock the Full Potential of Your GSC Data.</h2>
 </div>
 
-<div class="hero bg-neutral-content lg:p-4 pb-16">
-  <div class="hero-content flex-col lg:flex-row">
-    <!-- Hero Content -->
-    <div class="lg:w-1/2 w-full">
-      <ul class="mb-4 mt-4 pb-2 text-left">
+<div class="bg-neutral-content p-4">
+  
+  <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center">
+    <!-- Content -->
+    <div class="lg:w-1/2 w-full mb-6 lg:mb-0">
+      <ul class="mb-4 text-left">
         <li class="mt-2 text-base-content">💰 Enjoy unlimited access to your Google Search Console data, completely FREE!</li>
         <li class="mt-2 text-base-content">⚒️ Leverage prebuilt charts and insightful reports to enhance your data analysis.</li>
       </ul>
       
       <a href="/dashboard/" class="pb-2">
-        <button class="btn btn-active btn-primary m-0">🚀 Dive into Your Dashboard</button>
+        <button class="btn btn-active btn-primary">🚀 Dive into Your Dashboard</button>
       </a>
 
-      <div class="mt-6">
+      <div class="mt-6 text-center lg:text-left">
         <p>
           Crafted with ❤️ by <a href="https://www.mihirnaik.com/" class="link" target="_blank">Mihir Naik</a> in Toronto, Canada
         </p>
       </div>
     </div>
 
-    <!-- Video - Border -->
-    <div class="lg:w-1/2 w-full p-0 lg:border border-base-500 rounded-box p-2">
-      <iframe class="w-full h-64 md:h-80" 
-      src="https://www.youtube-nocookie.com/embed/5-zfPmm8HKw?si=AIlk8AdyEpbhAhZf&amp;start=5" 
+    <!-- Video -->
+    <div class="lg:w-1/2 w-full border border-primary rounded-box p-2">
+      <iframe width="100%" height="315" 
+      src="https://www.youtube.com/embed/-4DSIPJTkt0?si=QZDml77jmMuVa064&amp;controls=0&amp;start=1" 
       title="YouTube video player" frameborder="0" 
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-      </iframe>
+      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
     </div>
   </div>
+
 </div>
 
 <!-- Start of Selection -->

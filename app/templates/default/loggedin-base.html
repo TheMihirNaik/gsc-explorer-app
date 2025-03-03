@@ -71,7 +71,6 @@
     <!-- Main Content -->
     <div class="drawer-content p-5">
       
-
       <!-- Flash Messages -->
       <div class="bg-gray-100 max-w-fit">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -160,26 +159,30 @@
           <div class="">
             <ul class="menu p-4 bg-neutral text-neutral-content justify-between text-xl">
 
-              <!-- API Key content here -->
-              <!-- API Key content here -->
-              <div class="form-control w-full max-w-xs">
-                <div class="label">
-                  <span class="label-text">Enter Your OpenAI API Key</span>
+              <div class="form-control w-full max-w-xs bg-base-200 p-4 rounded-lg shadow-md">
+                <div class="label mb-2">
+                  <span class="label-text font-bold text-base-200-content">Enter Your OpenAI API Key</span>
                 </div>
+                <span class="text-sm text-info mb-2">
+                  <a href="https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key" target="_blank" class="link link-accent">Need help finding your API Key?</a>
+                </span>
                 <div class="flex items-center space-x-2">
                   <input 
                     type="password"
-                    placeholder="sk-****-****" 
+                    placeholder="e.g., sk-****-****" 
                     id="openai_api_key" 
-                    class="input input-bordered w-full max-w-xs" 
+                    class="input input-bordered w-full border-base-300 shadow-md focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-base-content" 
+                    aria-label="OpenAI API Key"
+                    required
                   />
-                  <button id="api-key-button" class="btn btn-square" onclick="handleApiKeyAction()">Save Key</button>
+                  <button id="api-key-button" class="btn btn-primary hover:bg-primary-focus transition duration-200" onclick="handleApiKeyAction()" aria-label="Save API Key">Save</button>
                 </div>
-                <div class="label">
-                  <span class="label-text-alt">The key is stored in your browser.</span>
+                <div class="label mt-2">
+                  <span class="label-text-alt text-sm text-base-200-content">Your key will be securely stored in your browser. 🔒 Keep your API key confidential</span>
+                  
                 </div>
-              </div>
               
+              </div>
 
 
 
