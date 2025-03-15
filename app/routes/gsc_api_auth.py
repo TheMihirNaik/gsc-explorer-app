@@ -10,6 +10,7 @@ import googleapiclient.discovery
 import google.auth.transport.requests
 
 import pandas as pd
+import os
 
 # This variable specifies the name of a file that contains the OAuth 2.0
 # information for this application, including its client_id and client_secret.
@@ -68,27 +69,49 @@ def test_api_request():
 
 @app.route('/gsc_authorize')
 def gsc_authorize():
-  # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
-  flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-      CLIENT_SECRETS_FILE, scopes=SCOPES)
+  try:
+    # Verify client_secrets.json exists
+    if not os.path.exists(CLIENT_SECRETS_FILE):
+      app.logger.error(f"OAuth authorization error: Client secrets file not found at {CLIENT_SECRETS_FILE}")
+      flash("Authentication failed. Server configuration error. Please contact support.")
+      return flask.redirect(url_for('home'))
+      
+    # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE, scopes=SCOPES)
 
-  # The URI created here must exactly match one of the authorized redirect URIs
-  # for the OAuth 2.0 client, which you configured in the API Console. If this
-  # value doesn't match an authorized URI, you will get a 'redirect_uri_mismatch'
-  # error.
-  flow.redirect_uri = flask.url_for('gsc_oauth2callback', _external=True, _scheme='https')
+    # Get the current URL scheme and host
+    scheme = request.headers.get('X-Forwarded-Proto', 'https')
+    host = request.headers.get('X-Forwarded-Host', request.host)
+    
+    # Log the redirect URI being used
+    redirect_uri = f"{scheme}://{host}{url_for('gsc_oauth2callback')}"
+    app.logger.info(f"Using redirect URI: {redirect_uri}")
+    
+    # Set the redirect URI
+    flow.redirect_uri = redirect_uri
 
-  authorization_url, state = flow.authorization_url(
-      # Enable offline access so that you can refresh an access token without
-      # re-prompting the user for permission. Recommended for web server apps.
-      access_type='offline',
-      # Enable incremental authorization. Recommended as a best practice.
-      include_granted_scopes='true')
+    authorization_url, state = flow.authorization_url(
+        # Enable offline access so that you can refresh an access token without
+        # re-prompting the user for permission. Recommended for web server apps.
+        access_type='offline',
+        # Enable incremental authorization. Recommended as a best practice.
+        include_granted_scopes='true',
+        # Add prompt to ensure we always get a refresh token
+        prompt='consent')
 
-  # Store the state so the callback can verify the auth server response.
-  flask.session['state'] = state
-
-  return flask.redirect(authorization_url)
+    # Store the state so the callback can verify the auth server response.
+    flask.session['state'] = state
+    app.logger.info(f"Stored state in session: {state}")
+    
+    # Make the session permanent to avoid early expiration
+    session.permanent = True
+    
+    return flask.redirect(authorization_url)
+  except Exception as e:
+    app.logger.error(f"OAuth authorization error: {str(e)}", exc_info=True)
+    flash(f"Authentication failed. Please try again. (Error: {str(e)})")
+    return flask.redirect(url_for('home'))
 
 @app.route('/gsc_oauth2callback')
 def gsc_oauth2callback():
@@ -109,18 +132,45 @@ def gsc_oauth2callback():
   try:
     # Check if state exists in session
     if 'state' not in flask.session:
-      flash("Authentication failed. Please try again.")
+      app.logger.error("OAuth callback error: 'state' not in session")
+      flash("Authentication failed. Please try again. (Error: Session state missing)")
       return flask.redirect(url_for('home'))
       
     state = flask.session['state']
+    
+    # Check if the state parameter in the request matches the one in the session
+    if request.args.get('state', '') != state:
+      app.logger.error(f"OAuth callback error: State mismatch. Session: {state}, Request: {request.args.get('state', '')}")
+      flash("Authentication failed. Please try again. (Error: State mismatch)")
+      return flask.redirect(url_for('home'))
+
+    # Verify client_secrets.json exists
+    if not os.path.exists(CLIENT_SECRETS_FILE):
+      app.logger.error(f"OAuth callback error: Client secrets file not found at {CLIENT_SECRETS_FILE}")
+      flash("Authentication failed. Server configuration error. Please contact support.")
+      return flask.redirect(url_for('home'))
 
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
     
-    flow.redirect_uri = flask.url_for('gsc_oauth2callback', _external=True, _scheme='https')
+    # Get the current URL scheme and host
+    scheme = request.headers.get('X-Forwarded-Proto', 'https')
+    host = request.headers.get('X-Forwarded-Host', request.host)
+    
+    # Log the redirect URI being used
+    redirect_uri = f"{scheme}://{host}{url_for('gsc_oauth2callback')}"
+    app.logger.info(f"Using redirect URI: {redirect_uri}")
+    
+    # Set the redirect URI
+    flow.redirect_uri = redirect_uri
 
     # Use the authorization server's response to fetch the OAuth 2.0 tokens.
     authorization_response = flask.request.url
+    if scheme == 'https' and authorization_response.startswith('http:'):
+      # Fix the scheme if needed
+      authorization_response = 'https:' + authorization_response[5:]
+      app.logger.info(f"Modified authorization response to use HTTPS: {authorization_response}")
+    
     flow.fetch_token(authorization_response=authorization_response)
 
     # Store credentials in the session.
@@ -128,16 +178,20 @@ def gsc_oauth2callback():
     #              credentials in a persistent database instead.
     credentials = flow.credentials
     flask.session['credentials'] = credentials_to_dict(credentials)
+    app.logger.info("Successfully stored credentials in session")
 
     return flask.redirect(url_for('gsc_property_selection'))
   except Exception as e:
+    # Log the exception
+    app.logger.error(f"OAuth callback error: {str(e)}", exc_info=True)
+    
     # Clear any partial session data
     if 'state' in flask.session:
       del flask.session['state']
     if 'credentials' in flask.session:
       del flask.session['credentials']
     
-    flash("Authentication failed. Please try again.")
+    flash(f"Authentication failed. Please try again. (Error: {str(e)})")
     return flask.redirect(url_for('home'))
 
 @app.route('/gsc_revoke')
