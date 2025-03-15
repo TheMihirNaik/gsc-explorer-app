@@ -16,7 +16,13 @@ import nltk
 nltk.download('stopwords')
 from openai import OpenAI
 import google.auth.transport.requests
+import pandas as pd
+import flask
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -118,6 +124,83 @@ def gsc_property_selection():
                            site_list=site_list_sorted,
                            selected_property=selected_property,
                            brand_keywords_string=brand_keywords_string)
+
+@app.route('/suggest-brand-keywords/', methods=['POST'])
+def suggest_brand_keywords():
+    if 'credentials' not in session:
+        return jsonify({'error': 'Not authenticated with Google Search Console'}), 401
+    
+    selected_property = request.json.get('selected_property')
+    if not selected_property:
+        return jsonify({'error': 'No property selected'}), 400
+    
+    # Load credentials from the session
+    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    
+    # Check if the token is expired and refresh it if needed
+    if not credentials.valid and credentials.expired and credentials.refresh_token:
+        try:
+            credentials.refresh(google.auth.transport.requests.Request())
+            # Save updated credentials back to session
+            session['credentials'] = credentials_to_dict(credentials)
+        except Exception as e:
+            return jsonify({'error': 'Failed to refresh access token'}), 401
+    
+    # Build the Search Console service
+    search_console_service = googleapiclient.discovery.build(
+        API_SERVICE_NAME, API_VERSION, credentials=credentials)
+    
+    # Get the last 90 days of data
+    end_date = datetime.now().strftime('%Y-%m-%d')
+    start_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
+    
+    try:
+        # Fetch search query data
+        query_data = fetch_search_console_data(
+            search_console_service, 
+            selected_property, 
+            start_date, 
+            end_date, 
+            ['query'], 
+            []
+        )
+        
+        # Process the data to identify potential brand keywords
+        if query_data.empty:
+            return jsonify({'suggested_keywords': []}), 200
+        
+        # Filter for queries with significant data
+        # Require at least 10 impressions to be considered
+        filtered_data = query_data[query_data['impressions'] >= 10]
+        
+        if filtered_data.empty:
+            return jsonify({'suggested_keywords': []}), 200
+        
+        # Sort by CTR (descending) as brand terms typically have higher CTR
+        sorted_data = filtered_data.sort_values(by='ctr', ascending=False)
+        
+        # Take the top 10 queries by CTR
+        top_queries = sorted_data.head(10)
+        
+        # Extract domain name from the property URL to use as a baseline brand term
+        domain = selected_property.replace('sc-domain:', '').replace('https://', '').replace('http://', '').split('/')[0]
+        domain_parts = domain.split('.')
+        if len(domain_parts) > 1:
+            base_domain = domain_parts[-2]  # Get the main part of the domain (e.g., 'example' from 'example.com')
+            
+            # Add the base domain to our suggested keywords if it's not already in the top queries
+            if not any(base_domain.lower() in query.lower() for query in top_queries['query'].tolist()):
+                suggested_keywords = [base_domain] + top_queries['query'].tolist()
+            else:
+                suggested_keywords = top_queries['query'].tolist()
+        else:
+            suggested_keywords = top_queries['query'].tolist()
+        
+        return jsonify({'suggested_keywords': suggested_keywords}), 200
+    
+    except Exception as e:
+        logger.error(f"Error suggesting brand keywords: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 # Charts Routes
 @app.route('/charts/sitewide-brand-vs-non-brand/', methods=['GET', 'POST'])
@@ -1385,7 +1468,7 @@ def optimize_ctr():
 
             except Exception as e:
                 # Log the error if needed, but do not interrupt the app flow
-                print(f"Error during HTML parsing: {e}")
+                logger.error(f"Error during HTML parsing: {e}")
                 title = 'No title found'
                 meta_desc = 'No description found'
                 h1 = 'No H1 found'
@@ -1533,8 +1616,8 @@ def generate_ai_title():
             print(openai_api_key)
 
             # Print or log the captured data for debugging
-            print('Existing Title:', existing_title)
-            print('Page:', page)
+            logger.info('Existing Title:', existing_title)
+            logger.info('Page:', page)
             #print('Title Query Tokens Count:', title_query_tokens_count)
 
             print(type(title_query_tokens_count))
@@ -1548,7 +1631,7 @@ def generate_ai_title():
                 formatted_tokens += f"Top 5 search queries: {', '.join(examples)}\n"
                 formatted_tokens += "\n"  # Adding a line break between entries
 
-            print(formatted_tokens)
+            logger.info(formatted_tokens)
 
             # Here you can perform any operations, such as generating the AI title
 
@@ -1648,8 +1731,8 @@ def generate_ai_meta_description():
             openai_api_key = data.get('openai_api_key')
 
             # Print or log the captured data for debugging
-            print('Existing Title:', existing_title)
-            print('Page:', page)
+            logger.info('Existing Title:', existing_title)
+            logger.info('Page:', page)
             #print('Title Query Tokens Count:', title_query_tokens_count)
 
             print(type(metaDescQueryTokensCount))
@@ -1663,7 +1746,7 @@ def generate_ai_meta_description():
                 formatted_tokens += f"Top 5 search queries: {', '.join(examples)}\n"
                 formatted_tokens += "\n"  # Adding a line break between entries
 
-            print(formatted_tokens)
+            logger.info(formatted_tokens)
 
             # Here you can perform any operations, such as generating the AI title
 
@@ -1788,7 +1871,7 @@ def optimize_page_content():
 
             except Exception as e:
                 # Log the error if needed, but do not interrupt the app flow
-                print(f"Error during HTML parsing: {e}")
+                logger.error(f"Error during HTML parsing: {e}")
                 title = 'No title found'
                 meta_desc = 'No description found'
                 content_html = 'No body content found'

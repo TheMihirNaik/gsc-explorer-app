@@ -27,7 +27,7 @@
                     Select Your Property
                 </h2>
                 
-                <select name="selected_property" 
+                <select id="property-select" name="selected_property" 
                         class="select select-bordered w-full" 
                         required
                         value="{{ selected_property if selected_property != 'Please Select your GSC Property.' else '' }}">
@@ -36,6 +36,14 @@
                     <option {% if site == selected_property %}selected{% endif %}>{{ site }}</option>
                     {% endfor %}
                 </select>
+                
+                <!-- Loading indicator for brand keywords suggestions -->
+                <div id="brand-keywords-loading" class="mt-2 hidden">
+                    <div class="flex items-center">
+                        <span class="loading loading-spinner loading-sm text-primary mr-2"></span>
+                        <span class="text-sm">Analyzing search data to suggest brand keywords...</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -67,6 +75,7 @@
                         <span class="label-text font-medium">Enter your brand keywords:</span>
                     </label>
                     <textarea 
+                        id="brand-keywords-textarea"
                         name="brand_keywords"
                         class="textarea textarea-bordered h-24"
                         placeholder="Example: stripe, stripe payments, stripe checkout"
@@ -74,6 +83,20 @@
                     <label class="label">
                         <span class="label-text-alt text-base-content/70">Separate keywords with commas</span>
                     </label>
+                </div>
+                
+                <!-- Suggested Keywords Section -->
+                <div id="suggested-keywords-container" class="mt-4 hidden">
+                    <div class="flex items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="font-medium">Suggested Brand Keywords</h3>
+                    </div>
+                    <div id="suggested-keywords-list" class="flex flex-wrap gap-2 mb-2"></div>
+                    <button id="use-suggestions-btn" type="button" class="btn btn-sm btn-outline btn-primary">
+                        Use Suggestions
+                    </button>
                 </div>
             </div>
         </div>
@@ -89,5 +112,103 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const propertySelect = document.getElementById('property-select');
+        const brandKeywordsTextarea = document.getElementById('brand-keywords-textarea');
+        const brandKeywordsLoading = document.getElementById('brand-keywords-loading');
+        const suggestedKeywordsContainer = document.getElementById('suggested-keywords-container');
+        const suggestedKeywordsList = document.getElementById('suggested-keywords-list');
+        const useSuggestionsBtn = document.getElementById('use-suggestions-btn');
+        
+        let suggestedKeywords = [];
+        
+        propertySelect.addEventListener('change', function() {
+            const selectedProperty = this.value;
+            
+            if (!selectedProperty) return;
+            
+            // Show loading indicator
+            brandKeywordsLoading.classList.remove('hidden');
+            suggestedKeywordsContainer.classList.add('hidden');
+            
+            // Make AJAX request to get suggested brand keywords
+            fetch('/suggest-brand-keywords/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ selected_property: selectedProperty }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide loading indicator
+                brandKeywordsLoading.classList.add('hidden');
+                
+                // Process the suggested keywords
+                suggestedKeywords = data.suggested_keywords || [];
+                
+                if (suggestedKeywords.length > 0) {
+                    // Display suggested keywords
+                    suggestedKeywordsList.innerHTML = '';
+                    suggestedKeywords.forEach(keyword => {
+                        const keywordBadge = document.createElement('div');
+                        keywordBadge.className = 'badge badge-outline gap-1 p-3';
+                        keywordBadge.innerHTML = `
+                            ${keyword}
+                            <button class="add-keyword-btn" data-keyword="${keyword}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </button>
+                        `;
+                        suggestedKeywordsList.appendChild(keywordBadge);
+                    });
+                    
+                    // Add click event to individual keyword add buttons
+                    document.querySelectorAll('.add-keyword-btn').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const keyword = this.getAttribute('data-keyword');
+                            addKeywordToTextarea(keyword);
+                        });
+                    });
+                    
+                    // Show the suggested keywords container
+                    suggestedKeywordsContainer.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching suggested keywords:', error);
+                brandKeywordsLoading.classList.add('hidden');
+            });
+        });
+        
+        // Function to add a keyword to the textarea
+        function addKeywordToTextarea(keyword) {
+            const currentText = brandKeywordsTextarea.value.trim();
+            if (currentText) {
+                // Check if the keyword is already in the textarea
+                const keywords = currentText.split(',').map(k => k.trim());
+                if (!keywords.includes(keyword)) {
+                    brandKeywordsTextarea.value = currentText + ', ' + keyword;
+                }
+            } else {
+                brandKeywordsTextarea.value = keyword;
+            }
+        }
+        
+        // Use all suggestions button
+        useSuggestionsBtn.addEventListener('click', function() {
+            brandKeywordsTextarea.value = suggestedKeywords.join(', ');
+        });
+    });
+</script>
 
 {% endblock %}
