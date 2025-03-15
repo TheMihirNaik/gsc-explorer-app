@@ -19,6 +19,7 @@ import google.auth.transport.requests
 import pandas as pd
 import flask
 import logging
+import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -164,32 +165,74 @@ def suggest_brand_keywords():
         if query_data.empty:
             return jsonify({'suggested_keywords': []}), 200
         
-        # Filter for queries with significant data
-        # Require at least 10 impressions to be considered
-        filtered_data = query_data[query_data['impressions'] >= 10]
-        
-        if filtered_data.empty:
-            return jsonify({'suggested_keywords': []}), 200
-        
-        # Sort by CTR (descending) as brand terms typically have higher CTR
-        sorted_data = filtered_data.sort_values(by='ctr', ascending=False)
-        
-        # Take the top 10 queries by CTR
-        top_queries = sorted_data.head(10)
-        
         # Extract domain name from the property URL to use as a baseline brand term
         domain = selected_property.replace('sc-domain:', '').replace('https://', '').replace('http://', '').split('/')[0]
         domain_parts = domain.split('.')
+        
+        # Get the main part of the domain (e.g., 'example' from 'example.com')
         if len(domain_parts) > 1:
-            base_domain = domain_parts[-2]  # Get the main part of the domain (e.g., 'example' from 'example.com')
-            
-            # Add the base domain to our suggested keywords if it's not already in the top queries
-            if not any(base_domain.lower() in query.lower() for query in top_queries['query'].tolist()):
-                suggested_keywords = [base_domain] + top_queries['query'].tolist()
-            else:
-                suggested_keywords = top_queries['query'].tolist()
+            base_domain = domain_parts[-2]
         else:
-            suggested_keywords = top_queries['query'].tolist()
+            base_domain = domain_parts[0]
+            
+        # Create a list to store potential brand tokens
+        potential_brand_tokens = []
+        
+        # Add the base domain as a potential brand token
+        potential_brand_tokens.append(base_domain)
+        
+        # Filter for queries with significant data
+        # Require at least 10 impressions to be considered
+        filtered_data = query_data[query_data['impressions'] >= 10].copy()
+        
+        if filtered_data.empty:
+            # If no significant data, just return the domain-based suggestions
+            return jsonify({'suggested_keywords': potential_brand_tokens}), 200
+        
+        # Calculate a brand relevance score
+        # Brand terms typically have: high CTR, good position (low number), and often contain the domain name
+        filtered_data['brand_score'] = (
+            # Weight CTR heavily (brand terms usually have high CTR)
+            filtered_data['ctr'] * 5 + 
+            # Weight position (brand terms usually rank well)
+            (10 / filtered_data['position']) * 3
+        )
+        
+        # Boost score for queries containing the base domain
+        filtered_data['contains_domain'] = filtered_data['query'].str.lower().apply(
+            lambda x: 1 if base_domain.lower() in x else 0
+        )
+        filtered_data['brand_score'] = filtered_data['brand_score'] + (filtered_data['contains_domain'] * 5)
+        
+        # Sort by brand score (descending)
+        sorted_data = filtered_data.sort_values(by='brand_score', ascending=False)
+        
+        # Take the top queries by brand score
+        top_queries = sorted_data.head(30)
+        
+        # Extract individual tokens from the top queries
+        stop_words = set(stopwords.words('english'))
+        
+        # Common words to exclude from brand tokens
+        common_words = ['www', 'com', 'http', 'https', 'login', 'sign', 'in', 'contact', 'about', 'help', 
+                        'the', 'and', 'for', 'with', 'how', 'what', 'when', 'where', 'why', 'who', 'which']
+        
+        # Process each query to extract tokens
+        for query in top_queries['query']:
+            # Split the query into tokens
+            tokens = re.findall(r'\b[a-zA-Z0-9]+\b', query.lower())
+            
+            # Add each token to potential_brand_tokens if it's not already there
+            # and it's not a common word or stop word
+            for token in tokens:
+                if (token not in potential_brand_tokens and 
+                    token not in common_words and 
+                    token not in stop_words and
+                    len(token) > 2):  # Ignore very short tokens
+                    potential_brand_tokens.append(token)
+        
+        # Limit to top 10 suggestions
+        suggested_keywords = potential_brand_tokens[:10]
         
         return jsonify({'suggested_keywords': suggested_keywords}), 200
     

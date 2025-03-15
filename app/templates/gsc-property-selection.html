@@ -57,17 +57,43 @@
                 </h2>
 
                 <div class="prose max-w-none mb-2">
-                    <p>Brand keywords help categorize your search traffic into "Brand" and "Non-Brand" segments.</p>
+                    <p>Brand keywords help categorize your search traffic into "Brand" and "Non-Brand" segments for more meaningful SEO analysis.</p>
                 </div>
 
                 <!-- Example Card -->
-                <div class="bg-accent bg-opacity-10 rounded-lg p-4 mb-2">
+                <div class="bg-accent bg-opacity-10 rounded-lg p-4 mb-4">
                     <h3 class="font-bold text-neutral-800 mb-2">How it works:</h3>
                     <ul class="list-disc list-inside space-y-2 text-sm">
-                        <li>Enter keywords that represent your brand (e.g., company name, product names)</li>
+                        <li><strong>Use single words only</strong> that represent your brand identity (company name, product names)</li>
                         <li>Any search query containing these keywords will be labeled as <span class="badge badge-neutral">Brand</span></li>
                         <li>All other queries will be categorized as <span class="badge badge-neutral">Non-Brand</span></li>
+                        <li>This separation helps you analyze organic performance more accurately</li>
                     </ul>
+                </div>
+
+                <!-- Brand vs Non-Brand Explanation -->
+                <div class="bg-info bg-opacity-10 rounded-lg p-4 mb-4">
+                    <h3 class="font-bold text-neutral-800 mb-2">Why this matters:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold mb-1">Brand Traffic</h4>
+                            <ul class="list-disc list-inside text-sm space-y-1">
+                                <li>Users already familiar with your brand</li>
+                                <li>Higher conversion rates</li>
+                                <li>Typically higher CTR and better rankings</li>
+                                <li>Example: Queries containing "<strong>nike</strong>"</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-1">Non-Brand Traffic</h4>
+                            <ul class="list-disc list-inside text-sm space-y-1">
+                                <li>New potential customers</li>
+                                <li>Competitive acquisition channel</li>
+                                <li>Measures SEO effectiveness</li>
+                                <li>Example: "best running shoes"</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-control">
@@ -78,10 +104,10 @@
                         id="brand-keywords-textarea"
                         name="brand_keywords"
                         class="textarea textarea-bordered h-24"
-                        placeholder="Example: stripe, stripe payments, stripe checkout"
+                        placeholder="Example: stripe, atlas, terminal, radar"
                         required>{{ brand_keywords_string }}</textarea>
                     <label class="label">
-                        <span class="label-text-alt text-base-content/70">Separate keywords with commas</span>
+                        <span class="label-text-alt text-base-content/70">Separate keywords with commas. <strong>Use single words only</strong> - each word will be matched individually.</span>
                     </label>
                 </div>
                 
@@ -93,10 +119,16 @@
                         </svg>
                         <h3 class="font-medium">Suggested Brand Keywords</h3>
                     </div>
-                    <div id="suggested-keywords-list" class="flex flex-wrap gap-2 mb-2"></div>
-                    <button id="use-suggestions-btn" type="button" class="btn btn-sm btn-outline btn-primary">
-                        Use Suggestions
-                    </button>
+                    <p class="text-sm mb-2">Based on your search data, we've identified these potential brand terms. Each is a single word that might represent your brand. Click to add them.</p>
+                    <div id="suggested-keywords-list" class="flex flex-wrap gap-2 mb-3"></div>
+                    <div class="flex gap-2">
+                        <button id="use-suggestions-btn" type="button" class="btn btn-sm btn-outline btn-primary">
+                            Use All Suggestions
+                        </button>
+                        <button id="clear-suggestions-btn" type="button" class="btn btn-sm btn-outline">
+                            Clear All
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,6 +153,7 @@
         const suggestedKeywordsContainer = document.getElementById('suggested-keywords-container');
         const suggestedKeywordsList = document.getElementById('suggested-keywords-list');
         const useSuggestionsBtn = document.getElementById('use-suggestions-btn');
+        const clearSuggestionsBtn = document.getElementById('clear-suggestions-btn');
         
         let suggestedKeywords = [];
         
@@ -159,25 +192,21 @@
                     suggestedKeywordsList.innerHTML = '';
                     suggestedKeywords.forEach(keyword => {
                         const keywordBadge = document.createElement('div');
-                        keywordBadge.className = 'badge badge-outline gap-1 p-3';
+                        keywordBadge.className = 'badge badge-outline gap-1 p-3 cursor-pointer hover:bg-primary hover:text-primary-content transition-colors';
                         keywordBadge.innerHTML = `
                             ${keyword}
-                            <button class="add-keyword-btn" data-keyword="${keyword}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                            </button>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
                         `;
-                        suggestedKeywordsList.appendChild(keywordBadge);
-                    });
-                    
-                    // Add click event to individual keyword add buttons
-                    document.querySelectorAll('.add-keyword-btn').forEach(btn => {
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            const keyword = this.getAttribute('data-keyword');
+                        keywordBadge.addEventListener('click', function() {
                             addKeywordToTextarea(keyword);
+                            this.classList.add('bg-success');
+                            this.classList.add('text-success-content');
+                            this.classList.remove('hover:bg-primary');
+                            this.classList.remove('hover:text-primary-content');
                         });
+                        suggestedKeywordsList.appendChild(keywordBadge);
                     });
                     
                     // Show the suggested keywords container
@@ -207,6 +236,19 @@
         // Use all suggestions button
         useSuggestionsBtn.addEventListener('click', function() {
             brandKeywordsTextarea.value = suggestedKeywords.join(', ');
+            
+            // Update all badges to show they've been added
+            document.querySelectorAll('#suggested-keywords-list > div').forEach(badge => {
+                badge.classList.add('bg-success');
+                badge.classList.add('text-success-content');
+                badge.classList.remove('hover:bg-primary');
+                badge.classList.remove('hover:text-primary-content');
+            });
+        });
+        
+        // Clear all button
+        clearSuggestionsBtn.addEventListener('click', function() {
+            brandKeywordsTextarea.value = '';
         });
     });
 </script>

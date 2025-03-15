@@ -99,11 +99,28 @@ def process_dates(start_date_str, end_date_str):
 
 # Function to determine keyword type
 def keyword_type(query, brand_terms):
-    if not brand_terms:  # If brand_terms is an empty list
-        return 'Branded'
+    if not brand_terms or brand_terms == "You haven't selected Brand Keywords.":
+        return 'Branded'  # Default to branded if no brand terms defined
     
+    # Convert query to lowercase for case-insensitive matching
+    query_lower = query.lower()
+    
+    # If brand_terms is a string (comma-separated), convert it to a list
+    if isinstance(brand_terms, str):
+        brand_terms = [term.strip().lower() for term in brand_terms.split(',')]
+    
+    # Check each brand term
     for term in brand_terms:
-        if term in query:
+        # Skip empty terms
+        if not term:
+            continue
+            
+        # Convert term to lowercase for case-insensitive matching
+        term_lower = term.strip().lower()
+        
+        # Check if the term is in the query as a whole word
+        # This prevents matching substrings (e.g., "apple" shouldn't match "pineapple")
+        if re.search(r'\b' + re.escape(term_lower) + r'\b', query_lower):
             return 'Branded'
     
     return 'Non Branded'
