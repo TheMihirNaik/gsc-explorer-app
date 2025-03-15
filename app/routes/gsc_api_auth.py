@@ -106,27 +106,39 @@ def gsc_oauth2callback():
 
   Redirects to the gsc property selection page.
   """
-  state = flask.session['state']
+  try:
+    # Check if state exists in session
+    if 'state' not in flask.session:
+      flash("Authentication failed. Please try again.")
+      return flask.redirect(url_for('home'))
+      
+    state = flask.session['state']
 
-  flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-      CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
-  
-  flow.redirect_uri = flask.url_for('gsc_oauth2callback', _external=True, _scheme='https')
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+    
+    flow.redirect_uri = flask.url_for('gsc_oauth2callback', _external=True, _scheme='https')
 
-  # Use the authorization server's response to fetch the OAuth 2.0 tokens.
-  authorization_response = flask.request.url
-  flow.fetch_token(authorization_response=authorization_response)
+    # Use the authorization server's response to fetch the OAuth 2.0 tokens.
+    authorization_response = flask.request.url
+    flow.fetch_token(authorization_response=authorization_response)
 
-  # Store credentials in the session.
-  # ACTION ITEM: In a production app, you likely want to save these
-  #              credentials in a persistent database instead.
-  credentials = flow.credentials
-  print("First time credentials")
-  print(flow.credentials)
-  print("----------")
-  flask.session['credentials'] = credentials_to_dict(credentials)
+    # Store credentials in the session.
+    # ACTION ITEM: In a production app, you likely want to save these
+    #              credentials in a persistent database instead.
+    credentials = flow.credentials
+    flask.session['credentials'] = credentials_to_dict(credentials)
 
-  return flask.redirect(url_for('gsc_property_selection'))
+    return flask.redirect(url_for('gsc_property_selection'))
+  except Exception as e:
+    # Clear any partial session data
+    if 'state' in flask.session:
+      del flask.session['state']
+    if 'credentials' in flask.session:
+      del flask.session['credentials']
+    
+    flash("Authentication failed. Please try again.")
+    return flask.redirect(url_for('home'))
 
 @app.route('/gsc_revoke')
 def revoke():
@@ -187,6 +199,48 @@ def credentials_to_dict(credentials):
           'client_id': credentials.client_id,
           'client_secret': credentials.client_secret,
           'scopes': credentials.scopes}
+
+def check_and_refresh_credentials():
+  """
+  Helper function to check if credentials are valid and refresh them if needed.
+  Returns:
+    - (credentials, None) if credentials are valid
+    - (None, redirect_response) if there's an issue and user should be redirected
+  """
+  if 'credentials' not in flask.session:
+    return None, redirect(url_for('gsc_authorize'))
+  
+  try:
+    credentials = google.oauth2.credentials.Credentials(
+      **flask.session['credentials'])
+    
+    # Check if the token is expired and refresh it if needed
+    if not credentials.valid and credentials.expired and credentials.refresh_token:
+      try:
+        credentials.refresh(google.auth.transport.requests.Request())
+        # Save updated credentials back to session
+        flask.session['credentials'] = credentials_to_dict(credentials)
+      except Exception as e:
+        # If refresh fails, clear session and redirect to auth
+        if 'credentials' in flask.session:
+          del flask.session['credentials']
+        flash("Your session has expired. Please log in again.")
+        return None, redirect(url_for('gsc_authorize'))
+    
+    # Test the credentials with a simple API call
+    search_console_service = googleapiclient.discovery.build(
+      API_SERVICE_NAME, API_VERSION, credentials=credentials)
+    # Simple API call to verify credentials work
+    search_console_service.sites().list().execute()
+    
+    return credentials, None
+  
+  except Exception as e:
+    # If any error occurs with credentials, clear session and redirect to auth
+    if 'credentials' in flask.session:
+      del flask.session['credentials']
+    flash("There was an issue with your authentication. Please log in again.")
+    return None, redirect(url_for('gsc_authorize'))
 
 def print_index_table():
   return ('<table>' +

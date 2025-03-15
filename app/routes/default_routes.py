@@ -38,9 +38,10 @@ def home():
 #Dashboard
 @app.route('/dashboard/')
 def dashboard():
-    if 'credentials' not in session:
-        # GSC is not logged in.
-        return redirect(url_for('gsc_authorize'))
+    # Check and refresh credentials
+    credentials, redirect_response = check_and_refresh_credentials()
+    if redirect_response:
+        return redirect_response
     
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
@@ -69,45 +70,39 @@ def gsc_property_selection():
 
         return redirect(url_for('dashboard'))
     
-    if 'credentials' not in session:
-        # GSC is not logged in.
+    # Check and refresh credentials
+    credentials, redirect_response = check_and_refresh_credentials()
+    if redirect_response:
+        return redirect_response
+    
+    try:
+        # Retrieve list of properties in account
+        search_console_service = googleapiclient.discovery.build(
+            API_SERVICE_NAME, API_VERSION, credentials=credentials)
+        
+        site_list = search_console_service.sites().list().execute()
+        
+        site_list = site_list['siteEntry']
+
+        # exlude sites that are not verified
+        site_list = [s for s in site_list if s['permissionLevel'] != 'siteUnverifiedUser']
+
+        site_list_sorted = []
+
+        for each in site_list:
+            site_list_sorted.append(each['siteUrl'])
+
+        site_list_sorted = sorted(site_list_sorted)
+
+        selected_property = session.get("selected_property", "Please Select your GSC Property.")
+        
+    except Exception as e:
+        # If any error occurs with credentials, clear session and redirect to auth
+        if 'credentials' in session:
+            del session['credentials']
+        flash("There was an issue with your authentication. Please log in again.")
         return redirect(url_for('gsc_authorize'))
-    
-    #get a list of GSC properties
-    # Load credentials from the session.
-    credentials = google.oauth2.credentials.Credentials(
-        **flask.session['credentials'])
 
-    # Check if the token is expired and refresh it if needed
-    if not credentials.valid and credentials.expired and credentials.refresh_token:
-        try:
-            credentials.refresh(google.auth.transport.requests.Request())
-            # Save updated credentials back to session
-            flask.session['credentials'] = credentials_to_dict(credentials)
-        except Exception as e:
-            flash("Failed to refresh access token. Please reauthorize.")
-            return redirect(url_for('gsc_authorize'))
-
-    # Retrieve list of properties in account
-    search_console_service = googleapiclient.discovery.build(
-        API_SERVICE_NAME, API_VERSION, credentials=credentials)
-    
-    site_list = search_console_service.sites().list().execute()
-    
-    site_list = site_list['siteEntry']
-
-    # exlude sites that are not verified
-    site_list = [s for s in site_list if s['permissionLevel'] != 'siteUnverifiedUser']
-
-    site_list_sorted = []
-
-    for each in site_list:
-        site_list_sorted.append(each['siteUrl'])
-
-    site_list_sorted = sorted(site_list_sorted)
-
-    selected_property = session.get("selected_property", "Please Select your GSC Property.")
-    
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
     brand_keywords_string = ''
