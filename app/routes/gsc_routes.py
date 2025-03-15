@@ -7,6 +7,7 @@ from app.routes.gsc_api_auth import CLIENT_SECRETS_FILE, SCOPES, API_SERVICE_NAM
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
+import google.auth.transport.requests
 
 from app.tasks.celery_tasks import *
 
@@ -29,6 +30,16 @@ def google_search_console():
         # Load credentials from the session.
         credentials = google.oauth2.credentials.Credentials(
             **session['credentials'])
+        
+        # Check if the token is expired and refresh it if needed
+        if not credentials.valid and credentials.expired and credentials.refresh_token:
+            try:
+                credentials.refresh(google.auth.transport.requests.Request())
+                # Save updated credentials back to session
+                session['credentials'] = credentials_to_dict(credentials)
+            except Exception as e:
+                flash("Failed to refresh access token. Please reauthorize.")
+                return redirect(url_for('gsc_authorize'))
         
         # Retrieve list of properties in account
         search_console_service = googleapiclient.discovery.build(

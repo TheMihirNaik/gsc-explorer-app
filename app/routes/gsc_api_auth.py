@@ -7,6 +7,7 @@ from app import app
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
+import google.auth.transport.requests
 
 import pandas as pd
 

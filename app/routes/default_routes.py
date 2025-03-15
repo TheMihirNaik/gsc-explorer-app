@@ -15,6 +15,7 @@ from nltk.corpus import stopwords
 import nltk
 nltk.download('stopwords')
 from openai import OpenAI
+import google.auth.transport.requests
 
 
 # Flask template filters
@@ -70,6 +71,16 @@ def gsc_property_selection():
     # Load credentials from the session.
     credentials = google.oauth2.credentials.Credentials(
         **flask.session['credentials'])
+
+    # Check if the token is expired and refresh it if needed
+    if not credentials.valid and credentials.expired and credentials.refresh_token:
+        try:
+            credentials.refresh(google.auth.transport.requests.Request())
+            # Save updated credentials back to session
+            flask.session['credentials'] = credentials_to_dict(credentials)
+        except Exception as e:
+            flash("Failed to refresh access token. Please reauthorize.")
+            return redirect(url_for('gsc_authorize'))
 
     # Retrieve list of properties in account
     search_console_service = googleapiclient.discovery.build(
@@ -1583,7 +1594,7 @@ def generate_ai_title():
 
                 Based on this data, optimize the Title Tag for better SEO performance. 
                 Provide a new Title Tag and don't generate anything other than title.
-                Ensure it’s within the character limit and includes high-value keywords from the associated queries.
+                Ensure it's within the character limit and includes high-value keywords from the associated queries.
                 When you write Titles, make it Actionable. Always keep this in mind.
                 
                 To handle edge cases:

@@ -5,6 +5,7 @@ import pandas as pd
 from celery.utils.log import get_task_logger
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+import google.auth.transport.requests
 
 
 logger = get_task_logger(__name__)
@@ -16,6 +17,17 @@ def celery_test_gsc_data(credentials_data, selected_property, start_date_formatt
     
     # Rebuild credentials
     credentials = Credentials(**credentials_data)
+    
+    # Check if the token is expired and refresh it if needed
+    if not credentials.valid and credentials.expired and credentials.refresh_token:
+        try:
+            credentials.refresh(google.auth.transport.requests.Request())
+            # Note: We can't update the session here since we're in a Celery task
+            logger.info("Token refreshed in Celery task")
+        except Exception as e:
+            logger.error(f"Failed to refresh access token in Celery task: {e}")
+            # We can't redirect in a Celery task, so we'll just log the error
+            # The main application will need to handle reauthorization
 
     # Rebuild the webmasters_service within the Celery task
     webmasters_service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
