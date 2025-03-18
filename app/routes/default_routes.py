@@ -1267,12 +1267,12 @@ def sitewide_pages():
                         <a href='/actionable-insights/optimize-ctr?page={x}' target='_blank' class='badge badge-primary'>
                             <i class='fa-solid fa-wand-magic-sparkles'></i>  CTR
                         </a>
-                        <!-- 
+                        
                         <div class="flex space-x-2" hidden>
                         <a href='/actionable-insights/optimize-page-content?page={x}' target='_blank' class='badge badge-secondary'>
                             <i class='fa-solid fa-file-pen'></i> Content 
                         </a>
-                        </div> -->
+                        </div>
                 """
             )
         )

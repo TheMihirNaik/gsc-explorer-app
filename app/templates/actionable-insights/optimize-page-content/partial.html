@@ -1,44 +1,146 @@
 <div id="pages-aggregate-data">
+    <div class="mb-6 mt-2">
+        <div class="stats shadow w-full bg-base-200">
+            <div class="stat">
+                <div class="stat-figure text-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                </div>
+                <div class="stat-title">Word Count</div>
+                <div class="stat-value text-secondary" id="word-count">0</div>
+                <div class="stat-desc">words in content</div>
+            </div>
+            
+            <div class="stat">
+                <div class="stat-figure text-accent">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                </div>
+                <div class="stat-title">Sentences</div>
+                <div class="stat-value text-accent" id="sentence-count">0</div>
+                <div class="stat-desc">sentences in content</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-figure text-secondary">
+                    <div class="radial-progress text-success" id="keyword-coverage-indicator" style="--value:0; --size:3rem">0%</div>
+                </div>
+                <div class="stat-title">Keyword Coverage</div>
+                <div class="stat-value text-success" id="keyword-coverage">0%</div>
+                <div class="stat-desc">search terms in content</div>
+            </div>
+        </div>
+    </div>
     
-    <!-- Create the editor container -->
-    <div class="grid grid-cols-6 gap-4">
-        <!-- First Section -->
-        <div class="col-span-4">
-            <div id="editor" class="ql-container ql-snow">
-                <div class="ql-editor" style="height: 300px;">
-                    {{ content_html | safe }}
+    <!-- Main Content Area -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <!-- First Section - Content Editor -->
+        <div class="lg:col-span-3 card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    Page Content Editor
+                    <div class="badge badge-primary">Live Editing</div>
+                </h2>
+                <div id="editor" class="ql-container ql-snow">
+                    <div class="ql-editor" style="min-height: 500px;">
+                        {{ content_html | safe }}
+                    </div>
+                </div>
+                <div class="card-actions justify-end mt-4">
+                    <button class="btn btn-primary" id="copy-content">Copy Content</button>
+                    <button class="btn btn-outline" id="highlight-keywords">Highlight Keywords</button>
                 </div>
             </div>
-        
         </div>
 
-        <!-- Second Section -->
-        <div class="col-span-2">
-            <h2 class="text-2xl font-bold mb-4">Content Analysis</h2>
-            <!-- Your other content here -->
-            <p class="text-sm mt-2" id="character-count"></p>
-            <p class="text-sm mt-2" id="word-count"></p>
-            <p class="text-sm mt-2" id="sentence-count"></p>
-
-            <div id="query-tokens">
-                <ul>
-                    {% for token, details in query_tokens %}
-                        <li id="token-{{token}}">
-                            <strong>{{ token }}</strong>:
-                            <span class="badge badge-info">{{ details.count }} in search queries</span>
-                            <span class="badge badge-info" id="token-{{token}}-content-count">0 in content</span>
-                            <div class="tooltip" data-tip="{% for example in details.examples %}{{ example }}{% if not loop.last %}, {% endif %}{% endfor %}">
-                                <span class="badge badge-info cursor-pointer">View Examples</span>
+        <!-- Second Section - Analysis Dashboard -->
+        <div class="lg:col-span-2">
+            <!-- Keyword Optimization Section -->
+            <div class="card bg-base-100 shadow-xl mb-6">
+                <div class="card-body p-4">
+                    <h2 class="card-title">
+                        Keyword Optimization
+                        <div class="badge badge-secondary">{{ query_tokens|length }} keywords</div>
+                    </h2>
+                    <p class="text-sm mb-3">These are the top search terms users are using to find your page.</p>
+                    
+                    <!-- Status Filter Pills -->
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button class="badge badge-lg badge-outline hover:bg-base-300 status-filter active" data-status="all">All</button>
+                        <button class="badge badge-lg badge-error hover:opacity-80 status-filter" data-status="missing">Missing</button>
+                        <button class="badge badge-lg badge-warning hover:opacity-80 status-filter" data-status="present">Present</button>
+                        <button class="badge badge-lg badge-success hover:opacity-80 status-filter" data-status="optimized">Optimized</button>
+                    </div>
+                    
+                    <!-- Search Filter -->
+                    <div class="mb-3">
+                        <div class="form-control">
+                            <div class="input-group input-group-sm">
+                                <input type="text" placeholder="Filter keywords..." class="input input-bordered input-sm w-full" id="keyword-filter" />
+                                <button class="btn btn-square btn-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                </button>
                             </div>
-                        </li>
-                    {% endfor %}
-                </ul>
+                        </div>
+                    </div>
+
+                    <!-- Keywords Table -->
+                    <div class="overflow-y-auto max-h-[calc(100vh-550px)] min-h-[300px]" id="query-tokens-container">
+                        <table class="table table-zebra table-sm w-full">
+                            <thead class="sticky top-0 bg-base-100 z-10">
+                                <tr>
+                                    <th>Keyword</th>
+                                    <th class="text-center">Volume</th>
+                                    <th class="text-center">Count</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for token, details in query_tokens %}
+                                <tr id="token-row-{{token}}" 
+                                    data-token="{{ token | lower }}" 
+                                    data-token-id="token-{{token}}"
+                                    data-count="{{ details.count }}"
+                                    data-status="missing">
+                                    <td>
+                                        <div class="font-medium cursor-pointer hover:text-primary">{{ token }}</div>
+                                    </td>
+                                    <td class="text-center">{{ details.count }}</td>
+                                    <td class="text-center" id="token-{{token}}-content-count">0</td>
+                                    <td class="text-center">
+                                        <div class="badge badge-ghost badge-sm" id="token-{{token}}-status">Missing</div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
+            <!-- Search Query Examples -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body p-4">
+                    <h2 class="card-title">Example Search Queries</h2>
+                    <p class="text-sm mb-3">These are real search queries users used to find your page. Click on a keyword above to see related queries.</p>
+                    
+                    <div id="example-queries" class="text-sm space-y-2">
+                        <div class="alert alert-info alert-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Click on a keyword to see example queries</span>
+                        </div>
+                        {% for token, details in query_tokens %}
+                            <div id="example-{{ token }}" class="hidden">
+                                <div class="mb-2 font-bold">Example queries containing "{{ token }}":</div>
+                                <ul class="list-disc pl-5 space-y-1">
+                                {% for example in details.examples %}
+                                    <li class="text-sm">{{ example }}</li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
-
-
-
     </div>
 
 <script>
@@ -64,32 +166,173 @@
         }
     });
 
+    // Add click event listeners to keywords
+    document.querySelectorAll('[data-token-id]').forEach(function(element) {
+        element.addEventListener('click', function() {
+            // Hide all example divs
+            document.querySelectorAll('#example-queries > div').forEach(div => div.classList.add('hidden'));
+            
+            // Show the selected example
+            const token = this.getAttribute('data-token');
+            const exampleDiv = document.getElementById(`example-${token}`);
+            if (exampleDiv) {
+                exampleDiv.classList.remove('hidden');
+            }
+            
+            // Highlight this row
+            document.querySelectorAll('#query-tokens-container tr').forEach(row => {
+                row.classList.remove('bg-base-200');
+            });
+            this.classList.add('bg-base-200');
+        });
+    });
+
+    // Status filter functionality
+    document.querySelectorAll('.status-filter').forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Update active state
+            document.querySelectorAll('.status-filter').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('badge-outline');
+            });
+            this.classList.add('active');
+            
+            if (this.getAttribute('data-status') === 'all') {
+                this.classList.add('badge-outline');
+            }
+            
+            const status = this.getAttribute('data-status');
+            
+            // Filter rows
+            document.querySelectorAll('#query-tokens-container tr[data-token]').forEach(function(row) {
+                if (status === 'all' || row.getAttribute('data-status') === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Filter keywords functionality
+    document.getElementById('keyword-filter').addEventListener('input', function() {
+        const filterText = this.value.toLowerCase();
+        document.querySelectorAll('#query-tokens-container tr[data-token]').forEach(function(row) {
+            const token = row.getAttribute('data-token');
+            // Only apply text filter to rows that aren't already hidden by status filter
+            if (row.style.display !== 'none' && token.includes(filterText)) {
+                row.style.display = '';
+            } else if (token.includes(filterText)) {
+                // Don't change status-filtered rows
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Highlight keywords button
+    document.getElementById('highlight-keywords').addEventListener('click', function() {
+        const content = quill.getText();
+        let newContent = quill.getContents().ops;
+        
+        // Remove any existing highlights first
+        quill.setContents(newContent);
+        
+        // Get all tokens
+        const tokens = [];
+        document.querySelectorAll('[data-token]').forEach(function(element) {
+            tokens.push(element.getAttribute('data-token'));
+        });
+        
+        // Highlight each token
+        tokens.forEach(function(token) {
+            const regex = new RegExp(`\\b${token}\\b`, 'gi');
+            let match;
+            while ((match = regex.exec(content)) !== null) {
+                quill.formatText(match.index, token.length, { 'background': '#FFEB3B' });
+            }
+        });
+    });
+
+    // Copy content button
+    document.getElementById('copy-content').addEventListener('click', function() {
+        const html = quill.root.innerHTML;
+        navigator.clipboard.writeText(html).then(function() {
+            this.textContent = 'Copied!';
+            setTimeout(() => {
+                this.textContent = 'Copy Content';
+            }, 2000);
+        }.bind(this));
+    });
+
     function updateCounts() {
         var editorContent = quill.getText().toLowerCase().trim();
         var wordCount = editorContent.split(/\s+/).filter(function(n) { return n != '' }).length;
-        var sentenceCount = editorContent.split('.').filter(function(n) { return n != '' }).length;
-        var characterCount = editorContent.length;
-        document.getElementById('word-count').innerHTML = `Words: ${wordCount}`;
-        document.getElementById('sentence-count').innerHTML = `Sentences: ${sentenceCount}`;
-        document.getElementById('character-count').innerHTML = `Characters: ${characterCount}`;
+        var sentenceCount = editorContent.split(/[.!?]+/).filter(function(n) { return n.trim() != '' }).length;
         
-        // update the color of query-tokens
-        {% for token, details in query_tokens %}
-            var tokenCount = (editorContent.match(new RegExp('\\b{{token | lower}}\\b', 'gi')) || []).length;
-            document.getElementById('token-{{token}}-content-count').innerHTML = `${tokenCount} in content`;
-            if (tokenCount > 0) {
-                document.querySelector('#token-{{token}} .badge-info').style.backgroundColor = '#34D399';
-            } else {
-                document.querySelector('#token-{{token}} .badge-info').style.backgroundColor = '#E2E8F0';
+        // Update the stats
+        document.getElementById('word-count').textContent = wordCount;
+        document.getElementById('sentence-count').textContent = sentenceCount;
+        
+        // Process keywords
+        var tokenElements = document.querySelectorAll('[data-token-id]');
+        var totalTokens = tokenElements.length;
+        var tokensFound = 0;
+        
+        tokenElements.forEach(function(element) {
+            var token = element.getAttribute('data-token');
+            var tokenId = element.getAttribute('data-token-id');
+            var tokenCount = (editorContent.match(new RegExp('\\b' + token + '\\b', 'gi')) || []).length;
+            
+            // Update the count in the table
+            const countElement = document.getElementById(tokenId + '-content-count');
+            if (countElement) {
+                countElement.textContent = tokenCount;
             }
-        {% endfor %}
+            
+            // Update status badge
+            const statusElement = document.getElementById(tokenId + '-status');
+            let status = 'missing';
+            
+            if (statusElement) {
+                if (tokenCount === 0) {
+                    statusElement.textContent = 'Missing';
+                    statusElement.className = 'badge badge-error badge-sm';
+                    status = 'missing';
+                } else if (tokenCount === 1) {
+                    statusElement.textContent = 'Present';
+                    statusElement.className = 'badge badge-warning badge-sm';
+                    status = 'present';
+                    tokensFound++; // Count as found even if only present once
+                } else {
+                    statusElement.textContent = 'Optimized';
+                    statusElement.className = 'badge badge-success badge-sm';
+                    status = 'optimized';
+                    tokensFound++;
+                }
+                
+                // Update the row's data-status attribute for filtering
+                const row = element.closest('tr');
+                if (row) {
+                    row.setAttribute('data-status', status);
+                }
+            }
+        });
+        
+        // Update keyword coverage - fixed to count keywords that appear at least once
+        var coveragePercent = totalTokens > 0 ? Math.round((tokensFound / totalTokens) * 100) : 0;
+        document.getElementById('keyword-coverage').textContent = coveragePercent + '%';
+        
+        // Update radial progress
+        const coverageIndicator = document.getElementById('keyword-coverage-indicator');
+        coverageIndicator.style.setProperty('--value', coveragePercent);
+        coverageIndicator.textContent = coveragePercent + '%';
     }
 
     quill.on('text-change', updateCounts);
 
-    // Set initial counts
-    updateCounts();
-
+    // Set initial counts - run it immediately to initialize properly
+    setTimeout(updateCounts, 500);
 </script>
 
 </div>
