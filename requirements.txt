@@ -15,3 +15,4 @@ redis
 beautifulsoup4==4.12.3
 nltk
 pytz==2024.1
+spacy
