@@ -8,49 +8,52 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
 
 {% block content %} 
 
-<!-- Hero Section -->
+<!-- Hero Section - Enhanced with visual appeal and engagement elements -->
 <section class="bg-gradient-to-b from-base-200 to-neutral-content py-16 md:py-20">
   <div class="container mx-auto px-4 md:px-8">
     <div class="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
       <!-- Hero Content -->
       <div class="lg:w-1/2 text-center lg:text-left">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-base-content leading-tight">
-          <span class="text-primary">GSC</span>Explorer<span class="text-primary">.</span>app
-        </h1>
-        <p class="text-xl md:text-2xl mt-4 text-base-content/80 font-light">
-          Unlock the <span class="font-semibold">full potential</span> of your Google Search Console data
+        <div class="relative">
+          <span class="absolute -top-6 -left-6 text-4xl animate-bounce">✨</span>
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-base-content leading-tight animate__animated animate__fadeIn">
+            <span class="text-primary">GSC</span>Explorer<span class="text-primary">.</span>app
+          </h1>
+        </div>
+        <p class="text-xl md:text-2xl mt-4 text-base-content/80 font-light animate__animated animate__fadeIn animate__delay-1s">
+          Unlock the <span class="font-semibold text-primary">full potential</span> of your Google Search Console data
         </p>
         
-        <!-- Social Proof -->
-        <div class="mt-4 bg-base-100/50 p-3 rounded-lg inline-block">
-          <p class="text-sm font-medium flex items-center gap-2">
-            <span class="flex items-center">
+        <!-- Social Proof - Enhanced with better visual hierarchy -->
+        <div class="mt-6 bg-base-100 p-4 rounded-lg shadow-md inline-block border-l-4 border-primary animate__animated animate__fadeIn animate__delay-2s">
+          <div class="flex flex-col md:flex-row md:items-center gap-3">
+            <div class="flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
               </svg>
-              <span class="ml-1 text-primary font-bold">2,400+</span>
-            </span>
-            users in the past 12 months
-          </p>
-          <p class="text-sm font-medium flex items-center gap-2 mt-1">
-            <span class="flex items-center">
+              <span class="text-primary font-bold text-lg">2,400+</span>
+              <span class="font-medium">users</span>
+            </div>
+            <div class="hidden md:block text-gray-400">|</div>
+            <div class="flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
               </svg>
-              <span class="ml-1 text-primary font-bold">450+</span>
-            </span>
-            monthly active users
-          </p>
+              <span class="text-primary font-bold text-lg">450+</span>
+              <span class="font-medium">monthly active users</span>
+            </div>
+          </div>
         </div>
         
-        <div class="mt-6 space-y-4 md:space-y-0 md:space-x-4 flex flex-col md:flex-row justify-center lg:justify-start">
-          <a href="/dashboard/" class="btn btn-primary btn-lg gap-2 animate-pulse">
+        <div class="mt-8 space-y-4 md:space-y-0 md:space-x-4 flex flex-col md:flex-row justify-center lg:justify-start">
+          <a href="/dashboard/" class="btn btn-primary btn-lg gap-2 group relative overflow-hidden">
+            <span class="absolute inset-0 w-0 bg-white bg-opacity-30 transition-all duration-300 ease-out group-hover:w-full"></span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
             </svg>
-            Get Started Free
+            <span class="relative z-10">Get Started Free</span>
           </a>
-          <a href="#features" class="btn btn-outline btn-lg gap-2">
+          <a href="#features" class="btn btn-outline btn-lg gap-2 transition-all duration-300 hover:bg-base-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
@@ -58,9 +61,9 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
           </a>
         </div>
         
-        <!-- Key Benefits -->
+        <!-- Key Benefits - Enhanced with better visual styling -->
         <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-base-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
             <div class="bg-primary/10 p-2 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -68,7 +71,7 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
             </div>
             <span class="text-base-content font-medium">100% Free Forever</span>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-base-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
             <div class="bg-primary/10 p-2 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -76,7 +79,7 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
             </div>
             <span class="text-base-content font-medium">Unlimited Data Access</span>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-base-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
             <div class="bg-primary/10 p-2 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -84,7 +87,7 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
             </div>
             <span class="text-base-content font-medium">No Coding Required</span>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-base-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
             <div class="bg-primary/10 p-2 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -95,14 +98,39 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
         </div>
       </div>
       
-      <!-- Hero Image/Video -->
-      <div class="lg:w-1/2 mt-8 lg:mt-0">
-        <div class="relative rounded-xl overflow-hidden shadow-2xl border border-base-300">
+      <!-- Hero Image with enhanced animation and visual appeal -->
+      <div class="lg:w-1/2 mt-8 lg:mt-0 animate__animated animate__fadeInRight animate__delay-1s">
+        <div class="relative rounded-xl overflow-hidden shadow-2xl border border-base-300 transform transition-all duration-500 hover:scale-105">
+          <!-- Decorative elements -->
+          <div class="absolute -top-4 -right-4 w-16 h-16 bg-primary/20 rounded-full blur-xl"></div>
+          <div class="absolute -bottom-4 -left-4 w-20 h-20 bg-secondary/20 rounded-full blur-xl"></div>
+          
           <iframe width="100%" height="315" 
           src="https://www.youtube.com/embed/-4DSIPJTkt0?si=QZDml77jmMuVa064&amp;controls=1&amp;start=1" 
           title="GSCExplorer.app Demo Video" frameborder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
           referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          
+          <!-- Play button overlay for better visual cue -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="bg-primary/80 rounded-full p-4 shadow-lg transform transition-transform hover:scale-110">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Testimonial badge for social proof -->
+        <div class="bg-base-100 shadow-lg rounded-lg p-3 max-w-xs mx-auto lg:mx-0 lg:ml-auto mt-4 transform -rotate-1">
+          <div class="flex items-center gap-2">
+            <div class="flex -space-x-2">
+              <div class="w-8 h-8 rounded-full bg-primary/30 flex items-center justify-center text-xs font-bold">MN</div>
+              <div class="w-8 h-8 rounded-full bg-secondary/30 flex items-center justify-center text-xs font-bold">JD</div>
+              <div class="w-8 h-8 rounded-full bg-accent/30 flex items-center justify-center text-xs font-bold">KL</div>
+            </div>
+            <p class="text-sm font-medium">Trusted by SEO professionals worldwide</p>
+          </div>
         </div>
       </div>
     </div>
@@ -269,6 +297,68 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
   </div>
 </section>
 
+<!-- Testimonials Section -->
+<section class="py-16 bg-gradient-to-r from-primary/5 to-secondary/5">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold">What Users Are Saying 💬</h2>
+      <p class="mt-4 text-xl text-base-content/70 max-w-2xl mx-auto">
+        Real feedback from SEO professionals using GSCExplorer.app
+      </p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Testimonial 1 -->
+      <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <div class="card-body">
+          <div class="flex justify-center mb-4">
+            <div class="rating rating-md">
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-primary" checked />
+            </div>
+          </div>
+          <p class="italic">"Amazing work! Appreciate it!"</p>
+        </div>
+      </div>
+      
+      <!-- Testimonial 2 -->
+      <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <div class="card-body">
+          <div class="flex justify-center mb-4">
+            <div class="rating rating-md">
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-primary" checked />
+            </div>
+          </div>
+          <p class="italic">"The brand vs non-brand labeling feature helped us understand our organic traffic much better. And the fact that it's completely free is amazing!"</p>
+        </div>
+      </div>
+      
+      <!-- Testimonial 3 -->
+      <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <div class="card-body">
+          <div class="flex justify-center mb-4">
+            <div class="rating rating-md">
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-primary" checked />
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-primary" />
+            </div>
+          </div>
+          <p class="italic">"I love how intuitive the interface is. The pre-built reports save me so much time, and I can actually see all my data now!"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FAQ Section -->
 <section class="py-16 bg-base-200">
   <div class="container mx-auto px-4">
@@ -334,20 +424,23 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
   </div>
 </section>
 
-<!-- CTA Section -->
-<section class="py-16 bg-primary text-primary-content">
-  <div class="container mx-auto px-4 text-center">
-    <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your SEO Analysis? 🚀</h2>
-    <p class="text-xl max-w-2xl mx-auto mb-8">
-      Join <span class="font-bold underline">2,400+ SEO professionals</span> who are already using GSCExplorer.app to gain deeper insights from their Google Search Console data.
+<!-- Enhanced CTA Section -->
+<section class="py-16 bg-primary text-primary-content relative overflow-hidden">
+  <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/10 blur-3xl"></div>
+  <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-white/10 blur-3xl"></div>
+  
+  <div class="container mx-auto px-4 text-center relative z-10">
+    <h2 class="text-3xl md:text-4xl font-bold mb-6 animate__animated animate__fadeIn">Ready to Transform Your SEO Analysis? 🚀</h2>
+    <p class="text-xl max-w-2xl mx-auto mb-8 animate__animated animate__fadeIn animate__delay-1s">
+      Join <span class="font-bold underline decoration-wavy decoration-white/70">2,400+ SEO professionals</span> who are already using GSCExplorer.app to gain deeper insights from their Google Search Console data.
     </p>
-    <a href="/dashboard/" class="btn btn-lg bg-white text-primary hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 gap-2">
+    <a href="/dashboard/" class="btn btn-lg bg-white text-primary hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 gap-2 animate__animated animate__pulse animate__infinite animate__slower">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
       Get Started for Free
     </a>
-    <p class="mt-4 text-primary-content/80">No credit card required. 100% free forever. ✨</p>
+    <p class="mt-4 text-primary-content/80 animate__animated animate__fadeIn animate__delay-2s">No credit card required. 100% free forever. ✨</p>
   </div>
 </section>
 
