@@ -1,204 +1,347 @@
 {% extends "/default/loggedout-base.html" %}
 
-{% block title %} Free GSC Data Analysis Tool {% endblock %}
+{% block title %} Free Google Search Console Data Analysis Tool {% endblock %}
 
 {% block meta_description %} 
-Explore GSCExplorer.app, a completely free tool to analyze your Google Search Console data with prebuilt charts and reports. Join us in enhancing your SEO workflow with open-source contributions and insightful analytics. 
+GSCExplorer.app is a powerful, completely free tool that lets you analyze your Google Search Console data with unlimited access, pre-built charts, and AI-powered insights. Break free from the 1000-row limitation and optimize your SEO strategy effortlessly.
 {% endblock %}
 
 {% block content %} 
 
-<!-- Hero Banner -->
-<div class="text-center pt-16">
-  <h1 class="text-3xl md:text-4xl lg:text-6xl font-bold text-base-content pb-2">✨ Welcome to GSCExplorer.app!</h1>
-  <h2 class="text-lg md:text-xl lg:text-2xl mt-2 mb-4 pb-2 text-base-content">🔥 Unlock the Full Potential of Your GSC Data.</h2>
-</div>
-
-<div class="bg-neutral-content p-4">
-  
-  <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center">
-    <!-- Content -->
-    <div class="lg:w-1/2 w-full mb-6 lg:mb-0">
-      <ul class="mb-4 text-left">
-        <li class="mt-2 text-base-content">💰 Enjoy unlimited access to your Google Search Console data, completely FREE!</li>
-        <li class="mt-2 text-base-content">⚒️ Leverage prebuilt charts and insightful reports to enhance your data analysis.</li>
-      </ul>
-      
-      <a href="/dashboard/" class="pb-2">
-        <button class="btn btn-active btn-primary">🚀 Dive into Your Dashboard</button>
-      </a>
-
-      <div class="mt-6 text-center lg:text-left">
-        <p>
-          Crafted with ❤️ by <a href="https://www.mihirnaik.com/" class="link" target="_blank">Mihir Naik</a> in Toronto, Canada
+<!-- Hero Section -->
+<section class="bg-gradient-to-b from-base-200 to-neutral-content py-16 md:py-20">
+  <div class="container mx-auto px-4 md:px-8">
+    <div class="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
+      <!-- Hero Content -->
+      <div class="lg:w-1/2 text-center lg:text-left">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-base-content leading-tight">
+          <span class="text-primary">GSC</span>Explorer<span class="text-primary">.</span>app
+        </h1>
+        <p class="text-xl md:text-2xl mt-4 text-base-content/80 font-light">
+          Unlock the <span class="font-semibold">full potential</span> of your Google Search Console data
         </p>
+        <div class="mt-6 space-y-4 md:space-y-0 md:space-x-4 flex flex-col md:flex-row justify-center lg:justify-start">
+          <a href="/dashboard/" class="btn btn-primary btn-lg gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+            </svg>
+            Get Started
+          </a>
+          <a href="#features" class="btn btn-outline btn-lg">
+            Learn More
+          </a>
+        </div>
+        
+        <!-- Key Benefits -->
+        <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex items-center gap-3">
+            <div class="bg-primary/10 p-2 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span class="text-base-content">100% Free Forever</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="bg-primary/10 p-2 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <span class="text-base-content">Unlimited Data Access</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="bg-primary/10 p-2 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </div>
+            <span class="text-base-content">No Coding Required</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="bg-primary/10 p-2 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <span class="text-base-content">Secure & Private</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Hero Image/Video -->
+      <div class="lg:w-1/2 mt-8 lg:mt-0">
+        <div class="relative rounded-xl overflow-hidden shadow-2xl border border-base-300">
+          <iframe width="100%" height="315" 
+          src="https://www.youtube.com/embed/-4DSIPJTkt0?si=QZDml77jmMuVa064&amp;controls=1&amp;start=1" 
+          title="GSCExplorer.app Demo Video" frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
       </div>
     </div>
-
-    <!-- Video -->
-    <div class="lg:w-1/2 w-full border border-primary rounded-box p-2">
-      <iframe width="100%" height="315" 
-      src="https://www.youtube.com/embed/-4DSIPJTkt0?si=QZDml77jmMuVa064&amp;controls=0&amp;start=1" 
-      title="YouTube video player" frameborder="0" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    </div>
   </div>
+</section>
 
-</div>
-
-<!-- Start of Selection -->
-<div class="mt-10 max-w-full animate-slide-up">
-  <iframe src="https://mihirnaik.substack.com/embed" class="w-full rounded-lg" height="320"></iframe>
-</div>
-<!-- End of Selection -->
-
-<div class="bg-neutral-content py-16">
+<!-- Newsletter Section -->
+<section class="py-10 bg-neutral-content">
   <div class="container mx-auto px-4">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Benefits of GSC Explorer App</h2>
+    <div class="max-w-3xl mx-auto bg-base-100 rounded-xl p-6 shadow-lg">
+      <h2 class="text-xl font-bold text-center mb-4">Stay Updated with SEO Tips & Tool Updates</h2>
+      <iframe src="https://mihirnaik.substack.com/embed" class="w-full rounded-lg" height="200"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-16 bg-base-200">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold">Why Choose GSCExplorer.app?</h2>
+      <p class="mt-4 text-xl text-base-content/70 max-w-2xl mx-auto">
+        Powerful features designed to help you uncover hidden insights in your search data
+      </p>
+    </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Unlimited Data Access -->
-      <div class="card bg-neutral-100 shadow-xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Feature 1 -->
+      <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
         <div class="card-body">
-          <h3 class="card-title text-lg md:text-xl mb-2">
-            <i class="fas fa-infinity mr-2"></i>
-            Unlimited Data Access 💰
-          </h3>
-          <p><strong>Pain Point:</strong> Google Search Console limits users to 1000 rows of data, which can restrict analysis and insights.</p>
-          <p><strong>Solution:</strong> GSC Explorer allows users to analyze their complete dataset, providing a comprehensive view of website performance.</p>
+          <div class="flex items-center gap-4 mb-4">
+            <div class="bg-primary/10 p-3 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3v4M8 3v4M3 11h18" />
+              </svg>
+            </div>
+            <h3 class="card-title">Unlimited Data Access</h3>
+          </div>
+          <p>Break free from Google Search Console's 1000-row limitation. Access and analyze your complete dataset for comprehensive insights.</p>
         </div>
       </div>
-
-      <!-- Brand vs Non-Brand -->
-      <div class="card bg-neutral-100 shadow-xl">
+      
+      <!-- Feature 2 -->
+      <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
         <div class="card-body">
-          <h3 class="card-title text-lg md:text-xl mb-2">
-            <i class="fas fa-tags mr-2"></i>
-            Brand vs Non-Brand Query Labeling ⚒️
-          </h3>
-          <p><strong>Pain Point:</strong> Understanding traffic sources can be challenging without clear categorization of queries.</p>
-          <p><strong>Solution:</strong> The app automatically categorizes search queries into brand and non-brand labels, helping users optimize their strategies based on traffic sources.</p>
+          <div class="flex items-center gap-4 mb-4">
+            <div class="bg-primary/10 p-3 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            </div>
+            <h3 class="card-title">Brand vs Non-Brand Labeling</h3>
+          </div>
+          <p>Automatically categorize queries as brand or non-brand to better understand traffic sources and optimize your SEO strategy accordingly.</p>
         </div>
       </div>
-
-      <!-- Pre-built Reports -->
-      <div class="card bg-neutral-100 shadow-xl">
+      
+      <!-- Feature 3 -->
+      <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
         <div class="card-body">
-          <h3 class="card-title text-lg md:text-xl mb-2">
-            <i class="fas fa-chart-line mr-2"></i>
-            Pre-built Reports and Visualizations 📊
-          </h3>
-          <p><strong>Pain Point:</strong> Manually creating reports and visualizations can be time-consuming and complex.</p>
-          <p><strong>Solution:</strong> GSC Explorer offers pre-built reports and charts for easy data visualization, making it simpler for users to interpret data and derive actionable insights.</p>
+          <div class="flex items-center gap-4 mb-4">
+            <div class="bg-primary/10 p-3 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h3 class="card-title">Pre-built Reports & Charts</h3>
+          </div>
+          <p>Save time with ready-to-use visualizations that help you quickly identify trends, opportunities, and areas for improvement.</p>
         </div>
       </div>
-
-      <!-- AI Tools -->
-      <div class="card bg-neutral-100 shadow-xl">
+      
+      <!-- Feature 4 -->
+      <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
         <div class="card-body">
-          <h3 class="card-title text-lg md:text-xl mb-2">
-            <i class="fas fa-robot mr-2"></i>
-            AI-Powered Optimization Tools 🤖
-          </h3>
-          <p><strong>Pain Point:</strong> Crafting effective titles and meta descriptions can be difficult without data-driven insights.</p>
-          <p><strong>Solution:</strong> The app includes features for generating AI-assisted titles and meta descriptions, helping users improve their click-through rates (CTR) by optimizing on-page SEO elements.</p>
+          <div class="flex items-center gap-4 mb-4">
+            <div class="bg-primary/10 p-3 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 class="card-title">Comparative Analysis</h3>
+          </div>
+          <p>Easily compare current period data with previous period and year-over-year metrics to track performance and identify seasonal patterns.</p>
         </div>
       </div>
-
-      <!-- User-Friendly Interface -->
-      <div class="card bg-neutral-100 shadow-xl">
+      
+      <!-- Feature 5 -->
+      <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
         <div class="card-body">
-          <h3 class="card-title text-lg md:text-xl mb-2">
-            <i class="fas fa-user-friends mr-2"></i>
-            User-Friendly Interface 🌟
-          </h3>
-          <p><strong>Pain Point:</strong> Many analytics tools can be overwhelming and difficult to navigate.</p>
-          <p><strong>Solution:</strong> GSC Explorer provides a responsive and user-friendly interface, making it accessible for users of all skill levels.</p>
+          <div class="flex items-center gap-4 mb-4">
+            <div class="bg-primary/10 p-3 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="card-title">User-Friendly Interface</h3>
+          </div>
+          <p>Navigate through your data with ease using our intuitive and responsive interface designed for users of all technical skill levels.</p>
         </div>
       </div>
-
-      <!-- Real-Time Data Fetching -->
-      <div class="card bg-neutral-100 shadow-xl">
+      
+      <!-- Feature 6 -->
+      <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
         <div class="card-body">
-          <h3 class="card-title text-lg md:text-xl mb-2">
-            <i class="fas fa-clock mr-2"></i>
-            Real-Time Data Fetching ⏱️
-          </h3>
-          <p><strong>Pain Point:</strong> Delays in data retrieval can hinder timely decision-making.</p>
-          <p><strong>Solution:</strong> The app fetches data in real-time from Google Search Console, allowing users to make informed decisions quickly.</p>
-        </div>
-      </div>
-
-      <!-- Comprehensive Metrics Analysis -->
-      <div class="card bg-neutral-100 shadow-xl">
-        <div class="card-body">
-          <h3 class="card-title text-lg md:text-xl mb-2">
-            <i class="fas fa-chart-pie mr-2"></i>
-            Comprehensive Metrics Analysis 📈
-          </h3>
-          <p><strong>Pain Point:</strong> Analyzing multiple metrics across different dimensions can be cumbersome.</p>
-          <p><strong>Solution:</strong> GSC Explorer provides detailed metrics analysis, including clicks, impressions, CTR, and positions, aggregated by various dimensions like country and device.</p>
-        </div>
-      </div>
-
-      <!-- Open Source Contribution -->
-      <div class="card bg-neutral-100 shadow-xl">
-        <div class="card-body">
-          <h3 class="card-title text-lg md:text-xl mb-2">
-            <i class="fas fa-code-branch mr-2"></i>
-            Open Source Contribution 🌍
-          </h3>
-          <p><strong>Pain Point:</strong> Users often seek transparency and the ability to customize tools.</p>
-          <p><strong>Solution:</strong> Being an open-source application, GSC Explorer allows users to contribute to its development and customize it according to their needs.</p>
+          <div class="flex items-center gap-4 mb-4">
+            <div class="bg-primary/10 p-3 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </div>
+            <h3 class="card-title">Open Source</h3>
+          </div>
+          <p>Contribute to the development, customize features, or verify the security of our codebase. We believe in transparency and community-driven improvement.</p>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- FAQs-->
-<div class="pb-10 bg-neutral-content items-center justify-center">
-
-  <h2 class="text-3xl md:text-4xl font-bold mx-auto text-center mb-6">Expected Questions</h2>
-
-  <div class="pt-4 pb-4">
-    <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md">
-      <input type="radio" name="my-accordion-2" checked="checked" /> 
-      <div class="collapse-title text-lg md:text-xl font-medium">
-        Why GSC Explorer is FREE?
+<!-- How It Works Section -->
+<section class="py-16 bg-neutral-content">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold">How It Works</h2>
+      <p class="mt-4 text-xl text-base-content/70 max-w-2xl mx-auto">
+        Get started in just three simple steps
+      </p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Step 1 -->
+      <div class="card bg-base-100 shadow-lg border-t-4 border-primary">
+        <div class="card-body items-center text-center">
+          <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl mb-4">1</div>
+          <h3 class="card-title">Sign In with Google</h3>
+          <p>Connect your Google account securely to access your Search Console properties</p>
+        </div>
       </div>
-      <div class="collapse-content p-4"> 
-        <p>This is my learning project. I know I don't have skills to release a product where I can charge yet, but I want to learn. 
-          I just expect this to be useful in your workflow, and you put in more feature requests so I can learn more. Since GSC API is free, the cost of running this project is just $7 per month.</p>
+      
+      <!-- Step 2 -->
+      <div class="card bg-base-100 shadow-lg border-t-4 border-primary">
+        <div class="card-body items-center text-center">
+          <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl mb-4">2</div>
+          <h3 class="card-title">Select Your Property</h3>
+          <p>Choose which website you want to analyze from your Google Search Console properties</p>
+        </div>
+      </div>
+      
+      <!-- Step 3 -->
+      <div class="card bg-base-100 shadow-lg border-t-4 border-primary">
+        <div class="card-body items-center text-center">
+          <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl mb-4">3</div>
+          <h3 class="card-title">Explore Your Data</h3>
+          <p>Instantly view pre-built reports, charts, and actionable insights for your website</p>
+        </div>
       </div>
     </div>
-    <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md mt-4">
-      <input type="radio" name="my-accordion-2" /> 
-      <div class="collapse-title text-lg md:text-xl font-medium">
-        Do you store any data?
-      </div>
-      <div class="collapse-content p-4"> 
-        This tool calls GSC API when you hit the "Fetch" button. All the data and credentials are stored locally and get removed once you exit the session. 
-        There are no database connections in the code. Refer to the <a href="https://github.com/TheMihirNaik/gsc-explorer-app" target="_blank" class="link">public codebase</a> to verify.
-      </div>
+    
+    <div class="text-center mt-10">
+      <a href="/dashboard/" class="btn btn-primary btn-lg">Get Started Now</a>
     </div>
-    <div class="collapse collapse-arrow bg-neutral-100 rounded-lg shadow-md mt-4">
-      <input type="radio" name="my-accordion-2" /> 
-      <div class="collapse-title text-lg md:text-xl font-medium">
-        What's worth knowing?
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-16 bg-base-200">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold">Frequently Asked Questions</h2>
+      <p class="mt-4 text-xl text-base-content/70 max-w-2xl mx-auto">
+        Everything you need to know about GSCExplorer.app
+      </p>
+    </div>
+    
+    <div class="max-w-3xl mx-auto">
+      <div class="collapse collapse-arrow bg-base-100 rounded-lg shadow-md mb-4">
+        <input type="radio" name="faq-accordion" checked="checked" /> 
+        <div class="collapse-title text-lg font-medium">
+          Why is GSCExplorer.app completely free?
+        </div>
+        <div class="collapse-content"> 
+          <p>This is my learning project. I don't have the skills to release a product where I can charge yet, but I want to learn. I just expect this to be useful in your workflow, and you put in more feature requests so I can learn more. Since the GSC API is free, the cost of running this project is just $7 per month.</p>
+        </div>
       </div>
-      <div class="collapse-content p-4"> 
-        <p>I've installed Google Analytics 4 (GA4) to help me understand how our products are being used and to learn more about user behavior. 
-          This information will help us improve your experience with our products. Personally, I want to learn more about product analytics as well.
-          <br><br>
-          Additionally, I've installed Microsoft Clarity to get insights through heatmaps and session recordings. 
-          This means I might be able to see recordings of how you interact with our site. 
-          I'm doing this to identify areas for improvement and to make our features even better for you.</p>
+      
+      <div class="collapse collapse-arrow bg-base-100 rounded-lg shadow-md mb-4">
+        <input type="radio" name="faq-accordion" /> 
+        <div class="collapse-title text-lg font-medium">
+          Is my data secure? Do you store any of my information?
+        </div>
+        <div class="collapse-content"> 
+          <p>Your data and privacy are our top priorities. This tool calls the GSC API when you hit the "Fetch" button. All data and credentials are stored locally and get removed once you exit the session. There are no database connections in the code. You can verify this by checking our <a href="https://github.com/TheMihirNaik/gsc-explorer-app" target="_blank" class="link link-primary">public codebase</a>.</p>
+        </div>
+      </div>
+      
+      <div class="collapse collapse-arrow bg-base-100 rounded-lg shadow-md mb-4">
+        <input type="radio" name="faq-accordion" /> 
+        <div class="collapse-title text-lg font-medium">
+          What analytics do you use on the site?
+        </div>
+        <div class="collapse-content"> 
+          <p>For learning purposes, I've installed Google Analytics 4 (GA4) to understand how the product is being used and to learn about user behavior. This information helps improve your experience.</p>
+          <p class="mt-2">I've also implemented Microsoft Clarity to gain insights through heatmaps and session recordings, which helps identify areas for improvement and enhance features.</p>
+        </div>
+      </div>
+      
+      <div class="collapse collapse-arrow bg-base-100 rounded-lg shadow-md mb-4">
+        <input type="radio" name="faq-accordion" /> 
+        <div class="collapse-title text-lg font-medium">
+          How does GSCExplorer.app overcome GSC's 1000-row limitation?
+        </div>
+        <div class="collapse-content"> 
+          <p>We use the Google Search Console API efficiently to fetch data beyond the standard 1000-row limitation. Our tool makes multiple API calls and combines the results to provide you with a complete dataset for comprehensive analysis.</p>
+        </div>
+      </div>
+      
+      <div class="collapse collapse-arrow bg-base-100 rounded-lg shadow-md">
+        <input type="radio" name="faq-accordion" /> 
+        <div class="collapse-title text-lg font-medium">
+          Can I contribute to the project?
+        </div>
+        <div class="collapse-content"> 
+          <p>Absolutely! GSCExplorer.app is an open-source project, and we welcome contributions. Whether you're a developer, designer, or SEO expert, you can help improve the tool. Visit our <a href="https://github.com/TheMihirNaik/gsc-explorer-app" target="_blank" class="link link-primary">GitHub repository</a> to get started.</p>
+        </div>
       </div>
     </div>
   </div>
+</section>
 
-</div>
+<!-- CTA Section -->
+<section class="py-16 bg-primary text-primary-content">
+  <div class="container mx-auto px-4 text-center">
+    <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your SEO Analysis?</h2>
+    <p class="text-xl max-w-2xl mx-auto mb-8">
+      Join hundreds of SEO professionals who are already using GSCExplorer.app to gain deeper insights from their Google Search Console data.
+    </p>
+    <a href="/dashboard/" class="btn btn-lg bg-white text-primary hover:bg-white/90">
+      Get Started for Free
+    </a>
+    <p class="mt-4 text-primary-content/80">No credit card required. 100% free forever.</p>
+  </div>
+</section>
+
+<!-- Creator Section -->
+<section class="py-10 bg-neutral-content">
+  <div class="container mx-auto px-4">
+    <div class="max-w-3xl mx-auto text-center">
+      <p class="text-base-content/70">
+        Crafted with ❤️ by <a href="https://www.mihirnaik.com/" class="link link-primary font-medium" target="_blank">Mihir Naik</a> in Toronto, Canada
+      </p>
+      <div class="mt-4 flex justify-center space-x-4">
+        <a href="https://github.com/TheMihirNaik/gsc-explorer-app" target="_blank" class="btn btn-circle btn-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+        <a href="https://twitter.com/themihirnaik" target="_blank" class="btn btn-circle btn-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+        </a>
+        <a href="https://mihirnaik.substack.com/" target="_blank" class="btn btn-circle btn-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
 
 {% endblock %}
