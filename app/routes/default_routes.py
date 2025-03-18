@@ -20,6 +20,7 @@ import pandas as pd
 import flask
 import logging
 import re
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -1862,19 +1863,26 @@ def generate_ai_meta_description():
 
 @app.route('/actionable-insights/optimize-page-content', methods=['GET', 'POST'])
 def optimize_page_content():
+    logger.info("Starting optimize_page_content route")
     if 'credentials' not in session:
+        logger.warning("No credentials in session, redirecting to GSC authorize")
         return redirect(url_for('gsc_authorize'))
     
     if request.method == 'POST':
+        logger.info("Processing POST request for optimize_page_content")
 
         selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
         brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+        logger.info(f"Selected property: {selected_property}")
+        logger.info(f"Brand keywords: {brand_keywords}")
 
         #capture variable <page> from url path
         page = request.form.get('page')
+        logger.info(f"Page URL to analyze: {page}")
 
         # scrape current title & meta description of the URL using bs4
         url = page
+        logger.info(f"Scraping content from URL: {url}")
 
         # Define headers with a real User-Agent
         headers = {
@@ -1882,16 +1890,20 @@ def optimize_page_content():
         }
 
         # Send a GET request to the URL
+        logger.info("Sending GET request to the URL")
         response = requests.get(url, headers=headers)
+        logger.info(f"Response status code: {response.status_code}")
 
         if response.status_code == 200:
             try:
+                logger.info("Parsing HTML content with BeautifulSoup")
                 # Parse the content using BeautifulSoup
                 soup = BeautifulSoup(response.content, 'html.parser')
                 
                 # Get the title
                 title_tag = soup.title
                 title = title_tag.string if title_tag else 'No title found'
+                logger.info(f"Extracted title: {title}")
                 
                 # Get the meta description
                 meta_desc = 'No description found'
@@ -1899,13 +1911,17 @@ def optimize_page_content():
                     meta_tag = soup.find('meta', attrs={'name': 'description'})
                     if meta_tag and 'content' in meta_tag.attrs:
                         meta_desc = meta_tag['content']
-                except Exception:
+                        logger.info(f"Extracted meta description: {meta_desc}")
+                except Exception as e:
+                    logger.error(f"Error extracting meta description: {e}")
                     pass  # Ensure no errors are raised during meta description extraction
 
                 # Get all content from the page
+                logger.info("Extracting page content")
                 content_html = ''
                 for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'table']):
                     content_html += str(tag)
+                logger.info(f"Extracted content length: {len(content_html)} characters")
 
             except Exception as e:
                 # Log the error if needed, but do not interrupt the app flow
@@ -1915,38 +1931,50 @@ def optimize_page_content():
                 content_html = 'No body content found'
         else:
             # Default fallback for non-200 responses
+            logger.error(f"Failed to fetch URL, status code: {response.status_code}")
             title = 'No title found'
             meta_desc = 'No description found'
             content_html = 'No body content found'
 
-
+        logger.info("Building GSC service")
         #build gsc service
         webmasters_service = build_gsc_service()
 
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
+        logger.info(f"Date range: {start_date_str} to {end_date_str}")
 
         start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
+        logger.info(f"Formatted date range: {start_date_formatted} to {end_date_formatted}")
 
         #total numbers make GSC API Calls
         dimensions = ['QUERY']
         dimensionFilterGroups = [{"filters": [
             {"dimension": "PAGE", "expression": page, "operator": "equals"},
         ]}]
+        logger.info(f"GSC query dimensions: {dimensions}")
+        logger.info(f"GSC dimension filters: {dimensionFilterGroups}")
 
         #get gsc data
+        logger.info("Fetching data from Google Search Console")
         query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
+        logger.info(f"Fetched {len(query_df)} rows of GSC data")
 
         # remove brand queries from query_df
+        logger.info("Removing brand queries from results")
         query_df = query_df[~query_df['QUERY'].str.contains('|'.join(brand_keywords), case=False)]
+        logger.info(f"After brand filtering: {len(query_df)} rows remain")
 
         # create a list of queries from query_df
         queries = query_df['QUERY'].tolist()
+        logger.info(f"Total unique queries: {len(queries)}")
 
         # tokenize queries
+        logger.info("Tokenizing queries")
         tokenized_queries = [query.split() for query in queries]
 
         # remove stop words from tokenized_queries
+        logger.info("Removing stop words")
         stop_words = set(stopwords.words('english'))
         tokenized_queries = [[word for word in query if word.lower() not in stop_words] for query in tokenized_queries]
 
@@ -1954,10 +1982,11 @@ def optimize_page_content():
         query_tokens_count = {}
 
         # count the occurrences of each token in the tokenized queries
+        logger.info("Counting token occurrences and collecting examples")
         for query in tokenized_queries:
             for token in query:
                 if token not in query_tokens_count:
-                    query_tokens_count[token] = {'count': 0, 'examples': []}
+                    query_tokens_count[token] = {'count': 0, 'examples': [], 'semantic_variations': []}
                 query_tokens_count[token]['count'] += 1
                 # Store top 5 examples for each token
                 query_rows = query_df[query_df['QUERY'] == ' '.join(query)]
@@ -1965,24 +1994,151 @@ def optimize_page_content():
                     example = query_rows.sort_values(by=['impressions'], ascending=False).head(1)['QUERY'].iloc[0]
                     if len(query_tokens_count[token]['examples']) < 5:
                         query_tokens_count[token]['examples'].append(example)
+        logger.info(f"Found {len(query_tokens_count)} unique tokens")
+
+        # Generate semantic variations for each token 
+        # using spaCy for natural language processing
+        try:
+            import spacy
+            import numpy as np
+            from collections import defaultdict
+            
+            logger.info("Starting semantic analysis with spaCy")
+            analysis_start_time = time.time()
+            
+            # Load the English model
+            try:
+                nlp = spacy.load("en_core_web_md")
+                logger.info("Successfully loaded spaCy model")
+            except:
+                # If model not found, download and load it
+                logger.warning("spaCy model not found, downloading it")
+                import subprocess
+                subprocess.run(["python", "-m", "spacy", "download", "en_core_web_md"])
+                nlp = spacy.load("en_core_web_md")
+                logger.info("Successfully downloaded and loaded spaCy model")
+            
+            # Process all tokens to get their vector representations - do this once
+            logger.info("Processing tokens with spaCy")
+            token_docs = {token: nlp(token) for token in query_tokens_count.keys()}
+            all_tokens = list(query_tokens_count.keys())
+            
+            # Process page content ONCE instead of for each token
+            logger.info("Processing page content with spaCy")
+            page_text = ' '.join([tag.get_text() for tag in soup.find_all(['h1', 'h2', 'h3', 'p'])])
+            
+            # Limit text length to avoid extremely long processing times
+            max_text_length = 10000  # Reasonable limit for analysis
+            if len(page_text) > max_text_length:
+                logger.info(f"Truncating page text from {len(page_text)} to {max_text_length} characters")
+                page_text = page_text[:max_text_length]
+                
+            page_doc = nlp(page_text.lower())
+            
+            # Extract and process noun chunks once
+            logger.info("Extracting noun chunks")
+            # Limit the number of chunks to analyze (take the first 200)
+            noun_chunks = list(page_doc.noun_chunks)[:200]
+            chunk_docs = [nlp(' '.join([token.text for token in chunk])) for chunk in noun_chunks]
+            
+            # Create a cache for similarity scores to avoid redundant calculations
+            similarity_cache = {}
+            
+            # For each token, find semantically similar terms
+            logger.info("Finding semantic variations for each token")
+            for token, details in query_tokens_count.items():
+                # Get the token's vector
+                token_doc = token_docs[token]
+                
+                # Find related terms based on semantic similarity
+                semantic_variations = []
+                for other_token in all_tokens:
+                    if other_token != token:
+                        # Check cache first
+                        cache_key = f"{token}|{other_token}"
+                        reverse_key = f"{other_token}|{token}"
+                        
+                        if cache_key in similarity_cache:
+                            similarity = similarity_cache[cache_key]
+                        elif reverse_key in similarity_cache:
+                            similarity = similarity_cache[reverse_key]
+                        else:
+                            similarity = token_doc.similarity(token_docs[other_token])
+                            similarity_cache[cache_key] = similarity
+                            
+                        if similarity > 0.6:  # Threshold for similarity
+                            semantic_variations.append({
+                                'term': other_token,
+                                'similarity': round(similarity * 100)  # Convert to percentage
+                            })
+                
+                # Add semantic variations to token details
+                details['semantic_variations'] = sorted(semantic_variations, 
+                                                      key=lambda x: x['similarity'], 
+                                                      reverse=True)[:5]  # Top 5 most similar terms
+                
+                # Calculate semantic relevance score more efficiently
+                logger.info(f"Calculating semantic relevance for token: {token}")
+                semantic_score = 0
+                
+                # Check chunk similarity in a more efficient way
+                high_similarity_chunks = 0
+                for chunk_doc in chunk_docs:
+                    # Check cache first
+                    cache_key = f"{token}|{chunk_doc.text[:20]}"  # Use first 20 chars as key
+                    if cache_key in similarity_cache:
+                        chunk_similarity = similarity_cache[cache_key]
+                    else:
+                        chunk_similarity = token_doc.similarity(chunk_doc)
+                        similarity_cache[cache_key] = chunk_similarity
+                    
+                    if chunk_similarity > 0.7:  # High semantic similarity
+                        semantic_score += chunk_similarity
+                        high_similarity_chunks += 1
+                
+                # Scale score based on number of matches and normalize (0-100 scale)
+                # Use a logarithmic scale to prevent extremely high scores for many small matches
+                if high_similarity_chunks > 0:
+                    semantic_score = min(round((semantic_score / high_similarity_chunks) * 100), 100)
+                else:
+                    semantic_score = 0
+                    
+                details['semantic_score'] = semantic_score
+                
+            analysis_end_time = time.time()
+            logger.info(f"Semantic analysis completed in {analysis_end_time - analysis_start_time:.2f} seconds")
+                
+        except Exception as e:
+            logger.error(f"Error during semantic analysis: {e}")
+            # If semantic analysis fails, add empty semantic data
+            for token in query_tokens_count:
+                if 'semantic_variations' not in query_tokens_count[token]:
+                    query_tokens_count[token]['semantic_variations'] = []
+                if 'semantic_score' not in query_tokens_count[token]:
+                    query_tokens_count[token]['semantic_score'] = 0
 
         # sort the query tokens by count in descending order
+        logger.info("Sorting query tokens by count")
         sorted_query_tokens_count = sorted(query_tokens_count.items(), key=lambda x: x[1]['count'], reverse=True)
+        logger.info(f"Top token: {sorted_query_tokens_count[0][0]} with count {sorted_query_tokens_count[0][1]['count']}")
 
-        print(type(sorted_query_tokens_count))
-
+        logger.info("Rendering template with analysis results")
         return render_template('/actionable-insights/optimize-page-content/partial.html', 
                                title=title, meta_desc=meta_desc, content_html=content_html,
                                query_tokens=sorted_query_tokens_count
                                )
     
     #get request
+    logger.info("Processing GET request for optimize_page_content")
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    logger.info(f"Selected property: {selected_property}")
 
     #capture variable <page> from url path
     page = request.args.get('page', default='')
+    logger.info(f"Page parameter: {page}")
 
+    logger.info("Rendering main template")
     return render_template('/actionable-insights/optimize-page-content/main.html', 
                            page=page,
                            selected_property=selected_property,

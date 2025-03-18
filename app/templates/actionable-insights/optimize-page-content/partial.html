@@ -27,6 +27,15 @@
                 <div class="stat-value text-success" id="keyword-coverage">0%</div>
                 <div class="stat-desc">search terms in content</div>
             </div>
+            
+            <div class="stat">
+                <div class="stat-figure text-primary">
+                    <div class="radial-progress text-primary" id="semantic-score-indicator" style="--value:0; --size:3rem">0%</div>
+                </div>
+                <div class="stat-title">Semantic Relevance</div>
+                <div class="stat-value text-primary" id="semantic-score-avg">0%</div>
+                <div class="stat-desc">topic coverage score</div>
+            </div>
         </div>
     </div>
     
@@ -39,6 +48,16 @@
                     Page Content Editor
                     <div class="badge badge-primary">Live Editing</div>
                 </h2>
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex gap-2">
+                        <button class="btn btn-sm btn-primary" id="highlight-keywords">
+                            <i class="fas fa-highlighter"></i> Highlight Keywords
+                        </button>
+                        <button class="btn btn-sm btn-secondary" id="highlight-semantic">
+                            <i class="fas fa-brain"></i> Highlight Semantic Terms
+                        </button>
+                    </div>
+                </div>
                 <div id="editor" class="ql-container ql-snow">
                     <div class="ql-editor" style="min-height: 500px;">
                         {{ content_html | safe }}
@@ -46,7 +65,6 @@
                 </div>
                 <div class="card-actions justify-end mt-4">
                     <button class="btn btn-primary" id="copy-content">Copy Content</button>
-                    <button class="btn btn-outline" id="highlight-keywords">Highlight Keywords</button>
                 </div>
             </div>
         </div>
@@ -90,7 +108,9 @@
                                     <th>Keyword</th>
                                     <th class="text-center">Volume</th>
                                     <th class="text-center">Count</th>
-                                    <th class="text-center">Status</th>
+                                    <th class="text-center">
+                                        <div class="tooltip" data-tip="Exact match count / Semantic score">Status</div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,6 +119,7 @@
                                     data-token="{{ token | lower }}" 
                                     data-token-id="token-{{token}}"
                                     data-count="{{ details.count }}"
+                                    data-semantic-score="{{ details.semantic_score }}"
                                     data-status="missing">
                                     <td>
                                         <div class="font-medium cursor-pointer hover:text-primary">{{ token }}</div>
@@ -106,12 +127,68 @@
                                     <td class="text-center">{{ details.count }}</td>
                                     <td class="text-center" id="token-{{token}}-content-count">0</td>
                                     <td class="text-center">
-                                        <div class="badge badge-ghost badge-sm" id="token-{{token}}-status">Missing</div>
+                                        <div class="flex flex-col items-center">
+                                            <div class="badge badge-ghost badge-sm mb-1" id="token-{{token}}-status">Missing</div>
+                                            <div class="tooltip tooltip-bottom" data-tip="Semantic relevance score">
+                                                <div class="text-xs text-primary">
+                                                    <span id="token-{{token}}-semantic-score">{{ details.semantic_score }}</span>%
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Semantic Analysis Section -->
+            <div class="card bg-base-100 shadow-xl mb-6">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-primary">
+                        Semantic Analysis
+                        <div class="badge badge-primary badge-outline">New</div>
+                    </h2>
+                    <p class="text-sm mb-3">This shows semantically related terms for the selected keyword.</p>
+                    
+                    <div id="semantic-analysis" class="text-sm">
+                        <div class="alert alert-info alert-sm mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Select a keyword to see related terms</span>
+                        </div>
+                        
+                        {% for token, details in query_tokens %}
+                        <div id="semantic-{{token}}" class="hidden">
+                            <div class="mb-3">
+                                <span class="font-bold text-primary">Topic: "{{ token }}"</span>
+                                <div class="mt-1">Semantic score: <span class="font-semibold">{{ details.semantic_score }}%</span></div>
+                                <div class="text-xs mb-2">This score indicates how well your content covers this topic beyond exact keyword matches.</div>
+                                
+                                <div class="divider text-xs">Related Terms</div>
+                                
+                                {% if details.semantic_variations %}
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    {% for variation in details.semantic_variations %}
+                                    <div class="badge badge-primary badge-outline tooltip" data-tip="{{ variation.similarity }}% similar">
+                                        {{ variation.term }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-xs italic">No semantic variations found</div>
+                                {% endif %}
+                                
+                                <div class="divider text-xs">Optimization Tips</div>
+                                <ul class="list-disc pl-5 space-y-1 text-xs">
+                                    <li>Consider including both "{{ token }}" and its related terms</li>
+                                    <li>Use semantically related terms for a more natural reading experience</li>
+                                    <li>Aim for a semantic score above 50% for good topic coverage</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -166,17 +243,34 @@
         }
     });
 
+    // Helper function to safely add event listeners
+    function addEventListenerSafely(id, eventType, callback) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener(eventType, callback);
+        } else {
+            console.warn(`Element with id '${id}' not found`);
+        }
+    }
+
     // Add click event listeners to keywords
     document.querySelectorAll('[data-token-id]').forEach(function(element) {
         element.addEventListener('click', function() {
-            // Hide all example divs
+            // Hide all example divs and semantic divs
             document.querySelectorAll('#example-queries > div').forEach(div => div.classList.add('hidden'));
+            document.querySelectorAll('#semantic-analysis > div[id^="semantic-"]').forEach(div => div.classList.add('hidden'));
             
-            // Show the selected example
+            // Show the selected example and semantic info
             const token = this.getAttribute('data-token');
             const exampleDiv = document.getElementById(`example-${token}`);
+            const semanticDiv = document.getElementById(`semantic-${token}`);
+            
             if (exampleDiv) {
                 exampleDiv.classList.remove('hidden');
+            }
+            
+            if (semanticDiv) {
+                semanticDiv.classList.remove('hidden');
             }
             
             // Highlight this row
@@ -215,7 +309,7 @@
     });
 
     // Filter keywords functionality
-    document.getElementById('keyword-filter').addEventListener('input', function() {
+    addEventListenerSafely('keyword-filter', 'input', function() {
         const filterText = this.value.toLowerCase();
         document.querySelectorAll('#query-tokens-container tr[data-token]').forEach(function(row) {
             const token = row.getAttribute('data-token');
@@ -231,7 +325,7 @@
     });
 
     // Highlight keywords button
-    document.getElementById('highlight-keywords').addEventListener('click', function() {
+    addEventListenerSafely('highlight-keywords', 'click', function() {
         const content = quill.getText();
         let newContent = quill.getContents().ops;
         
@@ -253,9 +347,46 @@
             }
         });
     });
+    
+    // Highlight semantic terms button
+    addEventListenerSafely('highlight-semantic', 'click', function() {
+        const content = quill.getText().toLowerCase();
+        let newContent = quill.getContents().ops;
+        
+        // Remove any existing highlights first
+        quill.setContents(newContent);
+        
+        // Get all semantic variations for all tokens
+        const semanticTerms = new Map(); // Using a Map to store term -> color
+        
+        document.querySelectorAll('[data-token-id]').forEach(function(element) {
+            const token = element.getAttribute('data-token');
+            const semanticDiv = document.getElementById(`semantic-${token}`);
+            
+            if (semanticDiv) {
+                // Find all variations in badges
+                semanticDiv.querySelectorAll('.badge').forEach(function(badge) {
+                    const term = badge.textContent.trim();
+                    semanticTerms.set(term.toLowerCase(), '#E0F2FE'); // Light blue bg for semantic terms
+                });
+            }
+            
+            // Add the main token itself with yellow highlight
+            semanticTerms.set(token.toLowerCase(), '#FFEB3B');
+        });
+        
+        // Highlight each term with its designated color
+        semanticTerms.forEach((color, term) => {
+            const regex = new RegExp(`\\b${term}\\b`, 'gi');
+            let match;
+            while ((match = regex.exec(content)) !== null) {
+                quill.formatText(match.index, term.length, { 'background': color });
+            }
+        });
+    });
 
     // Copy content button
-    document.getElementById('copy-content').addEventListener('click', function() {
+    addEventListenerSafely('copy-content', 'click', function() {
         const html = quill.root.innerHTML;
         navigator.clipboard.writeText(html).then(function() {
             this.textContent = 'Copied!';
@@ -278,11 +409,15 @@
         var tokenElements = document.querySelectorAll('[data-token-id]');
         var totalTokens = tokenElements.length;
         var tokensFound = 0;
+        var semanticScoreTotal = 0;
         
         tokenElements.forEach(function(element) {
             var token = element.getAttribute('data-token');
             var tokenId = element.getAttribute('data-token-id');
             var tokenCount = (editorContent.match(new RegExp('\\b' + token + '\\b', 'gi')) || []).length;
+            var semanticScore = parseInt(element.getAttribute('data-semantic-score') || 0);
+            
+            semanticScoreTotal += semanticScore;
             
             // Update the count in the table
             const countElement = document.getElementById(tokenId + '-content-count');
@@ -294,19 +429,42 @@
             const statusElement = document.getElementById(tokenId + '-status');
             let status = 'missing';
             
+            // Get all semantic variations for this token
+            let semanticMatches = 0;
+            const semanticDiv = document.getElementById(`semantic-${token}`);
+            if (semanticDiv) {
+                semanticDiv.querySelectorAll('.badge').forEach(function(badge) {
+                    const term = badge.textContent.trim().toLowerCase();
+                    const termCount = (editorContent.match(new RegExp('\\b' + term + '\\b', 'gi')) || []).length;
+                    if (termCount > 0) {
+                        semanticMatches++;
+                    }
+                });
+            }
+            
+            // Calculate combined score (exact matches + semantic matches)
+            const hasSemanticMatches = semanticMatches > 0;
+            
             if (statusElement) {
                 if (tokenCount === 0) {
-                    statusElement.textContent = 'Missing';
-                    statusElement.className = 'badge badge-error badge-sm';
-                    status = 'missing';
+                    if (hasSemanticMatches) {
+                        statusElement.textContent = 'Semantic';
+                        statusElement.className = 'badge badge-primary badge-sm mb-1';
+                        status = 'present'; // Count as present if semantic matches found
+                        tokensFound++; 
+                    } else {
+                        statusElement.textContent = 'Missing';
+                        statusElement.className = 'badge badge-error badge-sm mb-1';
+                        status = 'missing';
+                    }
                 } else if (tokenCount === 1) {
                     statusElement.textContent = 'Present';
-                    statusElement.className = 'badge badge-warning badge-sm';
+                    statusElement.className = 'badge badge-warning badge-sm mb-1';
                     status = 'present';
-                    tokensFound++; // Count as found even if only present once
+                    tokensFound++; 
                 } else {
                     statusElement.textContent = 'Optimized';
-                    statusElement.className = 'badge badge-success badge-sm';
+                    statusElement.className = 'badge badge-success badge-sm mb-1';
                     status = 'optimized';
                     tokensFound++;
                 }
@@ -323,16 +481,27 @@
         var coveragePercent = totalTokens > 0 ? Math.round((tokensFound / totalTokens) * 100) : 0;
         document.getElementById('keyword-coverage').textContent = coveragePercent + '%';
         
-        // Update radial progress
+        // Update semantic score average
+        var semanticScoreAvg = totalTokens > 0 ? Math.round(semanticScoreTotal / totalTokens) : 0;
+        document.getElementById('semantic-score-avg').textContent = semanticScoreAvg + '%';
+        
+        // Update radial progress indicators
         const coverageIndicator = document.getElementById('keyword-coverage-indicator');
         coverageIndicator.style.setProperty('--value', coveragePercent);
         coverageIndicator.textContent = coveragePercent + '%';
+        
+        const semanticIndicator = document.getElementById('semantic-score-indicator');
+        semanticIndicator.style.setProperty('--value', semanticScoreAvg);
+        semanticIndicator.textContent = semanticScoreAvg + '%';
     }
 
     quill.on('text-change', updateCounts);
 
     // Set initial counts - run it immediately to initialize properly
-    setTimeout(updateCounts, 500);
+    setTimeout(updateCounts, 1000);
+    
+    // Run it again after a longer delay as a fallback (sometimes the first run happens before content is fully loaded)
+    setTimeout(updateCounts, 2000);
 </script>
 
 </div>

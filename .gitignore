@@ -162,3 +162,4 @@ cython_debug/
 #.idea/
 app/routes/from flask import render_template, reque.py
 app/routes/@ -8,7 +8,7 @@.html
+app.log*
