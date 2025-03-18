@@ -130,29 +130,53 @@
 
     <!-- Customer Feedback Modal-->
     <div>
-    <!-- Open the modal using ID.showModal() method -->  
-    <button id="feedbackButton" class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-3 shadow-lg" 
+    <button id="feedbackButton" class="fixed bottom-4 right-4 bg-primary text-white rounded-full p-4 shadow-lg hover:bg-primary-focus transition-all duration-300 transform hover:scale-110" 
     onclick="my_modal_2.showModal()">
-      <i class="fa fa-comment"></i> Share Feedback
+      <i class="fa fa-comment text-xl"></i>
     </button>
 
-    <!-- Open the modal using ID.showModal() method -->
-    
     <dialog id="my_modal_2" class="modal">
-      <div class="modal-box p-8">
-        <h3 class="font-bold text-lg mb-5">Share your feedback, comments, and suggestions</h3>
-        <p class="mb-5"> I'm eager to learn more about issues you are facing, so please let me know. All responses are <a href="https://docs.google.com/spreadsheets/d/16HKm5ytVzMMyw4vjim-hJyPvq5Z876ZAN8GmFD9Hgz8/edit?usp=sharing" class="link" target="_blank">collected here</a>.</p>
+      <div class="modal-box p-8 max-w-2xl">
+        <div class="flex items-center gap-3 mb-6">
+          <i class="fa fa-comment-dots text-3xl text-primary"></i>
+          <h3 class="font-bold text-2xl">Help Us Improve!</h3>
+        </div>
         
-        <div id="feedback-response">
-          
-          <form class="form" id="form-feedback">
-            <input type="text" name="customer_feedback" placeholder='Enter your Feedback' class="input input-bordered input-lg w-full"><br><br>
-            <input type="submit" id="sub" class="btn btn-active btn-primary">
+        <div class="space-y-4">
+          <p class="text-lg">Your feedback helps us make GSCExplorer.App better for everyone. We'd love to hear:</p>
+          <ul class="list-disc list-inside space-y-2 text-base-content/80">
+            <li>What features you find most useful</li>
+            <li>What could be improved</li>
+            <li>Any bugs or issues you've encountered</li>
+            <li>Suggestions for new features</li>
+          </ul>
+        </div>
+
+        <div id="feedback-response" class="mt-6">
+          <form class="form space-y-4" id="form-feedback">
+            <div class="form-control">
+              <textarea 
+                name="customer_feedback" 
+                placeholder="Share your thoughts here..." 
+                class="textarea textarea-bordered h-32 text-base"
+                required
+              ></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+              <button type="button" class="btn btn-ghost" onclick="my_modal_2.close()">Cancel</button>
+              <button type="submit" id="sub" class="btn btn-primary">
+                <i class="fa fa-paper-plane mr-2"></i>Submit Feedback
+              </button>
+            </div>
           </form>
           
-          <p id="msg" class="py-2"></p> <!-- Element to display API response -->
+          <p id="msg" class="py-2 text-center"></p>
         </div>
-        <p class="py-2">Press ESC key or click outside to close</p>
+
+        <div class="mt-6 text-sm text-base-content/60">
+          <p>All feedback is collected in our <a href="https://docs.google.com/spreadsheets/d/16HKm5ytVzMMyw4vjim-hJyPvq5Z876ZAN8GmFD9Hgz8/edit?usp=sharing" class="link link-primary" target="_blank">feedback spreadsheet</a>.</p>
+          <p class="mt-2">Press ESC or click outside to close</p>
+        </div>
       </div>
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
@@ -162,10 +186,13 @@
     </div>
     
     <script>
-      let form = document.querySelector("#form-feedback"); // Select form using id
+      let form = document.querySelector("#form-feedback");
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        document.querySelector("#sub").value = "Submitting..";
+        const submitBtn = document.querySelector("#sub");
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>Submitting...';
+        
         let data = new FormData(form);
         fetch('https://script.google.com/macros/s/AKfycbzBS2FGa1_tkH-6LtUHKnRUY7v2xSu9g8-yp5OfMxY6WyEiKZnQL_Fo2B5SGgdflWQ5rg/exec', {
             method: "POST",
@@ -173,8 +200,17 @@
           })
           .then(res => res.text())
           .then(data => {
-            document.querySelector("#msg").innerHTML = data; // Display response in #msg element
-            document.querySelector("#sub").value = "Submit";
+            document.querySelector("#msg").innerHTML = data;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa fa-paper-plane mr-2"></i>Submit Feedback';
+            if (data.includes("success")) {
+              form.reset();
+            }
+          })
+          .catch(error => {
+            document.querySelector("#msg").innerHTML = "Sorry, there was an error submitting your feedback. Please try again.";
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa fa-paper-plane mr-2"></i>Submit Feedback';
           });
       });
     </script>
