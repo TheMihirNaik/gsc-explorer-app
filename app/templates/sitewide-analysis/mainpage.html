@@ -79,19 +79,53 @@
 
 
 
-  <!-- Loading Spinner-->
+  <!-- Hidden skeleton template for JavaScript to reuse -->
+  <div id="skeleton-template" style="display: none;">
+    {% include '/sitewide-analysis/skeleton.html' %}
+  </div>
+
+  <!-- Content Area - Shows helpful message initially, replaced by skeleton/data when Fetch Data is clicked -->
   <div id="sitewide-analysis">
-    
-    <!-- Explainer-->
-    <div role="alert" class="alert mt-5 bg-primary-content max-w-fit">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      <span> 
-          After clicking the "Fetch Data" button, please be patient as the data loads. 
-          <br> The wait time may vary based on the amount of data being processed.
-          <p class="text-sm">
-              If the process exceeds 2 minutes, consider narrowing your date range to 7 days for quicker results.
-          </p>
-      </span>
+    <!-- Initial State - Only shown before user clicks Fetch Data -->
+    <div class="mt-10 text-center">
+      <div role="alert" class="alert alert-info shadow-lg max-w-2xl mx-auto mb-5">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div>
+          <h3 class="font-bold">Ready to analyze your data!</h3>
+          <div class="text-sm">
+            Select a date range above and click <strong>"Fetch Data"</strong> to see your sitewide brand vs non-brand analysis.
+            <br>
+            <span class="text-xs opacity-75 mt-2 block">
+              💡 Tip: Start with a 7-day range for faster results, then expand if needed.
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Feature highlights -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mt-8">
+        <div class="card bg-base-200 shadow">
+          <div class="card-body text-center">
+            <div class="text-3xl mb-2">📊</div>
+            <h3 class="card-title text-lg justify-center">GSC Metrics</h3>
+            <p class="text-sm">Clicks, Impressions, CTR & Position by Brand vs Non-Brand</p>
+          </div>
+        </div>
+        <div class="card bg-base-200 shadow">
+          <div class="card-body text-center">
+            <div class="text-3xl mb-2">📈</div>
+            <h3 class="card-title text-lg justify-center">Interactive Charts</h3>
+            <p class="text-sm">Pre-built visualizations with time-series analysis</p>
+          </div>
+        </div>
+        <div class="card bg-base-200 shadow">
+          <div class="card-body text-center">
+            <div class="text-3xl mb-2">♾️</div>
+            <h3 class="card-title text-lg justify-center">No Limits</h3>
+            <p class="text-sm">Export unlimited rows beyond GSC's 1,000 limit</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -126,6 +160,30 @@
   
       cb(start, end);
   
+  });
+
+  // Show skeleton screen when HTMX request starts (user clicks Fetch Data)
+  document.body.addEventListener('htmx:beforeRequest', function(event) {
+    // Check if this is our form submission
+    const form = event.detail.elt;
+    if (form && form.id === 'dateRangeForm') {
+      const target = document.getElementById('sitewide-analysis');
+      const skeletonTemplate = document.getElementById('skeleton-template');
+      
+      if (target && skeletonTemplate) {
+        // Always show skeleton when Fetch Data is clicked (replaces initial state or previous data)
+        const skeletonHTML = skeletonTemplate.innerHTML;
+        
+        // Replace with skeleton immediately for better UX
+        target.innerHTML = `
+          <div role="alert" class="alert alert-info mt-5 mb-5">
+            <span class="loading loading-spinner loading-sm"></span>
+            <span>Loading data from Google Search Console... Please wait.</span>
+          </div>
+          ${skeletonHTML}
+        `;
+      }
+    }
   });
 </script>
 
