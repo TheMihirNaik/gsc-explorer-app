@@ -8,9 +8,9 @@
 <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
 
 <!-- Website Name & Brand Term Section-->
-<div class="container px-4 max-w-7xl">
+<div class="container mx-auto px-4 max-w-7xl">
   <!-- Property Info Cards -->
-  <div class="flex flex-col sm:flex-row gap-4 ">
+  <div class="flex flex-col sm:flex-row gap-4 mb-8">
     <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -31,41 +31,34 @@
         </div>
     </div>
   </div>
-</div>
-
-
-<div class="row-auto p-2">
 
   <!-- H1 Heading -->
-  <div class="row-auto p-2">
-    <h1 class="text-5xl font-bold mt-2 mb-2 justify-center flex-row">Optimize Title & Meta Descriptions : </h1>
-    <p>Selected Page : <a href="{{ page }}" target="_blank" class="link" id="page">{{ page }}</a></p>
-  </div>
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold mb-4">Optimize Title & Meta Descriptions</h1>
+    <p class="mb-6">Selected Page : <a href="{{ page }}" target="_blank" class="link" id="page">{{ page }}</a></p>
 
-  <!-- GSC Data Form -->
-  <div class="row-auto p-2">
-
-
-    <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;" class="inline-block max-w-fit mr-5">
-      <i class="fa fa-calendar"></i>&nbsp;
-      <span></span> <i class="fa fa-caret-down"></i>
+    <!-- GSC Data Form -->
+    <div class="mb-8">
+      <div class="flex flex-wrap items-center gap-3">
+        <div id="reportrange" class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
+          <i class="fa fa-calendar"></i>&nbsp;
+          <span></span> <i class="fa fa-caret-down"></i>
+        </div>
+        
+        <form id="dateRangeForm" hx-post="/actionable-insights/optimize-ctr" hx-swap="innerHTML" hx-target="#pages-aggregate-data" class="inline-flex items-center gap-3">
+          <input type="hidden" name="start_date" id="start_date">
+          <input type="hidden" name="end_date" id="end_date">
+          <input type="hidden" name="page" id="page" value="{{ page }}">
+          <button type="submit" class="btn btn-primary">Fetch Data</button>
+          <span class="loading loading-dots loading-lg htmx-indicator"></span>
+        </form>
+      </div>
     </div>
-    
-    <form id="dateRangeForm" hx-post="/actionable-insights/optimize-ctr" hx-swap="innerHTML" hx-target="#pages-aggregate-data" class="inline-block">
-      <input type="hidden" name="start_date" id="start_date">
-      <input type="hidden" name="end_date" id="end_date">
-      <input type="hidden" name="page" id="page" value="{{ page }}">
-      <button type="submit" class="btn btn-primary">Fetch Data</button>
-      <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
-    </form>
-
   </div>
 
-
-  <div id="pages-aggregate-data">
-
+  <div id="pages-aggregate-data" class="mt-8">
     <!-- Explainer-->
-    <div role="alert" class="alert mt-2 bg-primary-content text-sm max-w-fit">
+    <div role="alert" class="alert alert-info shadow-lg max-w-3xl mb-6">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
       <span> 
           Once you hit "Fetch Data" button, depending on the size of your data, you will have to wait for a couple of mins on this page.
@@ -75,9 +68,7 @@
           
       </span>
     </div>
-
   </div>
-
 </div>
 
 

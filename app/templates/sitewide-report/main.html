@@ -7,9 +7,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script> -->
 
-<div class="container px-4 max-w-7xl">
+<div class="container mx-auto px-4 max-w-7xl">
   <!-- Property Info Cards -->
-  <div class="flex flex-col sm:flex-row gap-4 mb-4">
+  <div class="flex flex-col sm:flex-row gap-4 mb-8">
     <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -30,37 +30,31 @@
         </div>
     </div>
   </div>
-</div>
-
-<div class="row-auto p-2">
 
   <!-- H1 Heading -->
-  <div class="row-auto p-2">
-    
-    <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">Sitewide Overview</h1>
-    
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold mb-8">Sitewide Overview</h1>
 
     <!-- GSC Data Form -->
-    <div class="row-auto p-2">
-      
-      <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;" 
-        class="inline-block max-w-fit mr-5">
-        <i class="fa fa-calendar"></i>&nbsp;
-        <span></span> 
-        <i class="fa fa-caret-down"></i>
+    <div class="mb-8">
+      <div class="flex flex-wrap items-center gap-3">
+        <div id="reportrange" class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
+          <i class="fa fa-calendar"></i>&nbsp;
+          <span></span> 
+          <i class="fa fa-caret-down"></i>
+        </div>
+        
+        <form id="dateRangeForm" hx-post="/reports/sitewide-overview/" 
+        hx-swap="innerHTML" hx-target="#sitewide-report" class="inline-flex items-center gap-3" hx-indicator="#loading-spinner">
+          <input type="hidden" name="start_date" id="start_date">
+          <input type="hidden" name="end_date" id="end_date">
+          <button type="submit" class="btn btn-primary">Fetch Data</button>
+          <span class="loading loading-dots loading-lg htmx-indicator" id="loading-spinner"></span>
+        </form>
       </div>
-      
-      <form id="dateRangeForm" hx-post="/reports/sitewide-overview/" 
-      hx-swap="innerHTML" hx-target="#sitewide-report" class="inline-block" hx-indicator="#loading-spinner">
-        <input type="hidden" name="start_date" id="start_date">
-        <input type="hidden" name="end_date" id="end_date">
-        <button type="submit" class="btn btn-primary">Fetch Data</button>
-        <span class="loading loading-dots loading-lg htmx-indicator align-middle" id="loading-spinner"></span>
-      </form>
-
     </div>
 
-    <div class="collapse collapse-plus max-w-fit bg-base-200">
+    <div class="collapse collapse-plus bg-base-200 rounded-lg shadow-sm mb-6">
       <input type="checkbox" class="peer" />
       <div class="collapse-title text-lg font-medium cursor-pointer">
         🔋 What's more than Google Search Console?
@@ -75,17 +69,11 @@
         </p>
       </div>
     </div>
-    
   </div>
-  
-  
-  
 
-
-  <div id="sitewide-report">
-
+  <div id="sitewide-report" class="mt-8">
     <!-- Explainer-->
-    <div role="alert" class="alert mt-5 bg-primary-content max-w-fit">
+    <div role="alert" class="alert alert-info shadow-lg max-w-3xl mb-6">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
       <span> 
           After clicking the "Fetch Data" button, please be patient as the data loads. 
@@ -99,7 +87,6 @@
     <!-- HTMX Indicator-->
     <span id="loading-spinner" class="loading loading-dots loading-lg htmx-indicator align-middle">Please Wait.</span>
   </div>
-
 </div>
 
 

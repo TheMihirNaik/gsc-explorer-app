@@ -7,7 +7,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
 
-<div class="container px-4 max-w-7xl">
+<div class="container mx-auto px-4 max-w-7xl">
   <!-- Property Info Cards -->
   <div class="flex flex-col sm:flex-row gap-4 mb-4">
     <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
@@ -30,34 +30,30 @@
         </div>
     </div>
   </div>
-</div>
 
-<div class="row-auto">
   <!-- H1 Heading -->
-  <div class="row-auto p-2 align-middle">
-    <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">Sitewide Analysis</h1>
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold mb-8">Sitewide Analysis</h1>
 
-
-    <div class="flex flex-row">
+    <div class="mb-8">
+      <div class="flex flex-wrap items-center gap-3">
         <!-- Date Range Picker -->
-        <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;" 
-        class="inline-block max-w-fit mr-5 align-middle">
-        <i class="fa fa-calendar"></i>&nbsp;
-        <span></span> <i class="fa fa-caret-down"></i>
+        <div id="reportrange" class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
+          <i class="fa fa-calendar"></i>&nbsp;
+          <span></span> <i class="fa fa-caret-down"></i>
         </div>
 
         <!-- Fetch Data Button -->
-
-        <form id="dateRangeForm" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis" class="inline-block">
-        <input type="hidden" name="start_date" id="start_date">
-        <input type="hidden" name="end_date" id="end_date">
-        <button type="submit" class="btn btn-primary">Fetch Data</button>
-        <span class="loading loading-dots loading-lg htmx-indicator align-middle"></span>
+        <form id="dateRangeForm" hx-post="/charts/sitewide-brand-vs-non-brand/" hx-swap="innerHTML" hx-target="#sitewide-analysis" class="inline-flex items-center gap-3">
+          <input type="hidden" name="start_date" id="start_date">
+          <input type="hidden" name="end_date" id="end_date">
+          <button type="submit" class="btn btn-primary">Fetch Data</button>
+          <span class="loading loading-dots loading-lg htmx-indicator"></span>
         </form>
-
+      </div>
     </div>
 
-    <div class="collapse collapse-plus max-w-fit bg-base-200 mt-5">
+    <div class="collapse collapse-plus bg-base-200 rounded-lg shadow-sm mb-6">
       <input type="checkbox" class="peer" />
       <div class="collapse-title text-lg font-medium cursor-pointer">
         🔋 What's more than Google Search Console?
@@ -72,9 +68,6 @@
         </p>
       </div>
     </div>
-
-   
-
   </div>
 
 
@@ -85,10 +78,10 @@
   </div>
 
   <!-- Content Area - Shows helpful message initially, replaced by skeleton/data when Fetch Data is clicked -->
-  <div id="sitewide-analysis">
+  <div id="sitewide-analysis" class="mt-8">
     <!-- Initial State - Only shown before user clicks Fetch Data -->
     <div class="mt-10 text-center">
-      <div role="alert" class="alert alert-info shadow-lg max-w-2xl mx-auto mb-5">
+      <div role="alert" class="alert alert-info shadow-lg max-w-3xl mx-auto mb-5">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <div>
           <h3 class="font-bold">Ready to analyze your data!</h3>
@@ -128,7 +121,6 @@
       </div>
     </div>
   </div>
-
 </div>
 
 
@@ -176,7 +168,7 @@
         
         // Replace with skeleton immediately for better UX
         target.innerHTML = `
-          <div role="alert" class="alert alert-info mt-5 mb-5">
+          <div role="alert" class="alert alert-info shadow-lg max-w-3xl mb-6">
             <span class="loading loading-spinner loading-sm"></span>
             <span>Loading data from Google Search Console... Please wait.</span>
           </div>

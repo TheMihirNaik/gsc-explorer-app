@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<div class="container px-4 max-w-4xl">
+<div class="container mx-auto px-4 max-w-4xl">
     <h1 class="text-4xl font-bold mt-8 mb-6">Search Console Setup</h1>
 
     <!-- Info Alert -->
@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <form action="/gsc-property-selection/" method="POST" class="space-y-8">
+    <form action="/gsc-property-selection/" method="POST" class="space-y-6">
         <!-- Property Selection Card -->
         <div class="card bg-base-200 shadow-xl">
             <div class="card-body">
@@ -121,7 +121,7 @@
                     </div>
                     <p class="text-sm mb-2">Based on your search data, we've identified these potential brand terms. Each is a single word that might represent your brand. Click to add them.</p>
                     <div id="suggested-keywords-list" class="flex flex-wrap gap-2 mb-3"></div>
-                    <div class="flex gap-2">
+                    <div class="flex gap-3">
                         <button id="use-suggestions-btn" type="button" class="btn btn-sm btn-outline btn-primary">
                             Use All Suggestions
                         </button>

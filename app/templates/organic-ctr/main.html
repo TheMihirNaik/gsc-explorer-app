@@ -7,7 +7,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
 
-<div class="container px-4 max-w-7xl">
+<div class="container mx-auto px-4 max-w-7xl">
   <!-- Property Info Cards -->
   <div class="flex flex-col sm:flex-row gap-4 mb-8">
     <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
@@ -31,30 +31,26 @@
     </div>
   </div>
 
-  <div class="row-auto p-2">
+  <!-- H1 Heading -->
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold mb-8">Organic CTR Analysis</h1>
 
-    <!-- H1 Heading -->
-    <div class="row-auto p-2">
-      
-      <h1 class="text-2xl font-bold mt-5 mb-5 justify-center flex-row">Organic CTR Analysis</h1>
-
-      <!-- GSC Data Form -->
-      <div class="row-auto p-2">
-
-        <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;" 
-          class="inline-block max-w-fit mr-5">
+    <!-- GSC Data Form -->
+    <div class="mb-8">
+      <div class="flex flex-wrap items-center gap-3">
+        <div id="reportrange" class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
           <i class="fa fa-calendar"></i>&nbsp;
           <span></span> 
           <i class="fa fa-caret-down"></i>
         </div>
         
-        <form id="dateRangeForm" hx-post="/charts/organic-ctr/" hx-swap="innerHTML" hx-target="#pages-aggregate-data" class="inline-block" 
+        <form id="dateRangeForm" hx-post="/charts/organic-ctr/" hx-swap="innerHTML" hx-target="#pages-aggregate-data" class="inline-flex items-center gap-3" 
         hx-indicator="#loading-spinner">
           <input type="hidden" name="start_date" id="start_date">
           <input type="hidden" name="end_date" id="end_date">
           
-          <select name="country" id="country" class="select select-bordered w-200 mr-5" required>
-            <option value="" disabled selected class="w-200">Select Country</option>
+          <select name="country" id="country" class="select select-bordered" required>
+            <option value="" disabled selected>Select Country</option>
             <option value="All">All Countries</option>
             {% for country in countries %}
               <option value="{{ country }}">{{country}}</option>
@@ -62,29 +58,32 @@
           </select>
           
           <button type="submit" class="btn btn-primary">Fetch Data</button>
-          <span class="loading loading-dots loading-lg htmx-indicator align-middle" id="loading-spinner"></span>
+          <span class="loading loading-dots loading-lg htmx-indicator" id="loading-spinner"></span>
         </form>
-
       </div>
+    </div>
 
 
-      <!-- Hidden Alert -->
-      <div role="alert" class="alert max-w-fit hidden">
-        <p class="text-sm mt-0">🔋 What's more than Google Search Console?</p>
-        <p class="text-xs mt-2">
+    <div class="collapse collapse-plus bg-base-200 rounded-lg shadow-sm mb-6">
+      <input type="checkbox" class="peer" />
+      <div class="collapse-title text-lg font-medium cursor-pointer">
+        🔋 What's more than Google Search Console?
+      </div>
+      <div class="collapse-content">
+        <p class="text-sm mt-2">
           💡 Period over Period and Year over Year Comparison %
           <br>💡 Filtering & Sorting Options for each Columns
           <br>💡 Export Data in CSV, Excel, PDF or Print
           <br>💡 No Limit of 1000 Rows of Data
+        </p>
       </div>
-
     </div>
+  </div>
 
-    <!-- Add a Two Column Grid using DaisyUi-->
-    <div id="pages-aggregate-data">
-
-      <!-- Explainer-->
-      <div role="alert" class="alert mt-2 bg-primary-content text-sm max-w-fit">
+  <!-- Add a Two Column Grid using DaisyUi-->
+  <div id="pages-aggregate-data" class="mt-8">
+    <!-- Explainer-->
+    <div role="alert" class="alert alert-info shadow-lg max-w-3xl mb-6">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span> 
             Once you hit "Fetch Data" button, depending on the size of your data, you will have to wait for a couple of mins on this page.
@@ -94,10 +93,7 @@
             
         </span>
       </div>
-
     </div>
-
-  </div>
 </div>
 
 

@@ -7,56 +7,67 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script> -->
 
-<!-- Website Name & Brand Term Section-->
+<div class="container mx-auto px-4 max-w-7xl">
+  <!-- Property Info Cards -->
+  <div class="flex flex-col sm:flex-row gap-4 mb-8">
+    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <div class="text-sm opacity-75">GSC Property</div>
+        <div class="font-bold">{{ selected_property}}</div>
+      </div>
+    </div>
 
-
-<div class="flex flex-row">
-
-  <div role="alert" class="alert alert-success max-w-fit pr-10">
-    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-    <b>GSC Property : </b>
-    <span>{{ selected_property}}</span>
+    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <div class="text-sm opacity-75">Brand Terms</div>
+        <div class="font-bold">{{ brand_keywords }}</div>
+      </div>
+    </div>
   </div>
-
-  <div role="alert" class="alert alert-success max-w-fit pr-10 ml-10">
-    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-    <span><b>Brand Terms :</b>  {{ brand_keywords }}</span>
-  </div>
-
-</div>
-
-<div class="row-auto p-2">
 
   <!-- H1 Heading -->
-  <div class="row-auto p-2">
-    <h1 class="text-5xl font-bold mt-5 mb-5 justify-center flex-row">Sitewide Overview</h1>
-    <div role="alert" class="alert max-w-fit inline-block">
-      <p class="text-lg mt-2">🔋 What's more than Google Search Console?</p>
-      <p class="text-sm mt-2">
-        💡 GSC Metrics(Clicks, Impressions, CTR, Positions) in Aggregate, By Country & By Device
-        <br>💡 Period over Period and Year over Year Comaparison
-        <br>💡 Filtering & Sorting Options for each Columns
-        <br>💡 Export Data in CSV, Excel, PDF or Print
-        <br>💡 No Limit of 1000 Rows of Data
-    </div>
-  </div>
-  
-  
-  <!-- GSC Data Form -->
-  <div class="row-auto p-2">
-
-    <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;" class="inline-block max-w-fit mr-5">
-      <i class="fa fa-calendar"></i>&nbsp;
-      <span></span> <i class="fa fa-caret-down"></i>
-    </div>
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold mb-8">Sitewide Overview</h1>
     
-    <form id="dateRangeForm" hx-post="/gsc-celery-test/" 
-        hx-trigger="submit" hx-target="#taskStatus" hx-swap="innerHTML" hx-indicator="#loading-spinner">
-        <input type="hidden" name="start_date" id="start_date">
-        <input type="hidden" name="end_date" id="end_date">
-        <button type="submit" class="btn btn-primary">Fetch Data</button>
-        <span class="loading loading-dots loading-lg htmx-indicator" id="loading-spinner"></span>
-    </form>
+    <div class="collapse collapse-plus bg-base-200 rounded-lg shadow-sm mb-6">
+      <input type="checkbox" class="peer" />
+      <div class="collapse-title text-lg font-medium cursor-pointer">
+        🔋 What's more than Google Search Console?
+      </div>
+      <div class="collapse-content">
+        <p class="text-sm mt-2">
+          💡 GSC Metrics(Clicks, Impressions, CTR, Positions) in Aggregate, By Country & By Device
+          <br>💡 Period over Period and Year over Year Comparison
+          <br>💡 Filtering & Sorting Options for each Columns
+          <br>💡 Export Data in CSV, Excel, PDF or Print
+          <br>💡 No Limit of 1000 Rows of Data
+        </p>
+      </div>
+    </div>
+
+    <!-- GSC Data Form -->
+    <div class="mb-8">
+      <div class="flex flex-wrap items-center gap-3">
+        <div id="reportrange" class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
+          <i class="fa fa-calendar"></i>&nbsp;
+          <span></span> <i class="fa fa-caret-down"></i>
+        </div>
+        
+        <form id="dateRangeForm" hx-post="/gsc-celery-test/" 
+            hx-trigger="submit" hx-target="#taskStatus" hx-swap="innerHTML" hx-indicator="#loading-spinner" class="inline-flex items-center gap-3">
+            <input type="hidden" name="start_date" id="start_date">
+            <input type="hidden" name="end_date" id="end_date">
+            <button type="submit" class="btn btn-primary">Fetch Data</button>
+            <span class="loading loading-dots loading-lg htmx-indicator" id="loading-spinner"></span>
+        </form>
+      </div>
+    </div>
 
     <!-- Fetch Task Status-->
     <div id="taskStatus">
@@ -69,9 +80,9 @@
     <div id="response-container" hx-get="/task-status/{{ task_id }}" hx-trigger="load" hx-swap="innerHTML" hx-indicator="#loading-spinner" hx-poll="5000">
         <!-- Task results will be loaded here -->
     </div>
-
-    
+    </div>
   </div>
+</div>
 
  
 <script type="text/javascript">
