@@ -11,7 +11,7 @@
   
 
   <!-- Title & Meta Description Analysis -->
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-2 gap-6">
     
     <!-- Title Analysis -->
     <div class="card bg-neutral-content">
@@ -22,7 +22,7 @@
         
         <p id="existing_title" class="text-sm">{{ title }}</p>
 
-        <h2 class="card-title mt-5 text-base">Terms Analysis:</h2>
+        <h2 class="card-title mt-6 text-base">Terms Analysis:</h2>
         
         <ul class="mt-2">
         {% for token in title_query_tokens_count %}
@@ -48,7 +48,7 @@
             {{ h1 }}
         </div>
         
-        <button id="generate-title-btn" onclick="generateAITitle()" class="btn btn-primary max-w-fit mt-5">
+        <button id="generate-title-btn" onclick="generateAITitle()" class="btn btn-primary max-w-fit mt-6">
             <i class="fa-solid fa-robot"></i> Generate AI-assisted Title
         </button>
 
@@ -63,7 +63,7 @@
         
         <p id="existing_meta_desc" class="text-sm">{{ meta_desc }}</p>
   
-        <h2 class="card-title mt-5 text-base">Terms Analysis:</h2>
+        <h2 class="card-title mt-6 text-base">Terms Analysis:</h2>
 
         <ul class="mt-2">
             {% for token in title_query_tokens_count %}
@@ -88,7 +88,7 @@
             {{ h1 }}
         </div>
         
-        <button id="generate-meta-desc-btn" onclick="generateAIMetaDescription()" class="btn btn-primary max-w-fit mt-5">
+        <button id="generate-meta-desc-btn" onclick="generateAIMetaDescription()" class="btn btn-primary max-w-fit mt-6">
             <i class="fa-solid fa-robot"></i> Generate AI-assisted Meta Description
         </button>
 
@@ -125,7 +125,7 @@
     
   </div>
 
-  <h2 class="text-2xl font-bold mt-10"> GSC Search Queries in Top 10 Positions</h2>
+  <h2 class="text-2xl font-bold mb-12"> GSC Search Queries in Top 10 Positions</h2>
 
   {{ query_list }}
 
