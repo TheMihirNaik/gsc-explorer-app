@@ -51,7 +51,7 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
             </svg>
-            <span class="relative z-10">Get Started Free</span>
+            <span class="relative z-10">{% if has_gsc_credentials %}Continue to Dashboard{% else %}Get Started Free{% endif %}</span>
           </a>
           <a href="#features" class="btn btn-outline btn-lg gap-2 transition-all duration-300 hover:bg-base-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -291,7 +291,7 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
         </svg>
-        Get Started Now
+        {% if has_gsc_credentials %}Continue to Dashboard{% else %}Get Started Now{% endif %}
       </a>
     </div>
   </div>
@@ -438,7 +438,7 @@ GSCExplorer.app is a powerful, completely free tool that lets you analyze your G
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
-      Get Started for Free
+      {% if has_gsc_credentials %}Continue to Dashboard{% else %}Get Started for Free{% endif %}
     </a>
     <p class="mt-4 text-primary-content/80 animate__animated animate__fadeIn animate__delay-2s">No credit card required. 100% free forever. ✨</p>
   </div>

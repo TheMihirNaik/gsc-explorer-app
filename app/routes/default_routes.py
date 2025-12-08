@@ -35,7 +35,9 @@ def format_number(value):
 # Homepage
 @app.route('/')
 def home():
-    return render_template('/default/homepage.html')
+    # Check if GSC credentials are stored in the session
+    has_gsc_credentials = 'credentials' in flask.session
+    return render_template('/default/homepage.html', has_gsc_credentials=has_gsc_credentials)
 
 #Dashboard
 @app.route('/dashboard/')
