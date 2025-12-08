@@ -120,20 +120,36 @@ gunicorn run:app --timeout 180
 
 ## 🐳 Deployment
 
-The project includes configuration for Heroku deployment:
+The project includes configuration files for deployment:
 
-- `Procfile` - Defines web process
-- `runtime.txt` - Specifies Python version
+- `Procfile` - Defines web process (Gunicorn)
+- `runtime.txt` - Specifies Python version (3.11.4)
 
-### Heroku Deployment Steps
+### General Deployment Steps
 
-1. Create a Heroku app
-2. Set environment variables in Heroku dashboard
-3. Deploy using Git:
+1. **Set up your hosting platform** (e.g., Coolify, Railway, Render, DigitalOcean, AWS, etc.)
 
-```bash
-git push heroku main
-```
+2. **Configure environment variables** in your platform's dashboard:
+   - `SECRET_KEY` - Flask secret key (generate a strong random key)
+   - `FLASK_ENV=production` - Set to production mode
+   - `GOOGLE_CLIENT_ID` - Google OAuth client ID (if using environment variables instead of `client_secrets.json`)
+   - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret (if using environment variables)
+
+3. **Upload OAuth credentials**:
+   - Upload `client_secrets.json` to your server, or
+   - Configure OAuth credentials through environment variables
+
+4. **Deploy the application**:
+   - Connect your Git repository to your hosting platform
+   - The platform will automatically build and deploy using the configuration files
+   - Ensure the web process runs: `gunicorn run:app --timeout 180`
+
+### Production Considerations
+
+- Use HTTPS/SSL certificates for secure OAuth authentication
+- Set up proper logging and monitoring
+- Configure appropriate timeout values for long-running requests
+- Ensure Python 3.11+ is available on your hosting platform
 
 ## 📁 Project Structure
 
@@ -155,8 +171,8 @@ gsc-explorer-app/
 │       └── ...
 ├── client_secrets.json       # Google OAuth credentials
 ├── requirements.txt          # Python dependencies
-├── Procfile                  # Heroku process file
-├── runtime.txt              # Python version
+├── Procfile                  # Process file for deployment (Gunicorn)
+├── runtime.txt              # Python version specification
 └── run.py                   # Application entry point
 ```
 
