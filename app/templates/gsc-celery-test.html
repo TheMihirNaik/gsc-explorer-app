@@ -60,11 +60,11 @@
         </div>
         
         <form id="dateRangeForm" hx-post="/gsc-celery-test/" 
-            hx-trigger="submit" hx-target="#taskStatus" hx-swap="innerHTML" hx-indicator="#loading-spinner" class="inline-flex items-center gap-3">
+            hx-trigger="submit" hx-target="#taskStatus" hx-swap="innerHTML" class="inline-flex items-center gap-3">
             <input type="hidden" name="start_date" id="start_date">
             <input type="hidden" name="end_date" id="end_date">
             <button type="submit" class="btn btn-primary">Fetch Data</button>
-            <span class="loading loading-dots loading-lg htmx-indicator" id="loading-spinner"></span>
+            <span class="loading loading-dots loading-lg htmx-indicator"></span>
         </form>
       </div>
     </div>

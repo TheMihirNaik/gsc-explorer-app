@@ -45,11 +45,11 @@
         </div>
         
         <form id="dateRangeForm" hx-post="/reports/sitewide-overview/" 
-        hx-swap="innerHTML" hx-target="#sitewide-report" class="inline-flex items-center gap-3" hx-indicator="#loading-spinner">
+        hx-swap="innerHTML" hx-target="#sitewide-report" class="inline-flex items-center gap-3">
           <input type="hidden" name="start_date" id="start_date">
           <input type="hidden" name="end_date" id="end_date">
           <button type="submit" class="btn btn-primary">Fetch Data</button>
-          <span class="loading loading-dots loading-lg htmx-indicator" id="loading-spinner"></span>
+          <span class="loading loading-dots loading-lg htmx-indicator"></span>
         </form>
       </div>
     </div>
@@ -84,8 +84,6 @@
       </span>
     </div>
 
-    <!-- HTMX Indicator-->
-    <span id="loading-spinner" class="loading loading-dots loading-lg htmx-indicator align-middle">Please Wait.</span>
   </div>
 </div>
 
