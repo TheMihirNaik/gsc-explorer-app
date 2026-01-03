@@ -2458,6 +2458,14 @@ def select_target():
         flash('Please Select your GSC Property.')
         return redirect(url_for('gsc_property_selection'))
 
+    # Fetch latest date for property cards
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    try:
+        webmasters_service = build_gsc_service()
+        latest_date = get_latest_available_date(webmasters_service, selected_property)
+    except Exception as e:
+        logger.error(f"Error fetching latest date for tool selection: {e}")
+
     # Fetch last 30 days of data to show top pages
     webmasters_service = build_gsc_service()
     end_date = datetime.now()
@@ -2491,7 +2499,8 @@ def select_target():
                            pages=pages,
                            destination=destination,
                            selected_property=selected_property,
-                           brand_keywords=brand_keywords)
+                           brand_keywords=brand_keywords,
+                           latest_date=latest_date)
 
 
 # Change Log Routes

@@ -1,48 +1,49 @@
 <!-- Property Info Cards Partial -->
-<div class="flex flex-col sm:flex-row gap-3 mb-4">
+<div class="flex flex-wrap gap-2 mb-4">
     <!-- GSC Property Card -->
-    <div role="alert" class="alert alert-success shadow-md py-2 px-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div class="flex-1">
-            <div class="text-xs opacity-75">GSC Property</div>
-            <div class="font-semibold text-sm">{{ selected_property}}</div>
+    <div
+        class="flex items-center gap-2 bg-primary/10 text-primary-content rounded-lg py-1.5 px-3 border border-primary/20">
+        <div class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-md">
+            <i class="fa-solid fa-globe text-sm"></i>
+        </div>
+        <div>
+            <div class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-none mb-0.5">Property</div>
+            <div class="font-bold text-xs leading-none text-base-content">{{ selected_property}}</div>
         </div>
     </div>
 
     <!-- Brand Terms Card -->
-    <div role="alert" class="alert alert-success shadow-md py-2 px-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div class="flex-1">
-            <div class="text-xs opacity-75">Brand Terms</div>
-            <div class="font-semibold text-sm">{{ brand_keywords }}</div>
+    <div
+        class="flex items-center gap-2 bg-secondary/10 text-secondary-content rounded-lg py-1.5 px-3 border border-secondary/20">
+        <div class="w-8 h-8 flex items-center justify-center bg-secondary text-white rounded-md">
+            <i class="fa-solid fa-tags text-sm"></i>
+        </div>
+        <div>
+            <div class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-none mb-0.5">Brand Keywords
+            </div>
+            <div class="font-bold text-xs leading-none text-base-content">{{ brand_keywords }}</div>
         </div>
     </div>
 
     <!-- Latest Data Info Card -->
-    <div role="alert" class="alert alert-success shadow-md py-2 px-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div class="flex-1">
-            <div class="text-xs opacity-75">Latest Data</div>
-            <div class="font-semibold text-sm" id="latest-data-display">{{ latest_date }}</div>
+    <div
+        class="flex items-center gap-2 bg-accent/10 text-accent-content rounded-lg py-1.5 px-3 border border-accent/20">
+        <div class="w-8 h-8 flex items-center justify-center bg-accent text-white rounded-md">
+            <i class="fa-solid fa-calendar-check text-sm"></i>
+        </div>
+        <div>
+            <div class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-none mb-0.5">Latest Data</div>
+            <div class="font-bold text-xs leading-none text-base-content" id="latest-data-display">{{ latest_date }}
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Date Formatting Script for Latest Data Card -->
+<!-- Date Formatting Script -->
 <script type="text/javascript">
     $(function () {
-        // Parse the latest_date passed from backend (YYYY-MM-DD)
         var latestDateStr = "{{ latest_date }}";
-        if (latestDateStr) {
+        if (latestDateStr && latestDateStr !== "None") {
             var latestDate = moment(latestDateStr, "YYYY-MM-DD");
             $('#latest-data-display').text(latestDate.format('MMM D, YYYY'));
         }

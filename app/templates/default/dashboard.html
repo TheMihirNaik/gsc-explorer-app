@@ -10,127 +10,111 @@
 
     <!-- New Feature Alert -->
     <!-- Quick Actions Section -->
-    <div class="mb-8">
-        <h2 class="text-2xl font-bold mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="mb-6">
+        <h2 class="text-lg font-bold mb-3">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <!-- Title & Meta Optimization Card -->
             <a href="/tools/select-target?destination=optimize-ctr"
-                class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-200">
-                <div class="card-body">
-                    <div class="text-primary mb-2">
-                        <i class="fa-solid fa-wand-magic-sparkles fa-2x"></i>
-                    </div>
-                    <h3 class="card-title">Optimize Title & Meta</h3>
-                    <p class="text-sm opacity-70">Improve CTR with AI-generated titles and descriptions.</p>
+                class="card bg-base-100 shadow-sm hover:shadow-md transition-all border border-base-200 flex-row items-center p-3 h-full">
+                <div class="text-primary mr-4 ml-2">
+                    <i class="fa-solid fa-wand-magic-sparkles fa-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base">Optimize Title & Meta</h3>
+                    <p class="text-xs opacity-70">Improve CTR with AI-generated suggestions.</p>
                 </div>
             </a>
 
             <!-- Content Optimization Card -->
             <a href="/tools/select-target?destination=optimize-page-content"
-                class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-200">
-                <div class="card-body">
-                    <div class="text-secondary mb-2">
-                        <i class="fa-solid fa-file-pen fa-2x"></i>
-                    </div>
-                    <h3 class="card-title">Optimize Content</h3>
-                    <p class="text-sm opacity-70">Enhance content relevance using search query data.</p>
+                class="card bg-base-100 shadow-sm hover:shadow-md transition-all border border-base-200 flex-row items-center p-3 h-full">
+                <div class="text-secondary mr-4 ml-2">
+                    <i class="fa-solid fa-file-pen fa-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base">Optimize Content</h3>
+                    <p class="text-xs opacity-70">Enhance relevance with query data.</p>
                 </div>
             </a>
         </div>
     </div>
 
     <!-- Reports Section -->
-    <section class="mb-8">
-        <h2 class="text-2xl font-bold mb-4">📊 Reports</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Report Cards -->
-            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-200">
-                <div class="card-body p-4">
-                    <h3 class="card-title text-lg mb-1">🌐 Sitewide Overview</h3>
-                    <p class="font-semibold text-sm mb-1">Comprehensive Performance Insights</p>
-                    <p class="text-xs opacity-75 mb-3">Explore a detailed overview of your site's performance across
-                        different periods, including comparisons by country and device.</p>
-                    <div class="card-actions justify-end">
-                        <a href="/reports/sitewide-overview/" class="btn btn-primary">View Detailed Metrics</a>
-                    </div>
+    <section class="mb-6">
+        <h2 class="text-lg font-bold mb-3">📊 Reports</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Sitewide Overview -->
+            <a href="/reports/sitewide-overview/"
+                class="card bg-base-100 shadow-sm hover:shadow-md transition-all border border-base-200 flex-row items-center p-3 h-full">
+                <div class="mr-3 ml-1 text-2xl">🌐</div>
+                <div>
+                    <h3 class="font-semibold text-base">Sitewide Overview</h3>
+                    <p class="text-xs opacity-75">Performance & comparisons.</p>
                 </div>
-            </div>
+            </a>
 
-            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-200">
-                <div class="card-body p-4">
-                    <h3 class="card-title text-lg mb-1">🔍 Sitewide Queries</h3>
-                    <p class="font-semibold text-sm mb-1">Analyze Brand vs Non-Brand Queries</p>
-                    <p class="text-xs opacity-75 mb-3">Dive into the performance of your search queries, distinguishing
-                        between branded and non-branded terms over various periods.</p>
-                    <div class="card-actions justify-end">
-                        <a href="/reports/sitewide-queries/" class="btn btn-primary">Explore Search Queries</a>
-                    </div>
+            <!-- Sitewide Queries -->
+            <a href="/reports/sitewide-queries/"
+                class="card bg-base-100 shadow-sm hover:shadow-md transition-all border border-base-200 flex-row items-center p-3 h-full">
+                <div class="mr-3 ml-1 text-2xl">🔍</div>
+                <div>
+                    <h3 class="font-semibold text-base">Sitewide Queries</h3>
+                    <p class="text-xs opacity-75">Brand vs Non-Brand terms.</p>
                 </div>
-            </div>
+            </a>
 
-            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-200">
-                <div class="card-body p-4">
-                    <h3 class="card-title text-lg mb-1">📄 Sitewide Pages</h3>
-                    <p class="font-semibold text-sm mb-1">Performance Overview of Your Pages</p>
-                    <p class="text-xs opacity-75 mb-3">Review the performance metrics of your site's pages, comparing
-                        current, previous, and year-over-year data.
-                        <span class="badge badge-info badge-sm tooltip"
-                            data-tip="Accessing the Sitewide Pages report enables you to utilize powerful tools for CTR Optimization and Page Content Optimization, enhancing your overall strategy">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Advance Features
-                        </span>
-                    </p>
-                    <div class="card-actions justify-end">
-                        <a href="/reports/sitewide-pages/" class="btn btn-primary">Assess Page Performance</a>
-                    </div>
+            <!-- Sitewide Pages -->
+            <a href="/reports/sitewide-pages/"
+                class="card bg-base-100 shadow-sm hover:shadow-md transition-all border border-base-200 flex-row items-center p-3 h-full relative">
+                <div class="mr-3 ml-1 text-2xl">📄</div>
+                <div>
+                    <h3 class="font-semibold text-base">Sitewide Pages</h3>
+                    <p class="text-xs opacity-75">Page metrics & CTR tools.</p>
                 </div>
-            </div>
+                <div class="absolute top-1 right-2 tooltip tooltip-left" data-tip="Advanced Features">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-info opacity-50 hover:opacity-100"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </a>
 
-            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-200">
-                <div class="card-body p-4">
-                    <h3 class="card-title text-lg mb-1">📏 Long-Tail Opportunities</h3>
-                    <p class="font-semibold text-sm mb-1">Target Low-Competition Queries</p>
-                    <p class="text-xs opacity-75 mb-3">Analyze performance based on query length to identify valuable
-                        long-tail opportunities.</p>
-                    <div class="card-actions justify-end">
-                        <a href="/reports/query-length-analysis/" class="btn btn-primary">Find Opportunities</a>
-                    </div>
+            <!-- Long-Tail Opportunities -->
+            <a href="/reports/query-length-analysis/"
+                class="card bg-base-100 shadow-sm hover:shadow-md transition-all border border-base-200 flex-row items-center p-3 h-full">
+                <div class="mr-3 ml-1 text-2xl">📏</div>
+                <div>
+                    <h3 class="font-semibold text-base">Long-Tail Ops</h3>
+                    <p class="text-xs opacity-75">Target low-comp queries.</p>
                 </div>
-            </div>
+            </a>
         </div>
     </section>
 
     <!-- Charts Section -->
-    <section class="mb-8">
-        <h2 class="text-2xl font-bold mb-4">📈 Charts</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-200">
-                <div class="card-body p-4">
-                    <h3 class="card-title text-lg mb-1">📊 Organic Search CTR</h3>
-                    <p class="font-semibold text-sm mb-1">CTR Analysis by Brand & Non-Brand</p>
-                    <p class="text-xs opacity-75 mb-3">Visualize the click-through rates for both branded and
-                        non-branded search queries across different countries.</p>
-                    <div class="card-actions justify-end">
-                        <a href="/charts/organic-ctr/" class="btn btn-primary">View CTR Insights</a>
-                    </div>
+    <section class="mb-6">
+        <h2 class="text-lg font-bold mb-3">📈 Charts</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Organic Search CTR -->
+            <a href="/charts/organic-ctr/"
+                class="card bg-base-100 shadow-sm hover:shadow-md transition-all border border-base-200 flex-row items-center p-3 h-full">
+                <div class="mr-3 ml-1 text-2xl">📊</div>
+                <div>
+                    <h3 class="font-semibold text-base">Organic CTR</h3>
+                    <p class="text-xs opacity-75">Brand vs Non-Brand curves.</p>
                 </div>
-            </div>
+            </a>
 
-            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-200">
-                <div class="card-body p-4">
-                    <h3 class="card-title text-lg mb-1">📉 Sitewide Analysis</h3>
-                    <p class="font-semibold text-sm mb-1">Comparative Metrics for Queries</p>
-                    <p class="text-xs opacity-75 mb-3">Examine GSC metrics through charts that compare brand, non-brand,
-                        and anonymized queries for deeper insights.</p>
-                    <div class="card-actions justify-end">
-                        <a href="/charts/sitewide-brand-vs-non-brand/" class="btn btn-primary">Analyze Brand Metrics</a>
-                    </div>
+            <!-- Sitewide Analysis -->
+            <a href="/charts/sitewide-brand-vs-non-brand/"
+                class="card bg-base-100 shadow-sm hover:shadow-md transition-all border border-base-200 flex-row items-center p-3 h-full">
+                <div class="mr-3 ml-1 text-2xl">📉</div>
+                <div>
+                    <h3 class="font-semibold text-base">Metric Analysis</h3>
+                    <p class="text-xs opacity-75">Deep dive into GSC metrics.</p>
                 </div>
-            </div>
+            </a>
         </div>
     </section>
 

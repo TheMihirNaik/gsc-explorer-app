@@ -23,6 +23,20 @@
   <!-- DaisyUI -->
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 
   <!-- HTMX -->
   <script src="https://unpkg.com/htmx.org@1.9.12"
@@ -113,47 +127,47 @@
       <label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
 
       <!-- Side Bar Content -->
-      <div class="menu p-0 w-80 min-h-full bg-neutral text-white flex flex-col justify-between">
+      <div class="menu p-0 w-64 min-h-full bg-neutral text-white flex flex-col justify-between">
         <!-- Top section with logo and navigation -->
         <div class="flex flex-col">
           <!-- Main Logo -->
-          <div class="flex items-center gap-2 p-5 border-b border-neutral-focus">
+          <div class="flex items-center gap-2 p-4 border-b border-neutral-focus">
             <a href="/" class="flex items-center gap-2">
-              <span class="text-primary text-2xl">✨</span>
-              <span class="font-bold text-xl">GSC Explorer App</span>
+              <span class="text-primary text-xl">✨</span>
+              <span class="font-bold text-lg">GSC Explorer App</span>
             </a>
           </div>
 
           <!-- Main Navigation -->
           <nav class="overflow-y-auto py-4">
             <!-- Dashboard -->
-            <div class="px-4 mb-6">
+            <div class="px-4 mb-4">
               <a href="/dashboard/"
-                class="flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-neutral-focus">
+                class="flex items-center gap-3 p-1.5 rounded-lg transition-all hover:bg-neutral-focus">
                 <i class="fa-solid fa-tachometer-alt text-primary"></i>
-                <span class="font-medium">Dashboard</span>
+                <span class="text-sm font-medium">Dashboard</span>
               </a>
             </div>
 
             <!-- Quick Actions -->
-            <div class="px-4 mb-6">
-              <div class="flex items-center mb-3">
+            <div class="px-4 mb-4">
+              <div class="flex items-center mb-2">
                 <div class="h-px flex-1 bg-neutral-focus"></div>
-                <h3 class="px-3 font-bold text-sm uppercase tracking-wider text-white/70">Quick Actions</h3>
+                <h3 class="px-3 font-bold text-[10px] uppercase tracking-wider text-white/50">Quick Actions</h3>
                 <div class="h-px flex-1 bg-neutral-focus"></div>
               </div>
 
               <ul class="space-y-1">
                 <li>
                   <a href="/tools/select-target?destination=optimize-ctr"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-wand-magic-sparkles text-primary w-5"></i>
                     <span>Optimize Title & Meta</span>
                   </a>
                 </li>
                 <li>
                   <a href="/tools/select-target?destination=optimize-page-content"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-file-pen text-secondary w-5"></i>
                     <span>Optimize Content</span>
                   </a>
@@ -162,24 +176,24 @@
             </div>
 
             <!-- Charts/Visualizations Section -->
-            <div class="px-4 mb-6">
-              <div class="flex items-center mb-3">
+            <div class="px-4 mb-4">
+              <div class="flex items-center mb-2">
                 <div class="h-px flex-1 bg-neutral-focus"></div>
-                <h3 class="px-3 font-bold text-sm uppercase tracking-wider text-white/70">Charts & Visualizations</h3>
+                <h3 class="px-3 font-bold text-[10px] uppercase tracking-wider text-white/50">Charts</h3>
                 <div class="h-px flex-1 bg-neutral-focus"></div>
               </div>
 
               <ul class="space-y-1">
                 <li>
                   <a href="/charts/sitewide-brand-vs-non-brand/"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-chart-pie text-secondary w-5"></i>
                     <span>Sitewide BR vs NB</span>
                   </a>
                 </li>
                 <li>
                   <a href="/charts/organic-ctr/"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-chart-bar text-secondary w-5"></i>
                     <span>Organic CTR Analysis</span>
                   </a>
@@ -188,38 +202,38 @@
             </div>
 
             <!-- Reports/Tables Section -->
-            <div class="px-4 mb-6">
-              <div class="flex items-center mb-3">
+            <div class="px-4 mb-4">
+              <div class="flex items-center mb-2">
                 <div class="h-px flex-1 bg-neutral-focus"></div>
-                <h3 class="px-3 font-bold text-sm uppercase tracking-wider text-white/70">Reports & Tables</h3>
+                <h3 class="px-3 font-bold text-[10px] uppercase tracking-wider text-white/50">Reports</h3>
                 <div class="h-px flex-1 bg-neutral-focus"></div>
               </div>
 
               <ul class="space-y-1">
                 <li>
                   <a href="/reports/sitewide-overview/"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-file-alt text-accent w-5"></i>
                     <span>Sitewide Overview</span>
                   </a>
                 </li>
                 <li>
                   <a href="/reports/sitewide-queries/"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-file-alt text-accent w-5"></i>
                     <span>Sitewide Queries</span>
                   </a>
                 </li>
                 <li>
                   <a href="/reports/sitewide-pages/"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-file-alt text-accent w-5"></i>
                     <span>Sitewide Pages</span>
                   </a>
                 </li>
                 <li>
                   <a href="/reports/query-length-analysis/"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-ruler-horizontal text-accent w-5"></i>
                     <span>Long-Tail Opportunities</span>
                   </a>
@@ -229,17 +243,17 @@
             </div>
 
             <!-- Resources Section -->
-            <div class="px-4 mb-6">
-              <div class="flex items-center mb-3">
+            <div class="px-4 mb-4">
+              <div class="flex items-center mb-2">
                 <div class="h-px flex-1 bg-neutral-focus"></div>
-                <h3 class="px-3 font-bold text-sm uppercase tracking-wider text-white/70">Resources</h3>
+                <h3 class="px-3 font-bold text-[10px] uppercase tracking-wider text-white/50">Resources</h3>
                 <div class="h-px flex-1 bg-neutral-focus"></div>
               </div>
 
               <ul class="space-y-1">
                 <li>
                   <a href="{{ url_for('changelog') }}"
-                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    class="flex items-center gap-3 p-1.5 pl-3 rounded-lg transition-all hover:bg-neutral-focus text-sm">
                     <i class="fa-solid fa-clock-rotate-left text-info w-5"></i>
                     <span>Change Log</span>
                   </a>
@@ -288,49 +302,49 @@
         </div>
 
         <!-- Bottom section with settings and options -->
-        <div class="p-4 border-t border-neutral-focus space-y-4">
+        <div class="p-4 border-t border-neutral-focus space-y-3">
           <!-- OpenAI API Key -->
-          <div class="bg-neutral-focus p-4 rounded-lg shadow-md">
-            <div class="flex items-center justify-between mb-2">
-              <span class="font-bold text-white">OpenAI API Key</span>
+          <div class="bg-neutral-focus p-3 rounded-lg shadow-sm">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-bold text-sm text-white">OpenAI API Key</span>
               <a href="https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key" target="_blank"
-                class="text-xs link link-secondary">
+                class="text-[10px] link link-secondary">
                 <i class="fa-solid fa-circle-question mr-1"></i>Help
               </a>
             </div>
 
-            <div class="flex items-center space-x-2 mb-2">
-              <input type="password" placeholder="e.g., sk-****-****" id="openai_api_key"
-                class="input input-sm input-bordered w-full border-neutral-focus shadow-md focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-base-content"
+            <div class="flex items-center space-x-1.5 mb-1.5">
+              <input type="password" placeholder="sk-****" id="openai_api_key"
+                class="input input-xs input-bordered w-full border-neutral-focus shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:ring-opacity-50 text-base-content"
                 aria-label="OpenAI API Key" required />
-              <button id="api-key-button" class="btn btn-sm btn-primary hover:bg-primary-focus transition duration-200"
+              <button id="api-key-button" class="btn btn-xs btn-primary hover:bg-primary-focus transition duration-200"
                 onclick="handleApiKeyAction()" aria-label="Save API Key">
                 <i id="api-key-icon" class="fa-solid fa-floppy-disk"></i>
               </button>
             </div>
 
-            <div class="text-xs text-white/70 flex items-center">
-              <i class="fa-solid fa-lock text-xs mr-1"></i>
-              <span>Stored locally in your browser</span>
+            <div class="text-[10px] text-white/50 flex items-center">
+              <i class="fa-solid fa-lock mr-1"></i>
+              <span>Stored locally</span>
             </div>
           </div>
 
           <!-- GSC Property Selection -->
           <a href="/gsc-property-selection/"
-            class="btn btn-secondary btn-block justify-between shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
+            class="btn btn-secondary btn-block btn-xs h-8 justify-between shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-1px] text-xs">
             <span class="flex items-center">
               <i class="fa-solid fa-exchange-alt mr-2"></i>
               Switch GSC Property
             </span>
-            <i class="fa-solid fa-chevron-right"></i>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </a>
 
           <!-- Logout Button -->
           <a href="/revoke-gsc-clear-session"
-            class="btn btn-error text-white btn-block justify-between shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
+            class="btn btn-error text-white btn-block btn-xs h-8 justify-between shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-1px] text-xs">
             <span class="flex items-center">
               <i class="fa-solid fa-sign-out-alt mr-2"></i>
-              Revoke GSC Access & Logout
+              Logout
             </span>
           </a>
         </div>

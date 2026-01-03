@@ -3,7 +3,9 @@
 {% block title %} Select Target Page {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 max-w-4xl py-8">
+<div class="container mx-auto px-4 max-w-4xl py-4">
+    <!-- Property Info Cards -->
+    {% include 'partials/property-cards.html' %}
 
     <div class="mb-8">
         <a href="/dashboard" class="btn btn-ghost gap-2 pl-0">
