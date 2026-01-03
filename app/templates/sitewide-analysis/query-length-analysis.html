@@ -40,6 +40,15 @@
           <input type="hidden" name="start_date" id="start_date">
           <input type="hidden" name="end_date" id="end_date">
 
+          <!-- Country Filter -->
+          <select name="country" class="select select-bordered w-full max-w-xs">
+            <option value="All" selected>All Countries</option>
+            {% for country in countries %}
+            <option value="{{ country.code }}">{{ country.code }} - {{ country.impressions_formatted }} Impressions
+            </option>
+            {% endfor %}
+          </select>
+
           <!-- Word Count Range Filters -->
           <div class="join">
             <div class="join-item">

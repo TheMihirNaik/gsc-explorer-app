@@ -5,31 +5,8 @@
 {% block content %}
 <div class="container mx-auto px-4 max-w-7xl py-4">
     <!-- Property Info Cards -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-4">
-        <div role="alert" class="alert alert-success shadow-md py-2 px-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-5 w-5" fill="none"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div class="flex-1">
-                <div class="text-xs opacity-75">GSC Property</div>
-                <div class="font-semibold text-sm">{{ selected_property}}</div>
-            </div>
-        </div>
-
-        <div role="alert" class="alert alert-success shadow-md py-2 px-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-5 w-5" fill="none"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div class="flex-1">
-                <div class="text-xs opacity-75">Brand Terms</div>
-                <div class="font-semibold text-sm">{{ brand_keywords }}</div>
-            </div>
-        </div>
-    </div>
+    <!-- Property Info Cards -->
+    {% include 'partials/property-cards.html' %}
 
     <!-- New Feature Alert -->
     <!-- Quick Actions Section -->

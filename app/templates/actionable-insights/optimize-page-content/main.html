@@ -16,7 +16,8 @@
   <div class="hero-content text-center">
     <div class="max-w-xl">
       <h1 class="text-4xl font-bold">Content Optimizer</h1>
-      <p class="py-6">Optimize your page content with data-driven insights from Google Search Console. See what search terms are driving traffic to your page and enhance your content accordingly.</p>
+      <p class="py-6">Optimize your page content with data-driven insights from Google Search Console. See what search
+        terms are driving traffic to your page and enhance your content accordingly.</p>
     </div>
   </div>
 </div>
@@ -26,35 +27,50 @@
   <!-- Property Info Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
     <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-            <div class="text-sm opacity-75">GSC Property</div>
-            <div class="font-bold">{{ selected_property}}</div>
-        </div>
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <div class="text-sm opacity-75">GSC Property</div>
+        <div class="font-bold">{{ selected_property}}</div>
+      </div>
     </div>
 
     <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-            <div class="text-sm opacity-75">Brand Terms</div>
-            <div class="font-bold">{{ brand_keywords }}</div>
-        </div>
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <div class="text-sm opacity-75">Brand Terms</div>
+        <div class="font-bold">{{ brand_keywords }}</div>
+      </div>
+    </div>
+
+    <!-- Latest Data Info Card -->
+    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <div class="text-sm opacity-75">Latest Data</div>
+        <div class="font-bold" id="latest-data-display">{{ latest_date }}</div>
+      </div>
     </div>
 
     <div role="alert" class="alert bg-info bg-opacity-10 shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-info shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-            <div class="text-sm opacity-75">Page URL</div>
-            <div class="font-bold truncate max-w-xs">
-                <a href="{{ page }}" target="_blank" class="link" id="page-url">{{ page }}</a>
-            </div>
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-info shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <div class="text-sm opacity-75">Page URL</div>
+        <div class="font-bold truncate max-w-xs">
+          <a href="{{ page }}" target="_blank" class="link" id="page-url">{{ page }}</a>
         </div>
+      </div>
     </div>
   </div>
 
@@ -64,31 +80,35 @@
       <h2 class="card-title">How It Works</h2>
       <div class="flex flex-wrap justify-between items-center gap-6 mt-2">
         <div class="flex flex-col items-center text-center p-2 md:w-1/5 w-full">
-          <div class="rounded-full bg-primary text-primary-content w-10 h-10 flex items-center justify-center mb-2">1</div>
+          <div class="rounded-full bg-primary text-primary-content w-10 h-10 flex items-center justify-center mb-2">1
+          </div>
           <p class="font-medium">Select Date Range</p>
           <p class="text-xs">Choose time period for analysis</p>
         </div>
-        
+
         <div class="hidden md:block text-primary">→</div>
-        
+
         <div class="flex flex-col items-center text-center p-2 md:w-1/5 w-full">
-          <div class="rounded-full bg-primary text-primary-content w-10 h-10 flex items-center justify-center mb-2">2</div>
+          <div class="rounded-full bg-primary text-primary-content w-10 h-10 flex items-center justify-center mb-2">2
+          </div>
           <p class="font-medium">Analyze Search Terms</p>
           <p class="text-xs">See what users search for</p>
         </div>
-        
+
         <div class="hidden md:block text-primary">→</div>
-        
+
         <div class="flex flex-col items-center text-center p-2 md:w-1/5 w-full">
-          <div class="rounded-full bg-primary text-primary-content w-10 h-10 flex items-center justify-center mb-2">3</div>
+          <div class="rounded-full bg-primary text-primary-content w-10 h-10 flex items-center justify-center mb-2">3
+          </div>
           <p class="font-medium">Edit Content</p>
           <p class="text-xs">Optimize based on data</p>
         </div>
-        
+
         <div class="hidden md:block text-primary">→</div>
-        
+
         <div class="flex flex-col items-center text-center p-2 md:w-1/5 w-full">
-          <div class="rounded-full bg-primary text-primary-content w-10 h-10 flex items-center justify-center mb-2">4</div>
+          <div class="rounded-full bg-primary text-primary-content w-10 h-10 flex items-center justify-center mb-2">4
+          </div>
           <p class="font-medium">Copy & Implement</p>
           <p class="text-xs">Update your website</p>
         </div>
@@ -103,24 +123,29 @@
         Select Date Range
         <div class="badge badge-primary">Step 1</div>
       </h2>
-      <p class="mb-4">Choose a date range to analyze search data for the page. We recommend at least 28 days to get sufficient data.</p>
-      
+      <p class="mb-4">Choose a date range to analyze search data for the page. We recommend at least 28 days to get
+        sufficient data.</p>
+
       <div class="flex flex-col sm:flex-row items-center gap-6">
-        <div id="reportrange" class="btn btn-outline h-auto px-4 py-2 w-full sm:w-auto flex items-center justify-between">
+        <div id="reportrange"
+          class="btn btn-outline h-auto px-4 py-2 w-full sm:w-auto flex items-center justify-between">
           <i class="fa fa-calendar mr-2"></i>
           <span class="flex-1 text-left"></span>
           <i class="fa fa-caret-down ml-2"></i>
         </div>
-        
-        <form id="dateRangeForm" hx-post="/actionable-insights/optimize-page-content" hx-swap="innerHTML" hx-target="#pages-aggregate-data" class="w-full sm:w-auto flex-1 sm:flex-none">
+
+        <form id="dateRangeForm" hx-post="/actionable-insights/optimize-page-content" hx-swap="innerHTML"
+          hx-target="#pages-aggregate-data" class="w-full sm:w-auto flex-1 sm:flex-none">
           <input type="hidden" name="start_date" id="start_date">
           <input type="hidden" name="end_date" id="end_date">
           <input type="hidden" name="page" id="page" value="{{ page }}">
-          
+
           <div class="flex items-center gap-2">
             <button type="submit" class="btn btn-primary w-full sm:w-auto">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               Fetch Data
             </button>
@@ -172,32 +197,41 @@
 
 <!--  Date Picker Script -->
 <script type="text/javascript">
-  $(function() {
-  
-    var start = moment().subtract(32, 'days');
-    var end = moment().subtract(2, 'days');
-  
-      function cb(start, end) {
-          $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-          $('#start_date').val(start.format('MM/DD/YYYY'));
-          $('#end_date').val(end.format('MM/DD/YYYY'));
+  $(function () {
+
+    // Parse the latest_date passed from backend (YYYY-MM-DD)
+    var latestDateStr = "{{ latest_date }}";
+    var latestDate = moment(latestDateStr, "YYYY-MM-DD");
+    $('#latest-data-display').text(latestDate.format('MMM D, YYYY'));
+
+    // Default: Last 30 Days relative to LATEST DATA
+    var start = moment(latestDate).subtract(30, 'days');
+    var end = moment(latestDate);
+
+    function cb(start, end) {
+      $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+      $('#start_date').val(start.format('MM/DD/YYYY'));
+      $('#end_date').val(end.format('MM/DD/YYYY'));
+    }
+
+    $('#reportrange').daterangepicker({
+      startDate: start,
+      endDate: end,
+      maxDate: moment(),
+      ranges: {
+        'Today': [moment(), moment()],
+        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+        'Last 7 Days': [moment(latestDate).subtract(6, 'days'), moment(latestDate)],
+        'Last 28 Days': [moment(latestDate).subtract(27, 'days'), moment(latestDate)],
+        'This Month': [moment().startOf('month'), moment().endOf('month')],
+        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+        'Last 90 Days': [moment(latestDate).subtract(89, 'days'), moment(latestDate)],
+        'Last 365 Days': [moment(latestDate).subtract(364, 'days'), moment(latestDate)]
       }
-  
-      $('#reportrange').daterangepicker({
-          startDate: start,
-          endDate: end,
-          ranges: {
-             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-             'Last 28 Days': [moment().subtract(27, 'days'), moment()],
-             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-             'This Month': [moment().startOf('month'), moment().endOf('month')],
-             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-             'Last 90 Days': [moment().subtract(89, 'days'), moment()]
-          }
-      }, cb);
-  
-      cb(start, end);
-  
+    }, cb);
+
+    cb(start, end);
+
   });
 </script>
 {% endblock %}

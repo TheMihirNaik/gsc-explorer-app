@@ -10,27 +10,8 @@
 <!-- Website Name & Brand Term Section-->
 <div class="container mx-auto px-4 max-w-7xl">
   <!-- Property Info Cards -->
-  <div class="flex flex-col sm:flex-row gap-4 mb-8">
-    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-            <div class="text-sm opacity-75">GSC Property</div>
-            <div class="font-bold">{{ selected_property}}</div>
-        </div>
-    </div>
-
-    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-            <div class="text-sm opacity-75">Brand Terms</div>
-            <div class="font-bold">{{ brand_keywords }}</div>
-        </div>
-    </div>
-  </div>
+  <!-- Property Info Cards -->
+  {% include 'partials/property-cards.html' %}
 
   <!-- H1 Heading -->
   <div class="mb-8">
@@ -40,12 +21,14 @@
     <!-- GSC Data Form -->
     <div class="mb-8">
       <div class="flex flex-wrap items-center gap-3">
-        <div id="reportrange" class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
+        <div id="reportrange"
+          class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
           <i class="fa fa-calendar"></i>&nbsp;
           <span></span> <i class="fa fa-caret-down"></i>
         </div>
-        
-        <form id="dateRangeForm" hx-post="/actionable-insights/optimize-ctr" hx-swap="innerHTML" hx-target="#pages-aggregate-data" class="inline-flex items-center gap-3">
+
+        <form id="dateRangeForm" hx-post="/actionable-insights/optimize-ctr" hx-swap="innerHTML"
+          hx-target="#pages-aggregate-data" class="inline-flex items-center gap-3">
           <input type="hidden" name="start_date" id="start_date">
           <input type="hidden" name="end_date" id="end_date">
           <input type="hidden" name="page" id="page" value="{{ page }}">
@@ -75,13 +58,17 @@
   <div id="pages-aggregate-data" class="mt-8">
     <!-- Explainer-->
     <div role="alert" class="alert alert-info shadow-lg max-w-3xl mb-6">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      <span> 
-          Once you hit "Fetch Data" button, depending on the size of your data, you will have to wait for a couple of mins on this page.
-          <!-- <p class="text-xs">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span>
+        Once you hit "Fetch Data" button, depending on the size of your data, you will have to wait for a couple of mins
+        on this page.
+        <!-- <p class="text-xs">
               If it's taking longer than 2 mins, try reducing the date range to 7 days.
           </p>-->
-          
+
       </span>
     </div>
   </div>
@@ -91,32 +78,41 @@
 <!--  Date Picker Script -->
 
 <script type="text/javascript">
-  $(function() {
-  
-    var start = moment().subtract(32, 'days');
-    var end = moment().subtract(2, 'days');
-  
-      function cb(start, end) {
-          $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-          $('#start_date').val(start.format('MM/DD/YYYY'));
-          $('#end_date').val(end.format('MM/DD/YYYY'));
+  $(function () {
+
+    // Parse the latest_date passed from backend (YYYY-MM-DD)
+    var latestDateStr = "{{ latest_date }}";
+    var latestDate = moment(latestDateStr, "YYYY-MM-DD");
+    $('#latest-data-display').text(latestDate.format('MMM D, YYYY'));
+
+    // Default: Last 30 Days relative to LATEST DATA
+    var start = moment(latestDate).subtract(30, 'days');
+    var end = moment(latestDate);
+
+    function cb(start, end) {
+      $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+      $('#start_date').val(start.format('MM/DD/YYYY'));
+      $('#end_date').val(end.format('MM/DD/YYYY'));
+    }
+
+    $('#reportrange').daterangepicker({
+      startDate: start,
+      endDate: end,
+      maxDate: moment(),
+      ranges: {
+        'Today': [moment(), moment()],
+        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+        'Last 7 Days': [moment(latestDate).subtract(6, 'days'), moment(latestDate)],
+        'Last 28 Days': [moment(latestDate).subtract(27, 'days'), moment(latestDate)],
+        'This Month': [moment().startOf('month'), moment().endOf('month')],
+        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+        'Last 90 Days': [moment(latestDate).subtract(89, 'days'), moment(latestDate)],
+        'Last 365 Days': [moment(latestDate).subtract(364, 'days'), moment(latestDate)]
       }
-  
-      $('#reportrange').daterangepicker({
-          startDate: start,
-          endDate: end,
-          ranges: {
-             'Today': [moment(), moment()],
-             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-             'This Month': [moment().startOf('month'), moment().endOf('month')],
-             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-          }
-      }, cb);
-  
-      cb(start, end);
-  
+    }, cb);
+
+    cb(start, end);
+
   });
 </script>
 
@@ -135,124 +131,124 @@
 
 <script>
   function generateAITitle() {
-  // Get OpenAI API key from local storage
-  const openai_api_key = localStorage.getItem('openai_api_key');
+    // Get OpenAI API key from local storage
+    const openai_api_key = localStorage.getItem('openai_api_key');
 
-  // Check if the API key exists
-  if (!openai_api_key) {
-    alert('Please add and save your OpenAI API key in Left Sidebar to generate a Title.');
-    return; // Exit the function if API key is missing
-  }
+    // Check if the API key exists
+    if (!openai_api_key) {
+      alert('Please add and save your OpenAI API key in Left Sidebar to generate a Title.');
+      return; // Exit the function if API key is missing
+    }
 
-  // Get the values from the DOM
-  const existingTitleElement = document.querySelector('#existing_title').textContent;
-  const page = document.querySelector('#page').textContent;
-  const h1 = document.querySelector('#hidden-h1-data').textContent;
+    // Get the values from the DOM
+    const existingTitleElement = document.querySelector('#existing_title').textContent;
+    const page = document.querySelector('#page').textContent;
+    const h1 = document.querySelector('#hidden-h1-data').textContent;
 
-  // Parse the JSON data into a JavaScript object
-  const titleQueryTokensCount = JSON.parse(document.getElementById('hidden-json-data').textContent);
+    // Parse the JSON data into a JavaScript object
+    const titleQueryTokensCount = JSON.parse(document.getElementById('hidden-json-data').textContent);
 
-  // Show loading spinner
-  const loadingIndicator = document.getElementById('loading-indicator');
-  loadingIndicator.style.display = 'inline-block'; // Show the spinner
+    // Show loading spinner
+    const loadingIndicator = document.getElementById('loading-indicator');
+    loadingIndicator.style.display = 'inline-block'; // Show the spinner
 
-  // Prepare the data to send in the POST request
-  const postData = {
-    openai_api_key: openai_api_key,
-    existing_title: existingTitleElement,
-    page: page,
-    titleQueryTokensCount: titleQueryTokensCount,
-    h1: h1
-  };
+    // Prepare the data to send in the POST request
+    const postData = {
+      openai_api_key: openai_api_key,
+      existing_title: existingTitleElement,
+      page: page,
+      titleQueryTokensCount: titleQueryTokensCount,
+      h1: h1
+    };
 
-  // Send POST request to the server
-  fetch('/optimize-ctr/generate-ai-title/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(postData)
-  })
-    .then(response => response.text()) // Assuming the server returns just the HTML string
-    .then(data => {
-      // Hide loading spinner
-      loadingIndicator.style.display = 'none';
-
-      // Insert the rendered HTML into the DOM
-      const aiGeneratedTitleDiv = document.getElementById('ai-generated-title');
-      aiGeneratedTitleDiv.innerHTML = data; // Insert the HTML response from the server
+    // Send POST request to the server
+    fetch('/optimize-ctr/generate-ai-title/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(postData)
     })
-    .catch(error => {
-      // Hide loading spinner if error occurs
-      loadingIndicator.style.display = 'none';
-      console.error('Error:', error);
-    });
-}
+      .then(response => response.text()) // Assuming the server returns just the HTML string
+      .then(data => {
+        // Hide loading spinner
+        loadingIndicator.style.display = 'none';
+
+        // Insert the rendered HTML into the DOM
+        const aiGeneratedTitleDiv = document.getElementById('ai-generated-title');
+        aiGeneratedTitleDiv.innerHTML = data; // Insert the HTML response from the server
+      })
+      .catch(error => {
+        // Hide loading spinner if error occurs
+        loadingIndicator.style.display = 'none';
+        console.error('Error:', error);
+      });
+  }
 
 </script>
 
 <script>
   function generateAIMetaDescription() {
-  // Get OpenAI API key from local storage
-  const openai_api_key = localStorage.getItem('openai_api_key');
+    // Get OpenAI API key from local storage
+    const openai_api_key = localStorage.getItem('openai_api_key');
 
-  // Check if the API key exists
-  if (!openai_api_key) {
-    alert('Please add and save your OpenAI API key in Left Sidebar to generate a Title.');
-    return; // Exit the function if API key is missing
-  }
+    // Check if the API key exists
+    if (!openai_api_key) {
+      alert('Please add and save your OpenAI API key in Left Sidebar to generate a Title.');
+      return; // Exit the function if API key is missing
+    }
 
-  // Get the values from the DOM
-  const existingTitleElement = document.querySelector('#existing_title').textContent;
-  console.log(existingTitleElement);
-  const existingMetaDescriptionElement = document.querySelector('#existing_meta_desc').textContent;
-  console.log(existingMetaDescriptionElement);
-  const page = document.querySelector('#page').textContent;
-  console.log(page);
-  const h1 = document.querySelector('#hidden-h1-data').textContent;
-  console.log(h1);
+    // Get the values from the DOM
+    const existingTitleElement = document.querySelector('#existing_title').textContent;
+    console.log(existingTitleElement);
+    const existingMetaDescriptionElement = document.querySelector('#existing_meta_desc').textContent;
+    console.log(existingMetaDescriptionElement);
+    const page = document.querySelector('#page').textContent;
+    console.log(page);
+    const h1 = document.querySelector('#hidden-h1-data').textContent;
+    console.log(h1);
 
-  // Parse the JSON data into a JavaScript object
-  const metaDescQueryTokensCount = JSON.parse(document.getElementById('hidden-json-data-meta-desc').textContent);
-  console.log(metaDescQueryTokensCount);
+    // Parse the JSON data into a JavaScript object
+    const metaDescQueryTokensCount = JSON.parse(document.getElementById('hidden-json-data-meta-desc').textContent);
+    console.log(metaDescQueryTokensCount);
 
-  // Show loading spinner
-  const loadingIndicator = document.getElementById('loading-indicator-meta-desc');
-  loadingIndicator.style.display = 'inline-block'; // Show the spinner
+    // Show loading spinner
+    const loadingIndicator = document.getElementById('loading-indicator-meta-desc');
+    loadingIndicator.style.display = 'inline-block'; // Show the spinner
 
-  // Prepare the data to send in the POST request
-  const postData = {
-    openai_api_key: openai_api_key,
-    existing_title: existingTitleElement,
-    existingMetaDescriptionElement: existingMetaDescriptionElement,
-    page: page,
-    metaDescQueryTokensCount: metaDescQueryTokensCount,
-    h1: h1
-  };
+    // Prepare the data to send in the POST request
+    const postData = {
+      openai_api_key: openai_api_key,
+      existing_title: existingTitleElement,
+      existingMetaDescriptionElement: existingMetaDescriptionElement,
+      page: page,
+      metaDescQueryTokensCount: metaDescQueryTokensCount,
+      h1: h1
+    };
 
-  // Send POST request to the server
-  fetch('/optimize-ctr/generate-ai-meta-description/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(postData)
-  })
-    .then(response => response.text())  // Assuming the server returns just the HTML string
-    .then(data => {
-      // Hide loading spinner
-      loadingIndicator.style.display = 'none';
-
-      // Insert the rendered HTML into the DOM
-      const aiGeneratedTitleDiv = document.getElementById('ai-generated-meta-description');
-      aiGeneratedTitleDiv.innerHTML = data;  // Insert the HTML response from the server
+    // Send POST request to the server
+    fetch('/optimize-ctr/generate-ai-meta-description/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(postData)
     })
-    .catch(error => {
-      // Hide loading spinner if error occurs
-      loadingIndicator.style.display = 'none';
-      console.error('Error:', error);
-    });
-}
+      .then(response => response.text())  // Assuming the server returns just the HTML string
+      .then(data => {
+        // Hide loading spinner
+        loadingIndicator.style.display = 'none';
+
+        // Insert the rendered HTML into the DOM
+        const aiGeneratedTitleDiv = document.getElementById('ai-generated-meta-description');
+        aiGeneratedTitleDiv.innerHTML = data;  // Insert the HTML response from the server
+      })
+      .catch(error => {
+        // Hide loading spinner if error occurs
+        loadingIndicator.style.display = 'none';
+        console.error('Error:', error);
+      });
+  }
 
 </script>
 

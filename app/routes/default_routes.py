@@ -64,9 +64,19 @@ def dashboard():
         flash('Please Select your GSC Property.')
         return redirect(url_for('gsc_property_selection'))
     
+    
+    # Initialize vars with safe defaults
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    try:
+        webmasters_service = build_gsc_service()
+        latest_date = get_latest_available_date(webmasters_service, selected_property)
+    except Exception as e:
+        logger.error(f"Error fetching latest date for dashboard: {e}")
+
     return render_template('/default/dashboard.html', 
                            selected_property=selected_property,
-                           brand_keywords=brand_keywords)
+                           brand_keywords=brand_keywords,
+                           latest_date=latest_date)
 
 @app.route('/gsc-property-selection/', methods=['GET', 'POST'])
 def gsc_property_selection():
@@ -549,13 +559,24 @@ def sitewide_analysis():
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
+    # Initialize vars with safe defaults
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    
+    if selected_property != "You haven't selected a GSC Property yet":
+        try:
+            webmasters_service = build_gsc_service()
+            latest_date = get_latest_available_date(webmasters_service, selected_property)
+        except Exception as e:
+            logger.error(f"Error initializing service for latest date check: {e}")
+
     if selected_property == "You haven't selected a GSC Property yet":
         flash('Please Select your GSC Property.')
         return redirect(url_for('gsc_property_selection'))
     
     return render_template('/sitewide-analysis/mainpage.html', 
                            selected_property=selected_property,
-                           brand_keywords=brand_keywords)
+                           brand_keywords=brand_keywords,
+                           latest_date=latest_date)
 
 
 @app.route('/reports/query-length-analysis/', methods=['GET', 'POST'])
@@ -571,6 +592,7 @@ def query_length_analysis():
         end_date_str = request.form.get('end_date')
         min_words = request.form.get('min_words')
         max_words = request.form.get('max_words')
+        country = request.form.get('country')
 
         # Convert min/max to integers if provided
         try:
@@ -586,7 +608,14 @@ def query_length_analysis():
         start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
 
         dimensions = ['query']
-        dimensionFilterGroups = [] # Add filters if needed, currently filtering logic is post-processing
+        dimensionFilterGroups = [] 
+        
+        if country and country != "All":
+             dimensionFilterGroups.append({
+                "filters": [
+                    {"dimension": "COUNTRY", "expression": country, "operator": "equals"}
+                ]
+            })
 
         # Fetch Data
         df = fetch_search_console_data(
@@ -663,7 +692,45 @@ def query_length_analysis():
         flash('Please Select your GSC Property.')
         return redirect(url_for('gsc_property_selection'))
 
-    return render_template('/sitewide-analysis/query-length-analysis.html', selected_property=selected_property)
+    webmasters_service = build_gsc_service()
+
+    # Calculate end_date
+    end_date = datetime.today()
+    # Calculate start_date (15 months before today)
+    start_date = end_date - relativedelta(months=15)
+    
+    end_date_str = end_date.strftime('%Y-%m-%d')
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    
+    dimensions = ['COUNTRY']
+    dimensionFilterGroups = []
+    
+    country_df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
+    
+    countries = []
+    if not country_df.empty and 'COUNTRY' in country_df.columns:
+        # Sort by impressions descending
+        country_df = country_df.sort_values(by='impressions', ascending=False)
+        
+        for _, row in country_df.iterrows():
+            country_code = str(row['COUNTRY']).upper()
+            impressions = int(row['impressions'])
+            countries.append({
+                'code': country_code,
+                'impressions_formatted': f"{impressions:,}"
+            })
+
+    # Fetch latest available date
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    try:
+        latest_date = get_latest_available_date(webmasters_service, selected_property)
+    except Exception as e:
+        logger.error(f"Error fetching latest date: {e}")
+
+    return render_template('/sitewide-analysis/query-length-analysis.html', 
+                           selected_property=selected_property, 
+                           countries=countries,
+                           latest_date=latest_date)
 
 
 @app.route('/charts/organic-ctr/', methods=['GET', 'POST'])
@@ -827,8 +894,47 @@ def organic_ctr():
 
     #countries = countries.to_dict('records')
     
+    # Initialize vars with safe defaults
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    try:
+        latest_date = get_latest_available_date(webmasters_service, selected_property)
+    except Exception as e:
+        logger.error(f"Error fetching latest date for organic-ctr: {e}")
+
     return render_template('/organic-ctr/main.html', selected_property=selected_property, 
-                           brand_keywords=brand_keywords, countries=countries)
+                           brand_keywords=brand_keywords, countries=countries, latest_date=latest_date)
+
+
+# Helper to get latest available date
+def get_latest_available_date(service, property_url):
+    """
+    Queries GSC API to find the latest available data date.
+    Checks the last 10 days including 'all' data state (fresh data).
+    """
+    try:
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=10)
+        
+        request_body = {
+            'startDate': start_date.strftime('%Y-%m-%d'),
+            'endDate': end_date.strftime('%Y-%m-%d'),
+            'dimensions': ['date'],
+            'dataState': 'all',  # fetch fresh data if available
+            'rowLimit': 25
+        }
+        
+        response = service.searchAnalytics().query(siteUrl=property_url, body=request_body).execute()
+        
+        if 'rows' in response:
+            dates = [row['keys'][0] for row in response['rows']]
+            if dates:
+                return max(dates)
+                
+    except Exception as e:
+        logger.error(f"Error fetching latest date for {property_url}: {e}")
+    
+    # Fallback: 2 days ago if API fails or returns no data
+    return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
 
 
 # Reports Routes
@@ -837,6 +943,19 @@ def sitewide_report():
     if 'credentials' not in session:
         # GSC is not logged in.
         return redirect(url_for('gsc_authorize'))
+
+    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    
+    # Initialize vars with safe defaults
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    
+    if selected_property != "You haven't selected a GSC Property yet":
+        try:
+            webmasters_service = build_gsc_service()
+            latest_date = get_latest_available_date(webmasters_service, selected_property)
+        except Exception as e:
+            logger.error(f"Error initializing service for latest date check: {e}")
 
     if request.method == 'POST':
         #get request
@@ -1164,7 +1283,8 @@ def sitewide_report():
 
     return render_template('/sitewide-report/main.html',
                            selected_property=selected_property,
-                           brand_keywords=brand_keywords)
+                           brand_keywords=brand_keywords,
+                           latest_date=latest_date)
 
 @app.route('/reports/sitewide-queries/', methods=['GET', 'POST'])
 def query_aggregate_report():
@@ -1314,6 +1434,16 @@ def query_aggregate_report():
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
+    # Initialize vars with safe defaults
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    
+    if selected_property != "You haven't selected a GSC Property yet":
+        try:
+            webmasters_service = build_gsc_service()
+            latest_date = get_latest_available_date(webmasters_service, selected_property)
+        except Exception as e:
+            logger.error(f"Error initializing service for latest date check: {e}")
+
     # if GSC property is not selected then send user to GSC property selection page
     if selected_property == "You haven't selected a GSC Property yet":
         # show a message
@@ -1322,7 +1452,8 @@ def query_aggregate_report():
 
     return render_template('/query-aggregate-report/main.html',
                         selected_property=selected_property,
-                        brand_keywords=brand_keywords)
+                        brand_keywords=brand_keywords,
+                        latest_date=latest_date)
 
 @app.route('/reports/sitewide-pages/', methods=['GET', 'POST'])
 def sitewide_pages():
@@ -1495,6 +1626,16 @@ def sitewide_pages():
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
+    # Initialize vars with safe defaults
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    
+    if selected_property != "You haven't selected a GSC Property yet":
+        try:
+            webmasters_service = build_gsc_service()
+            latest_date = get_latest_available_date(webmasters_service, selected_property)
+        except Exception as e:
+            logger.error(f"Error initializing service for latest date check: {e}")
+
     # if GSC property is not selected then send user to GSC property selection page
     if selected_property == "You haven't selected a GSC Property yet":
         # show a message
@@ -1503,7 +1644,8 @@ def sitewide_pages():
 
     return render_template('/sitewide-pages/main.html',
                         selected_property=selected_property,
-                        brand_keywords=brand_keywords)
+                        brand_keywords=brand_keywords,
+                        latest_date=latest_date)
 
 
 @app.route('/gsc-celery-test/', methods=['GET', 'POST'])
@@ -1762,10 +1904,20 @@ def optimize_ctr():
     page = request.args.get('page', default='')
 
 
+    # Fetch latest available date
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    if selected_property != "You haven't selected a GSC Property yet":
+        try:
+            webmasters_service = build_gsc_service()
+            latest_date = get_latest_available_date(webmasters_service, selected_property)
+        except Exception as e:
+            logger.error(f"Error fetching latest date: {e}")
+
     return render_template('/actionable-insights/optimize-ctr/main.html', 
                            page=page,
                            selected_property=selected_property,
-                           brand_keywords=brand_keywords)
+                           brand_keywords=brand_keywords,
+                           latest_date=latest_date)
 
 
 @app.route('/optimize-ctr/generate-ai-title/', methods=['POST', 'GET'])
@@ -2272,10 +2424,21 @@ def optimize_page_content():
     logger.info(f"Page parameter: {page}")
 
     logger.info("Rendering main template")
+    # Fetch latest available date
+    latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    if selected_property != "You haven't selected a GSC Property yet":
+        try:
+            webmasters_service = build_gsc_service()
+            latest_date = get_latest_available_date(webmasters_service, selected_property)
+        except Exception as e:
+            logger.error(f"Error fetching latest date: {e}")
+
+    logger.info("Rendering main template")
     return render_template('/actionable-insights/optimize-page-content/main.html', 
                            page=page,
                            selected_property=selected_property,
-                           brand_keywords=brand_keywords)
+                           brand_keywords=brand_keywords,
+                           latest_date=latest_date)
 
 
 @app.route('/tools/select-target', methods=['GET'])

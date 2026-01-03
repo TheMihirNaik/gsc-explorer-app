@@ -9,27 +9,8 @@
 
 <div class="container mx-auto px-4 max-w-7xl">
   <!-- Property Info Cards -->
-  <div class="flex flex-col sm:flex-row gap-4 mb-8">
-    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-            <div class="text-sm opacity-75">GSC Property</div>
-            <div class="font-bold">{{ selected_property}}</div>
-        </div>
-    </div>
-
-    <div role="alert" class="alert bg-success bg-opacity-10 shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-success shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-            <div class="text-sm opacity-75">Brand Terms</div>
-            <div class="font-bold">{{ brand_keywords }}</div>
-        </div>
-    </div>
-  </div>
+  <!-- Property Info Cards -->
+  {% include 'partials/property-cards.html' %}
 
   <!-- H1 Heading -->
   <div class="mb-8">
@@ -38,14 +19,16 @@
     <!-- GSC Data Form -->
     <div class="mb-8">
       <div class="flex flex-wrap items-center gap-3">
-        <div id="reportrange" class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
+        <div id="reportrange"
+          class="bg-white cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-100 transition-colors">
           <i class="fa fa-calendar"></i>&nbsp;
-          <span></span> 
+          <span></span>
           <i class="fa fa-caret-down"></i>
         </div>
-        
-        <form id="dateRangeForm" hx-post="/reports/sitewide-overview/" 
-        hx-swap="innerHTML" hx-target="#sitewide-report" class="inline-flex items-center gap-3">
+
+
+        <form id="dateRangeForm" hx-post="/reports/sitewide-overview/" hx-swap="innerHTML" hx-target="#sitewide-report"
+          class="inline-flex items-center gap-3">
           <input type="hidden" name="start_date" id="start_date">
           <input type="hidden" name="end_date" id="end_date">
           <button type="submit" class="btn btn-primary">Fetch Data</button>
@@ -74,13 +57,16 @@
   <div id="sitewide-report" class="mt-8">
     <!-- Explainer-->
     <div role="alert" class="alert alert-info shadow-lg max-w-3xl mb-6">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      <span> 
-          After clicking the "Fetch Data" button, please be patient as the data loads. 
-          <br/> Depending on the amount of data, this may take a few minutes.
-          <p class="text-sm">
-              If the process exceeds 2 minutes, consider narrowing your date range to 7 days for quicker results.
-          </p>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span>
+        After clicking the "Fetch Data" button, please be patient as the data loads.
+        <br /> Depending on the amount of data, this may take a few minutes.
+        <p class="text-sm">
+          If the process exceeds 2 minutes, consider narrowing your date range to 7 days for quicker results.
+        </p>
       </span>
     </div>
 
@@ -90,32 +76,41 @@
 
 
 <script type="text/javascript">
-  $(function() {
-  
-      var start = moment().subtract(31, 'days');
-      var end = moment().subtract(2, 'days');
-  
-      function cb(start, end) {
-          $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-          $('#start_date').val(start.format('MM/DD/YYYY'));
-          $('#end_date').val(end.format('MM/DD/YYYY'));
+  $(function () {
+
+    // Parse the latest_date passed from backend (YYYY-MM-DD)
+    var latestDateStr = "{{ latest_date }}";
+    var latestDate = moment(latestDateStr, "YYYY-MM-DD");
+    $('#latest-data-display').text(latestDate.format('MMM D, YYYY'));
+
+    // Default: Last 30 Days relative to LATEST DATA (not today)
+    var start = moment(latestDate).subtract(30, 'days');
+    var end = moment(latestDate);
+
+    function cb(start, end) {
+      $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+      $('#start_date').val(start.format('MM/DD/YYYY'));
+      $('#end_date').val(end.format('MM/DD/YYYY'));
+    }
+
+    $('#reportrange').daterangepicker({
+      startDate: start,
+      endDate: end,
+      maxDate: moment(), // Prevent selecting future dates
+      ranges: {
+        'Today': [moment(), moment()],
+        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+        'Last 7 Days': [moment(latestDate).subtract(6, 'days'), moment(latestDate)],
+        'Last 28 Days': [moment(latestDate).subtract(27, 'days'), moment(latestDate)],
+        'This Month': [moment().startOf('month'), moment().endOf('month')],
+        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+        'Last 90 Days': [moment(latestDate).subtract(89, 'days'), moment(latestDate)],
+        'Last 365 Days': [moment(latestDate).subtract(364, 'days'), moment(latestDate)]
       }
-  
-      $('#reportrange').daterangepicker({
-          startDate: start,
-          endDate: end,
-          ranges: {
-             'Today': [moment(), moment()],
-             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-             'This Month': [moment().startOf('month'), moment().endOf('month')],
-             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-          }
-      }, cb);
-  
-      cb(start, end);
-  
+    }, cb);
+
+    cb(start, end);
+
   });
 </script>
 
