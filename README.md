@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.0.0-green)](https://flask.palletsprojects.com/)
 
-**GSC Explorer** is an open-source web application that extends Google Search Console's capabilities, providing advanced analytics, unlimited data access, and powerful visualization tools for SEO professionals and website owners.
+**GSC Explorer** is an open-source web application that extends Google Search Console's capabilities, providing advanced analytics, unlimited data access, AI-driven insights, and powerful visualization tools for SEO professionals and website owners.
 
 ## 🌟 Features
 
@@ -12,6 +12,7 @@
 
 - **🔐 Google OAuth Integration** - Secure sign-in with your Google Account
 - **📊 Unlimited Data Access** - Break free from Google Search Console's 1,000-row limitation
+- **🤖 AI-Powered Insights** - Leverage OpenAI for topic generation and content opportunities (Optional)
 - **🔍 Brand vs Non-Brand Query Classification** - Automatically categorize queries using configurable brand keywords
 - **📈 Period Comparisons** - Pre-calculated comparisons for:
   - Current Period vs Previous Period
@@ -25,8 +26,10 @@
 2. **Sitewide Queries** - Analyze search query performance with brand/non-brand classification
 3. **Sitewide Pages** - Page-level performance analysis
 4. **Query Aggregate Report** - Aggregated query performance metrics
-5. **Organic CTR Analysis** - Click-through rate optimization insights
-6. **Sitewide Analysis** - Deep-dive analysis of site performance
+5.  **Organic CTR Analysis** - Click-through rate optimization insights
+6.  **Long-Tail Opportunities** - Identify high-potential long-tail queries
+7.  **Changelog** - Track application updates and features
+8. **Sitewide Analysis** - Deep-dive analysis of site performance
 
 ### Data Export
 
@@ -42,6 +45,7 @@ Export your data in multiple formats:
 - **Flask 3.0.0** - Web framework
 - **Google API Python Client** - Google Search Console API integration
 - **Pandas 2.2.2** - Data manipulation and analysis
+- **Celery & Redis** - Background task processing (Note: Architecture implemented but currently unused in active features)
 
 ### Frontend
 - **DaisyUI + Tailwind CSS** - Modern, responsive UI framework
@@ -49,19 +53,27 @@ Export your data in multiple formats:
 - **DataTables** - Advanced table features (filtering, sorting, pagination, export)
 - **Plotly Express** - Interactive charts and visualizations
 
-### Additional Tools
-- **BeautifulSoup4** - HTML parsing
-- **NLTK** - Natural language processing for query classification
-- **SpaCy** - Advanced NLP capabilities
-- **OpenAI API** - AI-powered insights (optional)
+### AI & NLP
+- **OpenAI API** - Content analysis and suggestions (Optional)
+- **NLTK & Spacy** - Natural language processing for query classification
+
+## 🔒 Security & Privacy
+
+> [!IMPORTANT]
+> **Security Warning**: This application handles sensitive OAuth credentials.
+> *   **Never commit** your `client_secrets.json` or `.env` file to version control.
+> *   Ensure `debug` mode is disabled in production.
+> *   If self-hosting, you retain full ownership of your data; it acts as a private interface to your GSC data.
 
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
 
 - Python 3.11+
+- [Redis Server](https://redis.io/) (Required for application startup)
 - Google Cloud Project with Search Console API enabled
-- OAuth 2.0 credentials (client_secrets.json)
+- OAuth 2.0 credentials (`client_secrets.json`)
+- OpenAI API Key (Optional, for AI features)
 
 ## 🛠️ Installation
 
@@ -92,6 +104,8 @@ Create a `.env` file in the root directory:
 ```env
 SECRET_KEY=your-secret-key-here
 FLASK_ENV=development
+REDIS_URL=redis://localhost:6379/0
+OPENAI_API_KEY=your-openai-key-optional
 ```
 
 ### 5. Configure Google OAuth
@@ -103,10 +117,21 @@ FLASK_ENV=development
 
 ### 6. Run the Application
 
-#### Development Mode
+#### Start Redis
+Ensure your Redis server is running:
+```bash
+redis-server
+```
 
+#### Start the Application
 ```bash
 python run.py
+```
+
+#### Start Celery Worker (Optional)
+Currently unused, but architecture is ready for future background tasks:
+```bash
+celery -A app.extensions.celery worker --loglevel=info
 ```
 
 The application will be available at `https://127.0.0.1:5000` (with SSL in development mode).
@@ -122,34 +147,33 @@ gunicorn run:app --timeout 180
 
 The project includes configuration files for deployment:
 
-- `Procfile` - Defines web process (Gunicorn)
+- `Procfile` - Defines web process (Gunicorn) and worker (Celery)
 - `runtime.txt` - Specifies Python version (3.11.4)
 
 ### General Deployment Steps
 
-1. **Set up your hosting platform** (e.g., Coolify, Railway, Render, DigitalOcean, AWS, etc.)
+1. **Set up your hosting platform** (e.g., Coolify, Railway, Render, DigitalOcean, AWS)
+2. **Provision Redis**: Ensure your hosting provider has a Redis instance available.
 
-2. **Configure environment variables** in your platform's dashboard:
-   - `SECRET_KEY` - Flask secret key (generate a strong random key)
-   - `FLASK_ENV=production` - Set to production mode
-   - `GOOGLE_CLIENT_ID` - Google OAuth client ID (if using environment variables instead of `client_secrets.json`)
-   - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret (if using environment variables)
+3. **Configure environment variables**:
+   - `SECRET_KEY`
+   - `FLASK_ENV=production`
+   - `REDIS_URL` - Connection string for your Redis instance
+   - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` (if not using file)
+   - `OPENAI_API_KEY` (Optional)
 
-3. **Upload OAuth credentials**:
-   - Upload `client_secrets.json` to your server, or
-   - Configure OAuth credentials through environment variables
+4. **Upload OAuth credentials**: `client_secrets.json` (or use env vars).
 
-4. **Deploy the application**:
-   - Connect your Git repository to your hosting platform
-   - The platform will automatically build and deploy using the configuration files
-   - Ensure the web process runs: `gunicorn run:app --timeout 180`
+5. **Deploy**:
+   - The platform should detect the `Procfile`.
+   - Ensure the `web` process runs.
+   - (Optional) Start the `celery` process if you plan to enable background tasks.
 
 ### Production Considerations
 
-- Use HTTPS/SSL certificates for secure OAuth authentication
-- Set up proper logging and monitoring
-- Configure appropriate timeout values for long-running requests
-- Ensure Python 3.11+ is available on your hosting platform
+- Use HTTPS/SSL certificates.
+- Set up proper logging.
+- **Security**: Double-check that no secrets are committed.
 
 ## 📁 Project Structure
 
@@ -157,21 +181,13 @@ The project includes configuration files for deployment:
 gsc-explorer-app/
 ├── app/
 │   ├── __init__.py          # Flask app initialization
-│   ├── extensions.py         # Extensions configuration
-│   ├── routes/               # Route handlers
-│   │   ├── default_routes.py
-│   │   ├── gsc_api_auth.py
-│   │   ├── gsc_routes.py
-│   │   └── ...
-│   ├── static/               # Static files
-│   └── templates/            # Jinja2 templates
-│       ├── default/
-│       ├── sitewide-report/
-│       ├── sitewide-queries/
-│       └── ...
-├── client_secrets.json       # Google OAuth credentials
-├── requirements.txt          # Python dependencies
-├── Procfile                  # Process file for deployment (Gunicorn)
+│   ├── extensions.py        # Extensions (Celery, etc.)
+│   ├── routes/              # Route handlers (default, gsc, openai, etc.)
+│   ├── static/              # Static files
+│   └── templates/           # Jinja2 templates
+├── client_secrets.json      # Google OAuth credentials
+├── requirements.txt         # Python dependencies
+├── Procfile                 # Process file for deployment
 ├── runtime.txt              # Python version specification
 └── run.py                   # Application entry point
 ```
@@ -179,19 +195,16 @@ gsc-explorer-app/
 ## 🔧 Configuration
 
 ### Brand Keywords
-
-After signing in, configure your brand keywords in the property selection page. These keywords are used to automatically classify queries as "Brand" or "Non-Brand".
+After signing in, configure your brand keywords in the property selection page.
 
 ### Session Configuration
-
-Sessions are configured with:
 - 300-minute lifetime
 - Secure cookies (HTTPS only)
 - SameSite=Lax policy
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -205,8 +218,7 @@ This project is open source. Please check the repository for license details.
 
 ## 🐛 Known Issues
 
-- Development mode requires SSL certificates (`cert.pem` and `key.pem`) for OAuth to work properly
-- Some MongoDB-related code is commented out but may be used in future versions
+- Development mode requires SSL certificates (`cert.pem` and `key.pem`) for OAuth to work properly.
 
 ## 🔗 Links
 

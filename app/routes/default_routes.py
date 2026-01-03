@@ -541,8 +541,8 @@ def sitewide_analysis():
                                 non_brand_position_bucket_graph=non_brand_position_bucket_graph,
                                 earliest_date=start_date_formatted,
                                 latest_date=end_date_formatted,
-                                unique_brand_query_count=unique_brand_query_count,
-                                unique_non_brand_query_count=unique_non_brand_query_count
+                                unique_brand_query_count=brand_query_count,
+                                unique_non_brand_query_count=non_brand_query_count
                                 )
 
     # GET request
