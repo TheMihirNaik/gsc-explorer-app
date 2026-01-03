@@ -1,42 +1,46 @@
 <!-- Property Info Cards Partial -->
 <div class="flex flex-wrap gap-2 mb-4">
     <!-- GSC Property Card -->
-    <div
-        class="flex items-center gap-2 bg-primary/10 text-primary-content rounded-lg py-1.5 px-3 border border-primary/20">
-        <div class="w-8 h-8 flex items-center justify-center bg-white rounded-md overflow-hidden border border-primary/10"
+    <div class="flex items-center gap-2 bg-primary/10 rounded-lg py-1.5 px-3 border border-primary/20 max-w-sm">
+        <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-white rounded-md overflow-hidden border border-primary/10"
             id="favicon-container">
             <img id="property-favicon" src="" alt="" class="w-5 h-5 hidden"
                 onerror="this.classList.add('hidden'); document.getElementById('property-globe').classList.remove('hidden');">
             <i id="property-globe" class="fa-solid fa-globe text-primary text-sm"></i>
         </div>
-        <div>
-            <div class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-none mb-0.5">Property</div>
-            <div class="font-bold text-xs leading-none text-base-content">{{ selected_property}}</div>
+        <div class="min-w-0">
+            <div
+                class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-tight mb-0.5 text-base-content whitespace-nowrap">
+                Property</div>
+            <div class="font-bold text-xs leading-tight text-base-content break-all line-clamp-1"
+                title="{{ selected_property }}">{{ selected_property }}</div>
         </div>
     </div>
 
     <!-- Brand Terms Card -->
-    <div
-        class="flex items-center gap-2 bg-secondary/10 text-secondary-content rounded-lg py-1.5 px-3 border border-secondary/20">
-        <div class="w-8 h-8 flex items-center justify-center bg-secondary text-white rounded-md">
+    <div class="flex items-center gap-2 bg-secondary/10 rounded-lg py-1.5 px-3 border border-secondary/20 max-w-xs">
+        <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-secondary text-white rounded-md">
             <i class="fa-solid fa-tags text-sm"></i>
         </div>
-        <div>
-            <div class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-none mb-0.5">Brand Keywords
-            </div>
-            <div class="font-bold text-xs leading-none text-base-content">{{ brand_keywords }}</div>
+        <div class="min-w-0">
+            <div
+                class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-tight mb-0.5 text-base-content whitespace-nowrap">
+                Brand Keywords</div>
+            <div class="font-bold text-xs leading-tight text-base-content truncate" title="{{ brand_keywords }}">{{
+                brand_keywords }}</div>
         </div>
     </div>
 
     <!-- Latest Data Info Card -->
-    <div
-        class="flex items-center gap-2 bg-accent/10 text-accent-content rounded-lg py-1.5 px-3 border border-accent/20">
-        <div class="w-8 h-8 flex items-center justify-center bg-accent text-white rounded-md">
+    <div class="flex items-center gap-2 bg-accent/10 rounded-lg py-1.5 px-3 border border-accent/20">
+        <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-accent text-white rounded-md">
             <i class="fa-solid fa-calendar-check text-sm"></i>
         </div>
-        <div>
-            <div class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-none mb-0.5">Latest Data</div>
-            <div class="font-bold text-xs leading-none text-base-content" id="latest-data-display">{{ latest_date }}
+        <div class="min-w-0">
+            <div
+                class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-tight mb-0.5 text-base-content whitespace-nowrap">
+                Latest Data</div>
+            <div class="font-bold text-xs leading-tight text-base-content" id="latest-data-display">{{ latest_date }}
             </div>
         </div>
     </div>
