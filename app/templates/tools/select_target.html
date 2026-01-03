@@ -1,0 +1,122 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Select Target Page {% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 max-w-4xl py-8">
+
+    <div class="mb-8">
+        <a href="/dashboard" class="btn btn-ghost gap-2 pl-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="text-center mb-10">
+        <h1 class="text-3xl font-bold mb-2">Select a Page to Optimize</h1>
+        <p class="opacity-70">
+            {% if destination == "optimize-ctr" %}
+            Choose a page to optimize Title & Meta Description
+            {% else %}
+            Choose a page to optimize Page Content
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="grid gap-8">
+        <!-- Manual Input Card -->
+        <div class="card bg-base-100 shadow-xl border border-base-200">
+            <div class="card-body">
+                <h2 class="card-title text-lg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    Enter URL Manually
+                </h2>
+                <form action="/actionable-insights/{{ destination }}" method="get" class="flex gap-4">
+                    <input type="text" name="page" placeholder="https://example.com/page-slug"
+                        class="input input-bordered flex-1" required />
+                    <button type="submit" class="btn btn-primary">Optimize</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="divider">OR</div>
+
+        <!-- Top Pages Card -->
+        <div class="card bg-base-100 shadow-xl border border-base-200">
+            <div class="card-body">
+                <h2 class="card-title text-lg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Select from Top Performing Pages (Last 30 Days)
+                </h2>
+
+                <div class="form-control mb-4">
+                    <input type="text" id="pageSearch" placeholder="Filter pages..."
+                        class="input input-bordered input-sm w-full max-w-xs" />
+                </div>
+
+                <div class="overflow-x-auto h-96">
+                    <table class="table table-pin-rows">
+                        <thead>
+                            <tr>
+                                <th>Page URL</th>
+                                <th>Clicks</th>
+                                <th>Impressions</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pagesTableBody">
+                            {% for page in pages %}
+                            <tr class="hover">
+                                <td class="text-sm break-all">
+                                    <div class="font-medium page-url">{{ page.PAGE }}</div>
+                                </td>
+                                <td>{{ page.clicks | int }}</td>
+                                <td>{{ page.impressions | int }}</td>
+                                <td>
+                                    <a href="/actionable-insights/{{ destination }}?page={{ page.PAGE }}"
+                                        class="btn btn-sm btn-ghost text-primary">Select</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-8 opacity-50">
+                                    No data available for the last 30 days. Please enter URL manually.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('pageSearch').addEventListener('keyup', function () {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#pagesTableBody tr');
+
+        rows.forEach(function (row) {
+            let text = row.querySelector('.page-url').textContent.toLowerCase();
+            if (text.includes(filter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+{% endblock %}

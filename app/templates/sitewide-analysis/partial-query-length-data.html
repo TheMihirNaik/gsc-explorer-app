@@ -1,0 +1,82 @@
+<div role="alert" class="alert alert-info shadow-lg max-w-3xl mb-6">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <span>
+        Found <strong>{{ total_queries }}</strong> queries in the selected range ({{ earliest_date }} - {{ latest_date
+        }}).
+        {% if min_words or max_words %}
+        <br>Filtered by Word Count:
+        {% if min_words %} Min: <strong>{{ min_words }}</strong> {% endif %}
+        {% if max_words %} Max: <strong>{{ max_words }}</strong> {% endif %}
+        {% endif %}
+    </span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+    <!-- Chart: Clicks by Word Count -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title">Clicks by Word Count</h2>
+            {{ clicks_chart|safe }}
+        </div>
+    </div>
+
+    <!-- Chart: Impressions by Word Count -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title">Impressions by Word Count</h2>
+            {{ impressions_chart|safe }}
+        </div>
+    </div>
+
+    <!-- Chart: Query Count by Word Count -->
+    <div class="card bg-base-100 shadow-xl lg:col-span-2">
+        <div class="card-body">
+            <h2 class="card-title">Query Count by Word Count</h2>
+            {{ query_count_chart|safe }}
+            <p class="text-sm opacity-75">This chart shows how many unique search queries exist at each word count
+                length.</p>
+        </div>
+    </div>
+</div>
+
+<h2 class="text-3xl font-bold mb-6">Detailed Query Analysis</h2>
+
+<div class="overflow-x-auto">
+    <table class="table table-zebra w-full" id="queryTable">
+        <thead>
+            <tr>
+                <th>Query</th>
+                <th class="text-right">Word Count</th>
+                <th class="text-right">Clicks</th>
+                <th class="text-right">Impressions</th>
+                <th class="text-right">CTR (%)</th>
+                <th class="text-right">Position</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table_data %}
+            <tr>
+                <td>{{ row.query }}</td>
+                <td class="text-right">{{ row.word_count }}</td>
+                <td class="text-right">{{ row.clicks|format_number }}</td>
+                <td class="text-right">{{ row.impressions|format_number }}</td>
+                <td class="text-right">{{ row.ctr|round(2) }}%</td>
+                <td class="text-right">{{ row.position|round(1) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Initialize DataTable if needed, or simple table
+    $(document).ready(function () {
+        $('#queryTable').DataTable({
+            "order": [[2, "desc"]], // Sort by Clicks descending by default
+            "pageLength": 25
+        });
+    });
+</script>

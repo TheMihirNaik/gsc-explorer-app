@@ -1,96 +1,112 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="autumn">
+
 <head>
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-54FLDRK3');</script>
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-54FLDRK3');</script>
   <!-- End Google Tag Manager -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %} - GSCExplorer.App✨</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% endblock %} - GSCExplorer.App✨</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
 
-    
-    <!-- DaisyUI -->
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
-  
-    <!-- Jquery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <!-- DaisyUI -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
 
-    <!-- Datatables -->
-    <link href="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/date-1.5.2/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sb-1.7.1/sp-2.3.1/sl-2.0.1/sr-1.4.1/datatables.min.css" rel="stylesheet">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/date-1.5.2/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sb-1.7.1/sp-2.3.1/sl-2.0.1/sr-1.4.1/datatables.min.js"></script>
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"
+    integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
+    crossorigin="anonymous"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Jquery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LV2HG04JYC"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+  <!-- Datatables -->
+  <link
+    href="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/date-1.5.2/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sb-1.7.1/sp-2.3.1/sl-2.0.1/sr-1.4.1/datatables.min.css"
+    rel="stylesheet">
 
-      gtag('config', 'G-LV2HG04JYC');
-    </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script
+    src="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/date-1.5.2/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sb-1.7.1/sp-2.3.1/sl-2.0.1/sr-1.4.1/datatables.min.js"></script>
 
-    <script type="text/javascript">
-      (function(c,l,a,r,i,t,y){
-          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-      })(window, document, "clarity", "script", "movkiwje2r");
-    </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LV2HG04JYC"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-  </head>
+    gtag('config', 'G-LV2HG04JYC');
+  </script>
+
+  <script type="text/javascript">
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+      t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, "clarity", "script", "movkiwje2r");
+  </script>
+
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+  {% block head %}{% endblock %}
+</head>
+
 <body class="">
-    <!-- Google Tag Manager (noscript) -->
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-54FLDRK3"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-  
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-54FLDRK3" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
   <div class="drawer lg:drawer-open">
     <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
-    
+
     <!-- Main Content -->
     <div class="drawer-content p-5">
-      
+
       <!-- Flash Messages -->
       <div class="bg-gray-100 max-w-fit">
         {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div role="alert" class="alert max-w-fit">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span>{{ message }}</span>
-              </div>
-            {% endfor %}
-          {% endif %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div role="alert" class="alert max-w-fit">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
       </div>
 
       <!-- Page content here -->
       <label for="my-drawer-2" class="btn btn-primary drawer-button lg:hidden">Open drawer</label>
-      {% block content %} 
+      {% block content %}
       {% endblock %}
-    
-    </div> 
+
+    </div>
 
     <!-- Side Bar -->
     <div class="drawer-side">
@@ -112,12 +128,13 @@
           <nav class="overflow-y-auto py-4">
             <!-- Dashboard -->
             <div class="px-4 mb-6">
-              <a href="/dashboard/" class="flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-neutral-focus">
+              <a href="/dashboard/"
+                class="flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-neutral-focus">
                 <i class="fa-solid fa-tachometer-alt text-primary"></i>
                 <span class="font-medium">Dashboard</span>
               </a>
             </div>
-            
+
             <!-- Charts/Visualizations Section -->
             <div class="px-4 mb-6">
               <div class="flex items-center mb-3">
@@ -125,23 +142,25 @@
                 <h3 class="px-3 font-bold text-sm uppercase tracking-wider text-white/70">Charts & Visualizations</h3>
                 <div class="h-px flex-1 bg-neutral-focus"></div>
               </div>
-              
+
               <ul class="space-y-1">
                 <li>
-                  <a href="/charts/sitewide-brand-vs-non-brand/" class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                  <a href="/charts/sitewide-brand-vs-non-brand/"
+                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
                     <i class="fa-solid fa-chart-pie text-secondary w-5"></i>
                     <span>Sitewide BR vs NB</span>
                   </a>
                 </li>
                 <li>
-                  <a href="/charts/organic-ctr/" class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                  <a href="/charts/organic-ctr/"
+                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
                     <i class="fa-solid fa-chart-bar text-secondary w-5"></i>
                     <span>Organic CTR Analysis</span>
                   </a>
                 </li>
               </ul>
             </div>
-            
+
             <!-- Reports/Tables Section -->
             <div class="px-4 mb-6">
               <div class="flex items-center mb-3">
@@ -149,29 +168,59 @@
                 <h3 class="px-3 font-bold text-sm uppercase tracking-wider text-white/70">Reports & Tables</h3>
                 <div class="h-px flex-1 bg-neutral-focus"></div>
               </div>
-              
+
               <ul class="space-y-1">
                 <li>
-                  <a href="/reports/sitewide-overview/" class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                  <a href="/reports/sitewide-overview/"
+                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
                     <i class="fa-solid fa-file-alt text-accent w-5"></i>
                     <span>Sitewide Overview</span>
                   </a>
                 </li>
                 <li>
-                  <a href="/reports/sitewide-queries/" class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                  <a href="/reports/sitewide-queries/"
+                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
                     <i class="fa-solid fa-file-alt text-accent w-5"></i>
                     <span>Sitewide Queries</span>
                   </a>
                 </li>
                 <li>
-                  <a href="/reports/sitewide-pages/" class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                  <a href="/reports/sitewide-pages/"
+                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
                     <i class="fa-solid fa-file-alt text-accent w-5"></i>
                     <span>Sitewide Pages</span>
                   </a>
                 </li>
+                <li>
+                  <a href="/reports/query-length-analysis/"
+                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    <i class="fa-solid fa-ruler-horizontal text-accent w-5"></i>
+                    <span>Long-Tail Opportunities</span>
+                  </a>
+                </li>
+              </ul>
               </ul>
             </div>
-            
+
+            <!-- Resources Section -->
+            <div class="px-4 mb-6">
+              <div class="flex items-center mb-3">
+                <div class="h-px flex-1 bg-neutral-focus"></div>
+                <h3 class="px-3 font-bold text-sm uppercase tracking-wider text-white/70">Resources</h3>
+                <div class="h-px flex-1 bg-neutral-focus"></div>
+              </div>
+
+              <ul class="space-y-1">
+                <li>
+                  <a href="{{ url_for('changelog') }}"
+                    class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    <i class="fa-solid fa-clock-rotate-left text-info w-5"></i>
+                    <span>Change Log</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+
             <!-- Coming Soon (Hidden) -->
             <div hidden>
               <div class="px-4 mb-6">
@@ -180,25 +229,29 @@
                   <h3 class="px-3 font-bold text-sm uppercase tracking-wider text-white/70">Coming Soon</h3>
                   <div class="h-px flex-1 bg-neutral-focus"></div>
                 </div>
-                
+
                 <ul class="space-y-1">
                   <li>
-                    <a href="#" onclick="incrementCount('keywordDiscoveryCount')" class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    <a href="#" onclick="incrementCount('keywordDiscoveryCount')"
+                      class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
                       <i class="fa-solid fa-spinner text-info w-5"></i>
                       <span>Keyword Discovery</span>
                       <div class="ml-auto flex items-center">
                         <i class="fa-solid fa-thumbs-up text-xs"></i>
-                        <span id="keywordDiscoveryCount" class="ml-1 text-xs bg-neutral-focus px-2 py-0.5 rounded-full">0</span>
+                        <span id="keywordDiscoveryCount"
+                          class="ml-1 text-xs bg-neutral-focus px-2 py-0.5 rounded-full">0</span>
                       </div>
                     </a>
                   </li>
                   <li>
-                    <a href="#" onclick="incrementCount('contentOptimizationCount')" class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
+                    <a href="#" onclick="incrementCount('contentOptimizationCount')"
+                      class="flex items-center gap-3 p-2 pl-4 rounded-lg transition-all hover:bg-neutral-focus">
                       <i class="fa-solid fa-spinner text-info w-5"></i>
                       <span>Content Optimization</span>
                       <div class="ml-auto flex items-center">
                         <i class="fa-solid fa-thumbs-up text-xs"></i>
-                        <span id="contentOptimizationCount" class="ml-1 text-xs bg-neutral-focus px-2 py-0.5 rounded-full">0</span>
+                        <span id="contentOptimizationCount"
+                          class="ml-1 text-xs bg-neutral-focus px-2 py-0.5 rounded-full">0</span>
                       </div>
                     </a>
                   </li>
@@ -207,49 +260,48 @@
             </div>
           </nav>
         </div>
-        
+
         <!-- Bottom section with settings and options -->
         <div class="p-4 border-t border-neutral-focus space-y-4">
           <!-- OpenAI API Key -->
           <div class="bg-neutral-focus p-4 rounded-lg shadow-md">
             <div class="flex items-center justify-between mb-2">
               <span class="font-bold text-white">OpenAI API Key</span>
-              <a href="https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key" target="_blank" class="text-xs link link-secondary">
+              <a href="https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key" target="_blank"
+                class="text-xs link link-secondary">
                 <i class="fa-solid fa-circle-question mr-1"></i>Help
               </a>
             </div>
-            
+
             <div class="flex items-center space-x-2 mb-2">
-              <input 
-                type="password"
-                placeholder="e.g., sk-****-****" 
-                id="openai_api_key" 
-                class="input input-sm input-bordered w-full border-neutral-focus shadow-md focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-base-content" 
-                aria-label="OpenAI API Key"
-                required
-              />
-              <button id="api-key-button" class="btn btn-sm btn-primary hover:bg-primary-focus transition duration-200" onclick="handleApiKeyAction()" aria-label="Save API Key">
+              <input type="password" placeholder="e.g., sk-****-****" id="openai_api_key"
+                class="input input-sm input-bordered w-full border-neutral-focus shadow-md focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-base-content"
+                aria-label="OpenAI API Key" required />
+              <button id="api-key-button" class="btn btn-sm btn-primary hover:bg-primary-focus transition duration-200"
+                onclick="handleApiKeyAction()" aria-label="Save API Key">
                 <i id="api-key-icon" class="fa-solid fa-floppy-disk"></i>
               </button>
             </div>
-            
+
             <div class="text-xs text-white/70 flex items-center">
               <i class="fa-solid fa-lock text-xs mr-1"></i>
               <span>Stored locally in your browser</span>
             </div>
           </div>
-          
+
           <!-- GSC Property Selection -->
-          <a href="/gsc-property-selection/" class="btn btn-secondary btn-block justify-between shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
+          <a href="/gsc-property-selection/"
+            class="btn btn-secondary btn-block justify-between shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
             <span class="flex items-center">
               <i class="fa-solid fa-exchange-alt mr-2"></i>
               Switch GSC Property
             </span>
             <i class="fa-solid fa-chevron-right"></i>
           </a>
-          
+
           <!-- Logout Button -->
-          <a href="/revoke-gsc-clear-session" class="btn btn-error text-white btn-block justify-between shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
+          <a href="/revoke-gsc-clear-session"
+            class="btn btn-error text-white btn-block justify-between shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
             <span class="flex items-center">
               <i class="fa-solid fa-sign-out-alt mr-2"></i>
               Revoke GSC Access & Logout
@@ -259,10 +311,11 @@
       </div>
     </div>
 
-     <!-- Customer Feedback Modal-->
+    <!-- Customer Feedback Modal-->
     <div>
-      <button id="feedbackButton" class="fixed bottom-4 right-4 bg-primary text-white rounded-full p-4 shadow-lg hover:bg-primary-focus transition-all duration-300 transform hover:scale-110" 
-      onclick="my_modal_2.showModal()">
+      <button id="feedbackButton"
+        class="fixed bottom-4 right-4 bg-primary text-white rounded-full p-4 shadow-lg hover:bg-primary-focus transition-all duration-300 transform hover:scale-110"
+        onclick="my_modal_2.showModal()">
         <i class="fa fa-comment text-xl"></i>
       </button>
 
@@ -272,7 +325,7 @@
             <i class="fa fa-comment-dots text-3xl text-primary"></i>
             <h3 class="font-bold text-2xl">Help Us Improve!</h3>
           </div>
-          
+
           <div class="space-y-4">
             <p class="text-lg">Your feedback helps us make GSCExplorer.App better for everyone. We'd love to hear:</p>
             <ul class="list-disc list-inside space-y-2 text-base-content/80">
@@ -286,12 +339,8 @@
           <div id="feedback-response" class="mt-6">
             <form class="form space-y-4" id="form-feedback">
               <div class="form-control">
-                <textarea 
-                  name="customer_feedback" 
-                  placeholder="Share your thoughts here..." 
-                  class="textarea textarea-bordered h-32 text-base"
-                  required
-                ></textarea>
+                <textarea name="customer_feedback" placeholder="Share your thoughts here..."
+                  class="textarea textarea-bordered h-32 text-base" required></textarea>
               </div>
               <div class="flex justify-end gap-3">
                 <button type="button" class="btn btn-ghost" onclick="my_modal_2.close()">Cancel</button>
@@ -300,12 +349,14 @@
                 </button>
               </div>
             </form>
-            
+
             <p id="msg" class="py-2 text-center"></p>
           </div>
 
           <div class="mt-6 text-sm text-base-content/60">
-            <p>All feedback is collected in our <a href="https://docs.google.com/spreadsheets/d/16HKm5ytVzMMyw4vjim-hJyPvq5Z876ZAN8GmFD9Hgz8/edit?usp=sharing" class="link link-primary" target="_blank">feedback spreadsheet</a>.</p>
+            <p>All feedback is collected in our <a
+                href="https://docs.google.com/spreadsheets/d/16HKm5ytVzMMyw4vjim-hJyPvq5Z876ZAN8GmFD9Hgz8/edit?usp=sharing"
+                class="link link-primary" target="_blank">feedback spreadsheet</a>.</p>
             <p class="mt-2">Press ESC or click outside to close</p>
           </div>
         </div>
@@ -313,7 +364,7 @@
           <button>close</button>
         </form>
       </dialog>
-      
+
     </div>
 
   </div>
@@ -325,12 +376,12 @@
       const submitBtn = document.querySelector("#sub");
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>Submitting...';
-      
+
       let data = new FormData(form);
       fetch('https://script.google.com/macros/s/AKfycbzBS2FGa1_tkH-6LtUHKnRUY7v2xSu9g8-yp5OfMxY6WyEiKZnQL_Fo2B5SGgdflWQ5rg/exec', {
-          method: "POST",
-          body: data
-        })
+        method: "POST",
+        body: data
+      })
         .then(res => res.text())
         .then(data => {
           document.querySelector("#msg").innerHTML = data;
@@ -348,104 +399,105 @@
     });
   </script>
 
-<script>
-  // Function to handle Save/Delete API key
-  function handleApiKeyAction() {
-    const apiKey = document.getElementById('openai_api_key').value;
-    const button = document.getElementById('api-key-button');
-    const icon = document.getElementById('api-key-icon');
+  <script>
+    // Function to handle Save/Delete API key
+    function handleApiKeyAction() {
+      const apiKey = document.getElementById('openai_api_key').value;
+      const button = document.getElementById('api-key-button');
+      const icon = document.getElementById('api-key-icon');
 
-    if (localStorage.getItem('openai_api_key')) {
-      // Remove the API key from local storage
-      localStorage.removeItem('openai_api_key');
-      
-      // Show success message with toast notification
-      const toast = document.createElement('div');
-      toast.className = 'toast toast-top toast-end';
-      toast.innerHTML = `
+      if (localStorage.getItem('openai_api_key')) {
+        // Remove the API key from local storage
+        localStorage.removeItem('openai_api_key');
+
+        // Show success message with toast notification
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-top toast-end';
+        toast.innerHTML = `
         <div class="alert alert-success">
           <i class="fa-solid fa-check-circle"></i>
           <span>API Key deleted successfully</span>
         </div>
       `;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-      
-      document.getElementById('openai_api_key').value = '';
-    } else {
-      if (apiKey) {
-        // Save the API key to local storage
-        localStorage.setItem('openai_api_key', apiKey);
-        
-        // Show success message with toast notification
-        const toast = document.createElement('div');
-        toast.className = 'toast toast-top toast-end';
-        toast.innerHTML = `
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+
+        document.getElementById('openai_api_key').value = '';
+      } else {
+        if (apiKey) {
+          // Save the API key to local storage
+          localStorage.setItem('openai_api_key', apiKey);
+
+          // Show success message with toast notification
+          const toast = document.createElement('div');
+          toast.className = 'toast toast-top toast-end';
+          toast.innerHTML = `
           <div class="alert alert-success">
             <i class="fa-solid fa-check-circle"></i>
             <span>API Key saved successfully</span>
           </div>
         `;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-      } else {
-        // Show error message with toast notification
-        const toast = document.createElement('div');
-        toast.className = 'toast toast-top toast-end';
-        toast.innerHTML = `
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+        } else {
+          // Show error message with toast notification
+          const toast = document.createElement('div');
+          toast.className = 'toast toast-top toast-end';
+          toast.innerHTML = `
           <div class="alert alert-error">
             <i class="fa-solid fa-exclamation-circle"></i>
             <span>Please enter a valid API Key</span>
           </div>
         `;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+        }
+      }
+
+      // Update the button state
+      updateButtonState();
+    }
+
+    // Function to update the button text based on API key state
+    function updateButtonState() {
+      const button = document.getElementById('api-key-button');
+      const icon = document.getElementById('api-key-icon');
+      const savedApiKey = localStorage.getItem('openai_api_key');
+
+      if (savedApiKey) {
+        button.classList.remove('btn-primary');
+        button.classList.add('btn-error');
+        icon.classList.remove('fa-floppy-disk');
+        icon.classList.add('fa-trash-alt');
+        button.setAttribute('title', 'Delete API Key');
+      } else {
+        button.classList.remove('btn-error');
+        button.classList.add('btn-primary');
+        icon.classList.remove('fa-trash-alt');
+        icon.classList.add('fa-floppy-disk');
+        button.setAttribute('title', 'Save API Key');
       }
     }
 
-    // Update the button state
-    updateButtonState();
-  }
+    // Check if the API key is in local storage on page load
+    window.addEventListener('DOMContentLoaded', function () {
+      const savedApiKey = localStorage.getItem('openai_api_key');
+      if (savedApiKey) {
+        document.getElementById('openai_api_key').value = savedApiKey;
+      }
+      updateButtonState();
+    });
+  </script>
 
-  // Function to update the button text based on API key state
-  function updateButtonState() {
-    const button = document.getElementById('api-key-button');
-    const icon = document.getElementById('api-key-icon');
-    const savedApiKey = localStorage.getItem('openai_api_key');
-
-    if (savedApiKey) {
-      button.classList.remove('btn-primary');
-      button.classList.add('btn-error');
-      icon.classList.remove('fa-floppy-disk');
-      icon.classList.add('fa-trash-alt');
-      button.setAttribute('title', 'Delete API Key');
-    } else {
-      button.classList.remove('btn-error');
-      button.classList.add('btn-primary');
-      icon.classList.remove('fa-trash-alt');
-      icon.classList.add('fa-floppy-disk');
-      button.setAttribute('title', 'Save API Key');
+  <script>
+    function incrementCount(elementId) {
+      const countElement = document.getElementById(elementId);
+      let count = parseInt(countElement.textContent) || 0;
+      count++;
+      countElement.textContent = count;
     }
-  }
-
-  // Check if the API key is in local storage on page load
-  window.addEventListener('DOMContentLoaded', function() {
-    const savedApiKey = localStorage.getItem('openai_api_key');
-    if (savedApiKey) {
-      document.getElementById('openai_api_key').value = savedApiKey;
-    }
-    updateButtonState();
-  });
-</script>
-
-<script>
-  function incrementCount(elementId) {
-    const countElement = document.getElementById(elementId);
-    let count = parseInt(countElement.textContent) || 0;
-    count++;
-    countElement.textContent = count;
-  }
-</script>
+  </script>
 
 </body>
+
 </html>

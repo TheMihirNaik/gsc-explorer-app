@@ -1,0 +1,114 @@
+{% extends base_template %}
+
+{% block title %}Change Log{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-5xl">
+
+    <!-- Breadcrumbs -->
+    <div class="text-sm breadcrumbs mb-6 text-base-content/70">
+        <ul>
+            {% if has_gsc_credentials %}
+            <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+            {% else %}
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            {% endif %}
+            <li>Change Log</li>
+        </ul>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mb-6">
+        {% if has_gsc_credentials %}
+        <a href="{{ url_for('dashboard') }}"
+            class="btn btn-ghost btn-sm gap-2 pl-0 hover:bg-transparent hover:text-primary">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+        {% else %}
+        <a href="{{ url_for('home') }}" class="btn btn-ghost btn-sm gap-2 pl-0 hover:bg-transparent hover:text-primary">
+            <i class="fa-solid fa-arrow-left"></i> Back to Homepage
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Header Section -->
+    <div class="mb-10 text-center">
+        <h1 class="text-4xl font-bold mb-4 text-base-content">
+            <i class="fa-solid fa-clock-rotate-left mr-2 text-primary"></i>Change Log
+        </h1>
+        <p class="text-lg text-base-content/70 max-w-2xl mx-auto">
+            Stay up to date with the latest features, improvements, and bug fixes in GSC Explorer.
+        </p>
+    </div>
+
+    <!-- How to use Section -->
+    <div class="bg-base-100 shadow-lg rounded-xl p-6 mb-10 border border-base-200">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-info"></i> How to use this Change Log
+        </h2>
+        <p class="mb-4">
+            This page provides a chronological list of all updates to the platform.
+            Click on "Read more" for any entry to see detailed instructions, screenshots, and tips on how to use new
+            features.
+        </p>
+    </div>
+
+    <!-- Timeline/List of Changes -->
+    <div class="relative border-l-4 border-base-300 ml-4 md:ml-6 space-y-12">
+        {% for entry in entries %}
+        <div class="mb-8 ml-8 relative group">
+            <!-- Dot on timeline -->
+            <div
+                class="absolute -left-[45px] top-1 bg-primary text-primary-content rounded-full w-8 h-8 flex items-center justify-center border-4 border-base-100 shadow-md transform transition-transform group-hover:scale-110">
+                <i class="fa-solid fa-code-branch text-xs"></i>
+            </div>
+
+            <!-- Card -->
+            <div
+                class="bg-base-100 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-base-200 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
+                        <h2 class="text-2xl font-bold hover:text-primary transition-colors">
+                            <a href="{{ url_for('changelog_detail', slug=entry.slug) }}">{{ entry.title }}</a>
+                        </h2>
+                        <span class="badge badge-lg badge-ghost gap-2">
+                            <i class="fa-regular fa-calendar"></i>
+                            {{ entry.formatted_date }}
+                        </span>
+                    </div>
+
+                    <p class="text-base-content/80 text-lg mb-6 leading-relaxed">
+                        {{ entry.summary }}
+                    </p>
+
+                    <div class="flex items-center">
+                        <a href="{{ url_for('changelog_detail', slug=entry.slug) }}"
+                            class="btn btn-outline btn-primary btn-sm gap-2 group-hover:bg-primary group-hover:text-white">
+                            Read more <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Structured Data for List (ItemList) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% for entry in entries %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "url": "{{ url_for('changelog_detail', slug=entry.slug, _external=True) }}",
+      "name": "{{ entry.title }}"
+    }{{ "," if not loop.last }}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends base_template %}
+
+{% block title %}{{ entry.seo_title }}{% endblock %}
+
+{% block content %}
+<!-- SEO Meta Tags -->
+<!-- These should ideally be injected into the <head> of the base template via blocks. 
+     Assuming the base template supports a 'head_extra' block or similar, otherwise they might not render in <head>.
+     Since loggedin-base.html doesn't seem to have a head_extra block, we might need to modify base or just place them here (though invalid HTML, browsers often handle it).
+     Ideally, we should add a block to the head of loggedin-base.html. For now, adding here. -->
+
+{% if entry.seo_description %}
+<meta name="description" content="{{ entry.seo_description }}">
+{% endif %}
+
+<!-- Open Graph / Twitter -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ entry.seo_title }}">
+<meta property="og:description" content="{{ entry.seo_description }}">
+<meta property="og:url" content="{{ request.url }}">
+{% if entry.og_image %}
+<meta property="og:image" content="{{ url_for('static', filename=entry.og_image, _external=True) }}">
+{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Canonical -->
+<link rel="canonical" href="{{ request.url }}">
+
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+
+    <!-- Breadcrumbs -->
+    <div class="text-sm breadcrumbs mb-6 text-base-content/70">
+        <ul>
+            {% if has_gsc_credentials %}
+            <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+            {% else %}
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('changelog') }}">Change Log</a></li>
+            <li>{{ entry.title }}</li>
+        </ul>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="bg-base-100 rounded-2xl shadow-xl overflow-hidden border border-base-200">
+
+        <div class="p-8 md:p-12">
+
+            <!-- Meta Header -->
+            <div
+                class="flex flex-wrap items-center gap-4 text-sm text-base-content/60 mb-6 uppercase tracking-wider font-semibold">
+                <span class="flex items-center gap-2">
+                    <i class="fa-regular fa-calendar text-primary"></i>
+                    {{ entry.formatted_date }}
+                </span>
+                {% if entry.author %}
+                <span class="flex items-center gap-2">
+                    <i class="fa-regular fa-user text-secondary"></i>
+                    {{ entry.author }}
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- H1 Title -->
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-8 text-base-content leading-tight">
+                {{ entry.h1 }}
+            </h1>
+
+            <!-- Content Body -->
+            <div class="prose prose-lg max-w-none prose-headings:text-base-content prose-p:text-base-content/80">
+                {{ entry.details | safe }}
+            </div>
+
+        </div>
+
+        <!-- Footer / Back Button -->
+        <div class="bg-base-200/50 p-6 border-t border-base-200 flex justify-between items-center">
+            <a href="{{ url_for('changelog') }}" class="btn btn-ghost hover:bg-base-200 gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Back to Change Log
+            </a>
+
+            <!-- Share buttons placeholder -->
+            <div class="flex gap-2">
+                <button class="btn btn-square btn-ghost btn-sm"
+                    onclick="navigator.clipboard.writeText(window.location.href); alert('URL copied to clipboard!')">
+                    <i class="fa-solid fa-link"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ entry.seo_title }}",
+  "image": [
+    "{{ url_for('static', filename=entry.og_image, _external=True) if entry.og_image else '' }}"
+   ],
+  "datePublished": "{{ entry.date }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ entry.author or 'GSC Explorer Team' }}"
+  },
+  "description": "{{ entry.seo_description }}"
+}
+</script>
+{% endblock %}

@@ -21,6 +21,8 @@ import flask
 import logging
 import re
 import time
+import json
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -37,7 +39,13 @@ def format_number(value):
 def home():
     # Check if GSC credentials are stored in the session
     has_gsc_credentials = 'credentials' in flask.session
-    return render_template('/default/homepage.html', has_gsc_credentials=has_gsc_credentials)
+    
+    # Get recent changelog entries (limit to 3)
+    changelog_entries = load_changelog_data()[:3]
+    
+    return render_template('/default/homepage.html', 
+                           has_gsc_credentials=has_gsc_credentials,
+                           changelog_entries=changelog_entries)
 
 #Dashboard
 @app.route('/dashboard/')
@@ -518,21 +526,144 @@ def sitewide_analysis():
                                     latest_date=latest_date
                                     )
 
-        return send_html
 
-    #get request
+        return render_template('/sitewide-analysis/partial-gsc-data.html', 
+                                total_data=total_data,
+                                brand_numbers=brand_numbers,
+                                non_brand_numbers=non_brand_numbers,
+                                clicks_graph=clicks_graph,
+                                impressions_graph=impressions_graph,
+                                ctr_fig_graph=ctr_fig_graph,
+                                position_fig_graph=position_fig_graph,
+                                brand_query_count_graph=brand_query_count_graph,
+                                non_brand_query_count_graph=non_brand_query_count_graph,
+                                brand_position_bucket_graph=brand_position_bucket_graph,
+                                non_brand_position_bucket_graph=non_brand_position_bucket_graph,
+                                earliest_date=start_date_formatted,
+                                latest_date=end_date_formatted,
+                                unique_brand_query_count=unique_brand_query_count,
+                                unique_non_brand_query_count=unique_non_brand_query_count
+                                )
+
+    # GET request
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
     brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
 
-    # if GSC property is not selected then send user to GSC property selection page
     if selected_property == "You haven't selected a GSC Property yet":
-        # show a message
         flash('Please Select your GSC Property.')
         return redirect(url_for('gsc_property_selection'))
     
     return render_template('/sitewide-analysis/mainpage.html', 
                            selected_property=selected_property,
                            brand_keywords=brand_keywords)
+
+
+@app.route('/reports/query-length-analysis/', methods=['GET', 'POST'])
+def query_length_analysis():
+    if 'credentials' not in session:
+        return redirect(url_for('gsc_authorize'))
+    
+    if request.method == 'POST':
+        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+        webmasters_service = build_gsc_service()
+
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+        min_words = request.form.get('min_words')
+        max_words = request.form.get('max_words')
+
+        # Convert min/max to integers if provided
+        try:
+            min_words = int(min_words) if min_words else 0
+        except ValueError:
+            min_words = 0
+            
+        try:
+            max_words = int(max_words) if max_words else 9999
+        except ValueError:
+            max_words = 9999
+
+        start_date_formatted, end_date_formatted = format_dates(start_date_str, end_date_str)
+
+        dimensions = ['query']
+        dimensionFilterGroups = [] # Add filters if needed, currently filtering logic is post-processing
+
+        # Fetch Data
+        df = fetch_search_console_data(
+            webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups
+        )
+
+        if df.empty:
+             return "<div class='alert alert-warning'>No data found for this range.</div>"
+
+        # Calculate Word Count
+        # Ensure 'query' column is string and drop NaNs
+        df = df.dropna(subset=['query'])
+        df['word_count'] = df['query'].astype(str).str.split().str.len()
+
+        # Apply Filters
+        filtered_df = df[df['word_count'] >= min_words]
+        if max_words < 9999: # Only filter max if it's set to something reasonable by user
+             filtered_df = filtered_df[filtered_df['word_count'] <= max_words]
+
+        if filtered_df.empty:
+            return "<div class='alert alert-warning'>No queries found matching the word count criteria.</div>"
+
+        # --- Aggregation for Charts ---
+        # Group by Word Count
+        grouped_df = filtered_df.groupby('word_count').agg(
+            clicks=('clicks', 'sum'),
+            impressions=('impressions', 'sum'),
+            ctr=('ctr', 'mean'), 
+            count_queries=('query', 'count')
+        ).reset_index()
+
+        # Generate Charts using Plotly
+        # Clicks by Word Count
+        clicks_fig = px.bar(grouped_df, x='word_count', y='clicks', 
+                            labels={'word_count': 'Word Count', 'clicks': 'Clicks'},
+                            title='Total Clicks by Word Count')
+        clicks_fig.update_layout(plot_bgcolor='#F1F1F1', paper_bgcolor='#F1F1F1')
+        clicks_chart = clicks_fig.to_html(full_html=False, include_plotlyjs='cdn')
+
+        # Impressions by Word Count
+        imps_fig = px.bar(grouped_df, x='word_count', y='impressions',
+                          labels={'word_count': 'Word Count', 'impressions': 'Impressions'},
+                          title='Total Impressions by Word Count')
+        imps_fig.update_layout(plot_bgcolor='#F1F1F1', paper_bgcolor='#F1F1F1')
+        impressions_chart = imps_fig.to_html(full_html=False, include_plotlyjs=False) 
+
+        # Query Count by Word Count
+        qc_fig = px.bar(grouped_df, x='word_count', y='count_queries',
+                          labels={'word_count': 'Word Count', 'count_queries': 'Query Count'},
+                          title='Number of Queries by Word Count')
+        qc_fig.update_layout(plot_bgcolor='#F1F1F1', paper_bgcolor='#F1F1F1')
+        query_count_chart = qc_fig.to_html(full_html=False, include_plotlyjs=False) 
+
+
+        # --- Detailed Table Data ---
+        # Provide the full list of queries for the table (DataTable will handle pagination/sorting client side)
+        table_data = filtered_df.to_dict('records')
+        
+        return render_template('/sitewide-analysis/partial-query-length-data.html',
+                               total_queries=len(filtered_df),
+                               min_words=min_words if min_words > 0 else None,
+                               max_words=max_words if max_words < 9999 else None,
+                               earliest_date=start_date_formatted,
+                               latest_date=end_date_formatted,
+                               clicks_chart=clicks_chart,
+                               impressions_chart=impressions_chart,
+                               query_count_chart=query_count_chart,
+                               table_data=table_data)
+
+
+    # GET Request Handler
+    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+    if selected_property == "You haven't selected a GSC Property yet":
+        flash('Please Select your GSC Property.')
+        return redirect(url_for('gsc_property_selection'))
+
+    return render_template('/sitewide-analysis/query-length-analysis.html', selected_property=selected_property)
 
 
 @app.route('/charts/organic-ctr/', methods=['GET', 'POST'])
@@ -2146,3 +2277,115 @@ def optimize_page_content():
                            selected_property=selected_property,
                            brand_keywords=brand_keywords)
 
+
+@app.route('/tools/select-target', methods=['GET'])
+def select_target():
+    if 'credentials' not in session:
+        return redirect(url_for('gsc_authorize'))
+        
+    destination = request.args.get('destination')
+    if not destination:
+        flash('No destination specified')
+        return redirect(url_for('dashboard'))
+
+    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    
+    if selected_property == "You haven't selected a GSC Property yet":
+        flash('Please Select your GSC Property.')
+        return redirect(url_for('gsc_property_selection'))
+
+    # Fetch last 30 days of data to show top pages
+    webmasters_service = build_gsc_service()
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=30)
+    
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    end_date_str = end_date.strftime('%Y-%m-%d')
+    
+    dimensions = ['PAGE']
+    dimensionFilterGroups = []
+    
+    try:
+        df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
+        
+        # Sort by clicks descending and take top 50
+        if not df.empty:
+            # Filter out common image/resource extensions
+            df = df[~df['PAGE'].str.lower().str.endswith(('.jpg', '.jpeg', '.png', '.gif', '.svg', '.pdf', '.webp'))]
+            
+            df = df.sort_values(by='clicks', ascending=False).head(50)
+            pages = df.to_dict('records')
+        else:
+            pages = []
+            
+    except Exception as e:
+        logger.error(f"Error fetching pages for selector: {e}")
+        pages = []
+        flash("Could not fetch top pages. You can still enter a URL manually.")
+
+    return render_template('/tools/select_target.html',
+                           pages=pages,
+                           destination=destination,
+                           selected_property=selected_property,
+                           brand_keywords=brand_keywords)
+
+
+# Change Log Routes
+def ordinal(n):
+    return "%d%s" % (n, "tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
+
+def load_changelog_data():
+    try:
+        data_path = os.path.join(app.root_path, 'data', 'changelog.json')
+        with open(data_path, 'r') as f:
+            data = json.load(f)
+        
+        # Format dates
+        for entry in data:
+            if 'date' in entry:
+                try:
+                    dt = datetime.strptime(entry['date'], '%Y-%m-%d')
+                    # Format: 3rd Jun 2026, Tuesday
+                    day = ordinal(dt.day)
+                    entry['formatted_date'] = f"{day} {dt.strftime('%b %Y, %A')}"
+                except ValueError:
+                    # Fallback if date is invalid
+                    entry['formatted_date'] = entry['date']
+        
+        # Sort by date descending
+        data.sort(key=lambda x: x['date'], reverse=True)
+        return data
+    except Exception as e:
+        logger.error(f"Error loading changelog data: {e}")
+        return []
+
+@app.route('/changelog/')
+def changelog():
+    # Check if GSC credentials are stored in the session (for base template context)
+    has_gsc_credentials = 'credentials' in session
+    base_template = "/default/loggedin-base.html" if has_gsc_credentials else "/default/loggedout-base.html"
+    
+    entries = load_changelog_data()
+    return render_template('/default/changelog.html', 
+                           entries=entries,
+                           has_gsc_credentials=has_gsc_credentials,
+                           base_template=base_template)
+
+@app.route('/changelog/<slug>/')
+def changelog_detail(slug):
+    # Check if GSC credentials are stored in the session
+    has_gsc_credentials = 'credentials' in session
+    base_template = "/default/loggedin-base.html" if has_gsc_credentials else "/default/loggedout-base.html"
+    
+    entries = load_changelog_data()
+    entry = next((item for item in entries if item["slug"] == slug), None)
+    
+    if not entry:
+        flash("Changelog entry not found.", "error")
+        return redirect(url_for('changelog'))
+    
+    return render_template('/default/changelog_detail.html', 
+                           entry=entry,
+                           has_gsc_credentials=has_gsc_credentials,
+                           base_template=base_template)
