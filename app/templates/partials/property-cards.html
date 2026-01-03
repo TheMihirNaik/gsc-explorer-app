@@ -3,8 +3,11 @@
     <!-- GSC Property Card -->
     <div
         class="flex items-center gap-2 bg-primary/10 text-primary-content rounded-lg py-1.5 px-3 border border-primary/20">
-        <div class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-md">
-            <i class="fa-solid fa-globe text-sm"></i>
+        <div class="w-8 h-8 flex items-center justify-center bg-white rounded-md overflow-hidden border border-primary/10"
+            id="favicon-container">
+            <img id="property-favicon" src="" alt="" class="w-5 h-5 hidden"
+                onerror="this.classList.add('hidden'); document.getElementById('property-globe').classList.remove('hidden');">
+            <i id="property-globe" class="fa-solid fa-globe text-primary text-sm"></i>
         </div>
         <div>
             <div class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-none mb-0.5">Property</div>
@@ -39,13 +42,46 @@
     </div>
 </div>
 
-<!-- Date Formatting Script -->
+<!-- Header Logic Script -->
 <script type="text/javascript">
     $(function () {
+        // 1. Handle Latest Date Formatting
         var latestDateStr = "{{ latest_date }}";
         if (latestDateStr && latestDateStr !== "None") {
             var latestDate = moment(latestDateStr, "YYYY-MM-DD");
             $('#latest-data-display').text(latestDate.format('MMM D, YYYY'));
+        }
+
+        // 2. Handle Favicon Loading
+        var selectedProperty = "{{ selected_property }}";
+        if (selectedProperty && !selectedProperty.includes("haven't selected")) {
+            var domain = selectedProperty;
+
+            // Clean up domain formats
+            if (domain.startsWith('sc-domain:')) {
+                domain = domain.replace('sc-domain:', '');
+            } else {
+                try {
+                    // Try to parse as URL
+                    var url = new URL(domain);
+                    domain = url.hostname;
+                } catch (e) {
+                    // Fallback cleanup
+                    domain = domain.replace('https://', '').replace('http://', '').split('/')[0];
+                }
+            }
+
+            if (domain) {
+                var faviconUrl = "https://www.google.com/s2/favicons?domain=" + domain + "&sz=64";
+                var $img = $('#property-favicon');
+                var $icon = $('#property-globe');
+
+                $img.attr('src', faviconUrl);
+                $img.on('load', function () {
+                    $img.removeClass('hidden');
+                    $icon.addClass('hidden');
+                });
+            }
         }
     });
 </script>
