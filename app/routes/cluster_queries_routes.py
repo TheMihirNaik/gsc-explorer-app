@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 from openai import OpenAI
 import os
+import gc
 from dotenv import load_dotenv
 
 # Configure logging
@@ -251,13 +252,26 @@ def query_clustering_analyze():
             embeddings_dict,
             openai_api_key
         )
+
+        # Cleanup large objects that are no longer needed
+        del embeddings_dict
+        gc.collect()
         
         # Generate UMAP 2D projection for visualization
         logger.info("Generating UMAP 2D projection for scatter plot")
         umap_coords = generate_umap_projection(embeddings_array, cluster_labels)
         
+        # Cleanup embeddings array as it's no longer needed
+        del embeddings_array
+        gc.collect()
+        
         # Create scatter plot data with impression data
         scatter_data = create_scatter_plot_data(unique_queries, cluster_labels, umap_coords, df)
+        
+        # Cleanup UMAP coords and full DataFrame
+        del umap_coords
+        del df
+        gc.collect()
         
         # Filter scatter_data to only include queries from filtered clusters
         # This prevents showing "Cluster X" for filtered-out clusters
@@ -273,6 +287,10 @@ def query_clustering_analyze():
         for result in cluster_results_final:
             clean_result = {k: v for k, v in result.items() if k != 'cluster_centroid' and k != 'all_queries'}
             cluster_results_clean.append(clean_result)
+        
+        # Cleanup intermediate results
+        del cluster_results_final
+        gc.collect()
         
         # Calculate summary stats (granular)
         recommendation_counts = {

@@ -1,5 +1,18 @@
 [
     {
+        "id": "12",
+        "slug": "query-clustering",
+        "date": "2026-01-04",
+        "author": "GSC Explorer Team",
+        "title": "Query Clustering",
+        "seo_title": "Query Clustering - GSC Explorer",
+        "seo_description": "Group similar search queries to identify content opportunities and optimization targets.",
+        "h1": "Query Clustering",
+        "summary": "Introduced meaningful grouping of search queries to surface new content opportunities and optimization targets.",
+        "details": "<p>Transform your keyword strategy from a chaotic list of thousands of queries into a structured, actionable roadmap. Query Clustering uses semantic analysis to group related search terms, helping you understand user intent at scale.</p><h3>Why this is useful</h3><ul><li><strong>Stop Guessing, Start Targeting:</strong> Instead of optimizing for single keywords, optimize for entire topics. See the total search volume for a concept, not just one phrasing.</li><li><strong>Identify Content Gaps (New Content):</strong> We automatically flag clusters where you have high impressions but no dominant ranking URL. These are prime opportunities to create new, targeted content that captures existing demand.</li><li><strong>Spot Underperforming Pages (Optimization):</strong> Find clusters where you have a ranking page but low CTR. These are your 'quick wins' for re-optimization (better titles, clearer content).</li><li><strong>Cannibalization Detection:</strong> See if multiple pages are competing for the same cluster of queries, allowing you to consolidate and strengthen your rankings.</li></ul><p><strong>How to use:</strong> Navigate to <strong>Query Clustering</strong> in the sidebar. The system will analyze your GSC data and present you with a prioritized list of 'New Content Opportunities' and 'Optimization Targets'.</p>",
+        "og_image": "/static/images/logo.png"
+    },
+    {
         "id": "11",
         "slug": "dashboard-quick-actions",
         "date": "2026-01-03",
