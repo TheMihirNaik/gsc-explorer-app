@@ -16,3 +16,7 @@ beautifulsoup4==4.12.3
 nltk==3.8.1
 pytz==2024.1
 spacy==3.7.2
+hdbscan==0.8.33
+scikit-learn==1.4.0
+umap-learn==0.5.5
+numpy==1.26.4

@@ -729,6 +729,7 @@ def query_length_analysis():
 
     return render_template('/sitewide-analysis/query-length-analysis.html', 
                            selected_property=selected_property, 
+                           brand_keywords=session.get("brand_keywords", "You haven't selected Brand Keywords."),
                            countries=countries,
                            latest_date=latest_date)
 
@@ -2163,7 +2164,9 @@ def optimize_page_content():
 
         #capture variable <page> from url path
         page = request.form.get('page')
+        target_keyword = request.form.get('target_keyword', '')
         logger.info(f"Page URL to analyze: {page}")
+        logger.info(f"Target keyword: {target_keyword}")
 
         # scrape current title & meta description of the URL using bs4
         url = page
@@ -2410,7 +2413,8 @@ def optimize_page_content():
         logger.info("Rendering template with analysis results")
         return render_template('/actionable-insights/optimize-page-content/partial.html', 
                                title=title, meta_desc=meta_desc, content_html=content_html,
-                               query_tokens=sorted_query_tokens_count
+                               query_tokens=sorted_query_tokens_count,
+                               target_keyword=target_keyword
                                )
     
     #get request
@@ -2421,7 +2425,9 @@ def optimize_page_content():
 
     #capture variable <page> from url path
     page = request.args.get('page', default='')
+    target_keyword = request.args.get('query', default='')
     logger.info(f"Page parameter: {page}")
+    logger.info(f"Target keyword parameter: {target_keyword}")
 
     logger.info("Rendering main template")
     # Fetch latest available date
@@ -2436,6 +2442,7 @@ def optimize_page_content():
     logger.info("Rendering main template")
     return render_template('/actionable-insights/optimize-page-content/main.html', 
                            page=page,
+                           target_keyword=target_keyword,
                            selected_property=selected_property,
                            brand_keywords=brand_keywords,
                            latest_date=latest_date)
@@ -2466,18 +2473,37 @@ def select_target():
     except Exception as e:
         logger.error(f"Error fetching latest date for tool selection: {e}")
 
+    # Initial render without heavy data
+    return render_template('/tools/select_target.html',
+                           pages=[], # Data will be loaded via HTMX
+                           destination=destination,
+                           selected_property=selected_property,
+                           brand_keywords=brand_keywords,
+                           latest_date=latest_date)
+
+@app.route('/tools/select-target-data', methods=['GET'])
+def select_target_data():
+    if 'credentials' not in session:
+        return "<tr class='text-error'><td colspan='4'>Session expired. Please refresh the page.</td></tr>"
+
+    destination = request.args.get('destination')
+    selected_property = session.get("selected_property")
+    
+    if not selected_property or selected_property == "You haven't selected a GSC Property yet":
+        return "<tr class='text-warning'><td colspan='4'>Please select a property first.</td></tr>"
+
     # Fetch last 30 days of data to show top pages
-    webmasters_service = build_gsc_service()
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=30)
-    
-    start_date_str = start_date.strftime('%Y-%m-%d')
-    end_date_str = end_date.strftime('%Y-%m-%d')
-    
-    dimensions = ['PAGE']
-    dimensionFilterGroups = []
-    
     try:
+        webmasters_service = build_gsc_service()
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=30)
+        
+        start_date_str = start_date.strftime('%Y-%m-%d')
+        end_date_str = end_date.strftime('%Y-%m-%d')
+        
+        dimensions = ['PAGE']
+        dimensionFilterGroups = []
+        
         df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
         
         # Sort by clicks descending and take top 50
@@ -2493,14 +2519,12 @@ def select_target():
     except Exception as e:
         logger.error(f"Error fetching pages for selector: {e}")
         pages = []
-        flash("Could not fetch top pages. You can still enter a URL manually.")
+        # Return error row
+        return "<tr class='text-error'><td colspan='4'>Error loading data. Please try again later.</td></tr>"
 
-    return render_template('/tools/select_target.html',
+    return render_template('/partials/select_target_rows.html',
                            pages=pages,
-                           destination=destination,
-                           selected_property=selected_property,
-                           brand_keywords=brand_keywords,
-                           latest_date=latest_date)
+                           destination=destination)
 
 
 # Change Log Routes

@@ -1,0 +1,19 @@
+{% for page in pages %}
+<tr class="hover">
+    <td class="text-sm break-all">
+        <div class="font-medium page-url">{{ page.PAGE }}</div>
+    </td>
+    <td>{{ page.clicks | int }}</td>
+    <td>{{ page.impressions | int }}</td>
+    <td>
+        <a href="/actionable-insights/{{ destination }}?page={{ page.PAGE }}"
+            class="btn btn-sm btn-ghost text-primary">Select</a>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="4" class="text-center py-8 opacity-50">
+        No data available for the last 30 days. Please enter URL manually.
+    </td>
+</tr>
+{% endfor %}

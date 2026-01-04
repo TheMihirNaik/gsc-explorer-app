@@ -1,0 +1,160 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %} Query Clustering : {{ selected_property}} {% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 max-w-6xl py-4">
+    <!-- Property Info Cards -->
+    {% include 'partials/property-cards.html' %}
+
+    <!-- Page Header - Compact -->
+    <div class="mb-4">
+        <h1 class="text-2xl font-bold mb-1">🔍 Query Clustering Analysis</h1>
+        <p class="text-sm text-base-content/70">
+            Discover content opportunities by clustering related queries using AI embeddings.
+        </p>
+    </div>
+
+    <!-- Analysis Form - Compact -->
+    <div class="card bg-base-100 shadow-md mb-6">
+        <div class="card-body p-4">
+            <form id="clustering-form" hx-post="/tools/query-clustering/analyze" hx-target="#results-container"
+                hx-swap="innerHTML" hx-indicator="#loading-indicator" class="flex flex-col gap-4">
+
+                <div class="flex flex-wrap items-end gap-4">
+                    <!-- Date Range -->
+                    <div class="form-control flex-1 min-w-[250px]">
+                        <label class="label py-1">
+                            <span class="label-text font-bold text-xs uppercase opacity-70">📅 Date Range</span>
+                        </label>
+                        <div class="join w-full">
+                            <input type="text" name="start_date" id="start_date"
+                                class="input input-bordered input-sm join-item w-1/2" placeholder="Start" required>
+                            <input type="text" name="end_date" id="end_date"
+                                class="input input-bordered input-sm join-item w-1/2" placeholder="End" required>
+                        </div>
+                    </div>
+
+                    <!-- Query Type Filter -->
+                    <div class="form-control">
+                        <label class="label py-1">
+                            <span class="label-text font-bold text-xs uppercase opacity-70">🏷️ Type</span>
+                        </label>
+                        <div class="join border border-base-300 rounded-lg">
+                            <input class="join-item btn btn-sm btn-ghost checked:btn-active" type="radio"
+                                name="brand_filter" value="both" aria-label="All" checked />
+                            <input class="join-item btn btn-sm btn-ghost checked:btn-active" type="radio"
+                                name="brand_filter" value="brand" aria-label="Brand" />
+                            <input class="join-item btn btn-sm btn-ghost checked:btn-active" type="radio"
+                                name="brand_filter" value="non-brand" aria-label="Non-Brand" />
+                        </div>
+                    </div>
+
+                    <!-- Country Selection -->
+                    <div class="form-control flex-1 min-w-[200px]">
+                        <label class="label py-1">
+                            <span class="label-text font-bold text-xs uppercase opacity-70">🌍 Country</span>
+                        </label>
+                        <select name="countries" id="countries" class="select select-bordered select-sm w-full">
+                            <option value="all" selected>All Countries</option>
+                            {% if countries_with_impressions %}
+                            {% for country in countries_with_impressions %}
+                            <option value="{{ country.code }}">{{ country.name }} ({{ '{:,}'.format(country.impressions)
+                                }})</option>
+                            {% endfor %}
+                            {% else %}
+                            <option value="usa">United States</option>
+                            <option value="gbr">United Kingdom</option>
+                            <option value="can">Canada</option>
+                            <option value="aus">Australia</option>
+                            {% endif %}
+                        </select>
+                        <label class="label py-0">
+                            <span class="label-text-alt text-[10px] opacity-50">Select 'All' for global view.</span>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-sm gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        Run Analysis
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="htmx-indicator mt-4">
+                <div class="flex items-center gap-4 p-4 bg-base-200 rounded-lg animate-pulse">
+                    <span class="loading loading-spinner loading-md text-primary"></span>
+                    <div class="flex-1">
+                        <div class="text-sm font-bold">Generating Clusters & Insights...</div>
+                        <div class="text-xs opacity-70">Crunching thousands of queries. This may take 30-60 seconds.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Results Container -->
+    <div id="results-container">
+        <!-- Results will be loaded here via HTMX -->
+    </div>
+</div>
+
+<!-- Initialize date range picker and handle OpenAI key -->
+<script>
+    $(document).ready(function () {
+        // Use server-provided latest_date or default to today - 2 days
+        var latestDateStr = "{{ latest_date }}" || moment().subtract(2, 'days').format('YYYY-MM-DD');
+
+        var endDate = moment(latestDateStr);
+        var startDate = moment(latestDateStr).subtract(30, 'days');
+
+        // Initialize date range picker
+        $('#start_date, #end_date').daterangepicker({
+            singleDatePicker: true,
+            showDropdowns: true,
+            minYear: 2020,
+            maxYear: parseInt(moment().format('YYYY'), 10),
+            maxDate: endDate, // Restrict selection to available data
+            autoUpdateInput: false,
+            locale: {
+                format: 'MM/DD/YYYY'
+            }
+        }, function (start, end, label) {
+            $(this.element).val(start.format('MM/DD/YYYY'));
+        });
+
+        // Set initial values
+        $('#start_date').val(startDate.format('MM/DD/YYYY'));
+        $('#end_date').val(endDate.format('MM/DD/YYYY'));
+
+        // Handle input updates manually to allow typing if needed
+        $('#start_date, #end_date').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('MM/DD/YYYY'));
+        });
+    });
+
+    // Use HTMX event to inject OpenAI key before request
+    document.body.addEventListener('htmx:configRequest', function (evt) {
+        // Only for clustering form
+        if (evt.detail.path === '/tools/query-clustering/analyze') {
+            const openai_api_key = localStorage.getItem('openai_api_key');
+
+            if (!openai_api_key) {
+                evt.preventDefault();
+                alert('Please add and save your OpenAI API key in the sidebar settings first.');
+                return false;
+            }
+
+            // Add API key to request parameters
+            evt.detail.parameters['openai_api_key'] = openai_api_key;
+        }
+    });
+</script>
+{% endblock %}

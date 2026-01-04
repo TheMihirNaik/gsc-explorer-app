@@ -5,4 +5,5 @@ from app.routes.datatables import *
 from app.routes.customer_support import *
 from app.routes.gsc_api_auth import *
 from app.routes.gsc_routes import *
+from app.routes.cluster_queries_routes import *
 #from app.routes.valueserp_api import *

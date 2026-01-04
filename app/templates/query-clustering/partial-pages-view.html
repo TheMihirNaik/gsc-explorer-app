@@ -1,0 +1,234 @@
+<div class="space-y-6">
+    <!-- Page Perspective Accordion -->
+    <div class="space-y-4" id="page-cards">
+        {% for page in page_summary %}
+        <div class="collapse collapse-plus bg-base-100 border border-base-300 shadow-md rounded-lg page-card">
+            <input type="checkbox" class="peer" />
+
+            <!-- Collapsed Header -->
+            <div class="collapse-title text-xl font-medium peer-checked:bg-base-200">
+                <div class="flex items-start gap-4">
+                    <div class="badge badge-secondary badge-lg font-bold">{{ page.cluster_count }}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="tooltip tooltip-right" data-tip="{{ page.page_url }}">
+                                <h3 class="text-lg font-bold break-all cursor-help">{{ page.page_url }}</h3>
+                            </div>
+                            <span class="badge badge-neutral">{{ page.num_optimize }} Actions</span>
+                        </div>
+                        <div class="flex flex-wrap gap-4 text-sm text-base-content/70">
+                            <span>👁️ {{ '{:,}'.format(page.total_impressions) }} total impressions</span>
+                            <span>🔍 {{ page.total_queries }} total queries</span>
+                            <span>📍 Avg Pos {{ page.avg_position }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expanded Content -->
+            <div class="collapse-content peer-checked:bg-base-200">
+                <div class="mt-4 space-y-4">
+                    <div class="mt-4 space-y-4">
+                        {% set optimize_clusters = [] %}
+                        {% set redirect_clusters = [] %}
+                        {% for cluster in page.optimize_clusters %}
+                        {% if cluster.recommendation_slug == 'redirect_focus' %}
+                        {% set _ = redirect_clusters.append(cluster) %}
+                        {% else %}
+                        {% set _ = optimize_clusters.append(cluster) %}
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if optimize_clusters %}
+                        <div>
+                            <h4 class="font-bold text-sm uppercase opacity-50 mb-3">✅ Optimize Content (Primary Topics)
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {% for cluster in optimize_clusters %}
+                                <div
+                                    class="card bg-base-100 shadow-sm border border-success/20 hover:border-success/40 transition-colors">
+                                    <div class="card-body p-4">
+                                        <!-- Header: Name + Trend -->
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div class="flex flex-col">
+                                                <h5 class="font-bold text-base text-base-content">{{
+                                                    cluster.cluster_name }}</h5>
+                                                {% if cluster.trend_status == 'Rising' %}
+                                                <span
+                                                    class="text-[10px] font-bold text-success flex items-center gap-1">
+                                                    📈 Trending Up
+                                                </span>
+                                                {% elif cluster.trend_status == 'Declining' %}
+                                                <span class="text-[10px] font-bold text-error flex items-center gap-1">
+                                                    📉 Needs Attention
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="badge badge-success badge-sm gap-1">
+                                                Match: {{ ((1 - cluster.semantic_distance) * 100)|round|int }}%
+                                            </div>
+                                        </div>
+
+                                        <!-- Statistics Row -->
+                                        <div class="flex gap-4 text-xs my-2 pb-2 border-b border-base-200">
+                                            <div class="tooltip" data-tip="Average Position">
+                                                <span
+                                                    class="font-mono font-bold {% if cluster.weighted_avg_position <= 3 %}text-success{% elif cluster.weighted_avg_position <= 10 %}text-warning{% endif %}">
+                                                    Pos {{ cluster.weighted_avg_position }}
+                                                </span>
+                                            </div>
+                                            <div class="tooltip" data-tip="Total Impressions">
+                                                <span class="font-mono opacity-70">👁️ {{
+                                                    '{:,}'.format(cluster.total_impressions) }}</span>
+                                            </div>
+                                            <div class="tooltip" data-tip="Total Clicks">
+                                                <span class="font-mono opacity-70">🖱️ {{
+                                                    '{:,}'.format(cluster.total_clicks) }}</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Smart Rationale -->
+                                        <p class="text-xs italic mb-3 text-base-content/70">{{ cluster.rationale }}</p>
+
+                                        <!-- Keywords Tags -->
+                                        <div class="flex flex-wrap gap-1 mb-4">
+                                            {% for query in cluster.sample_queries[:3] %}
+                                            <span class="badge badge-xs badge-ghost opacity-70">{{ query }}</span>
+                                            {% endfor %}
+                                            {% if cluster.query_count > 3 %}
+                                            <span class="text-[10px] opacity-50">+{{ cluster.query_count - 3 }}
+                                                more</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Action Button -->
+                                        <a href="/actionable-insights/optimize-page-content?page={{ page.page_url }}&query={{ cluster.cluster_name }}"
+                                            target="_blank"
+                                            class="btn btn-sm btn-outline btn-success w-full gap-2 group mt-auto">
+                                            ✨ Optimize Topic
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="2" stroke="currentColor"
+                                                class="w-3 h-3 group-hover:translate-x-1 transition-transform">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if redirect_clusters %}
+                        <div class="mt-4">
+                            <h4 class="font-bold text-sm uppercase opacity-50 mb-2 text-warning">🔄 Consolidation
+                                Targets (Redirects Incoming)</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {% for cluster in redirect_clusters %}
+                                <div class="card bg-warning/5 shadow-sm border border-warning/20">
+                                    <div class="card-body p-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h5 class="font-bold text-base">#{{ cluster.cluster_id }} {{
+                                                cluster.cluster_name }}</h5>
+                                            <span class="badge badge-warning badge-sm">Redirect Here</span>
+                                        </div>
+                                        <div class="alert alert-warning p-2 text-xs mb-2">
+                                            <span>{{ cluster.rationale }}</span>
+                                        </div>
+                                        <div class="flex gap-4 text-xs font-mono opacity-60">
+                                            <span>Potential Gain: {{ '{:,}'.format(cluster.total_impressions) }}
+                                                impr</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Create New Page Column (Content Gaps) -->
+    {% if create_new_recommendations %}
+    <div class="divider text-accent font-bold text-lg mb-8">🆕 New Content Opportunities</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for cluster in create_new_recommendations %}
+        <div class="card bg-base-100 border-2 border-accent/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+            <div class="card-body p-5">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold uppercase tracking-wider text-accent opacity-70 mb-1">#{{
+                            cluster.cluster_id }} Cluster</span>
+                        <h5 class="card-title text-accent leading-tight">{{ cluster.cluster_name }}</h5>
+                    </div>
+                    <div class="badge badge-accent badge-outline font-bold">New Page</div>
+                </div>
+
+                <div class="bg-accent/5 rounded-lg p-3 mb-4">
+                    <p class="text-sm font-medium italic text-base-content/80">{{ cluster.rationale }}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold uppercase opacity-50">Impressions</span>
+                        <span class="font-bold text-primary">{{ '{:,}'.format(cluster.total_impressions) }}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold uppercase opacity-50">Queries</span>
+                        <span class="font-bold text-secondary">{{ cluster.query_count }}</span>
+                    </div>
+                </div>
+
+                <!-- Closest Matches (Why we recommend new) -->
+                {% if cluster.candidate_pages %}
+                <div class="collapse collapse-arrow bg-base-200 mb-4 rounded-md">
+                    <input type="checkbox" />
+                    <div class="collapse-title text-xs font-bold p-3 min-h-0">
+                        Why? (Closest Pages match &lt; 60%)
+                    </div>
+                    <div class="collapse-content px-3 py-0 text-xs">
+                        <div class="overflow-x-auto">
+                            <table class="table table-xs w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Page</th>
+                                        <th>Match</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for candidate in cluster.candidate_pages[:3] %}
+                                    <tr>
+                                        <td class="max-w-[150px] truncate" title="{{ candidate.page }}">...{{
+                                            candidate.page[-20:] }}</td>
+                                        <td class="font-mono">{{ (candidate.similarity * 100)|int }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="card-actions justify-end pt-2 border-t border-base-200">
+                    <div class="tooltip tooltip-left" data-tip="Generate a complete content brief for this new topic">
+                        <button class="btn btn-sm btn-accent btn-outline gap-2 hover:bg-accent hover:text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Plan Content
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

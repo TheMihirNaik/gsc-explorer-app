@@ -1,0 +1,86 @@
+<!-- Query Clustering Results Partial - Enhanced UI with Tabbed Views -->
+<div class="space-y-6">
+    <!-- Summary Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Clusters -->
+        <div class="stat bg-base-100 shadow rounded-lg p-4">
+            <div class="stat-figure text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                    </path>
+                </svg>
+            </div>
+            <div class="stat-title text-sm">Total Clusters</div>
+            <div class="stat-value text-3xl text-primary">{{ total_clusters }}</div>
+            <div class="stat-desc">From {{ '{:,}'.format(total_queries) }} queries</div>
+        </div>
+
+        <!-- Optimize Recommendations -->
+        <div class="stat bg-base-100 shadow rounded-lg p-4">
+            <div class="stat-figure text-success">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="stat-title text-sm">Optimize Pages</div>
+            <div class="stat-value text-3xl text-success">{{ total_optimize }}</div>
+            <div class="stat-desc">Improve existing content</div>
+        </div>
+
+        <!-- Create New Pages -->
+        <div class="stat bg-base-100 shadow rounded-lg p-4">
+            <div class="stat-figure text-accent">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+            </div>
+            <div class="stat-title text-sm">New Pages</div>
+            <div class="stat-value text-3xl text-accent">{{ total_create }}</div>
+            <div class="stat-desc">Content gap opportunities</div>
+        </div>
+
+        <!-- Average Semantic Distance -->
+        <div class="stat bg-base-100 shadow rounded-lg p-4">
+            <div class="stat-figure text-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <div class="stat-title text-sm">Avg Distance</div>
+            <div class="stat-value text-3xl text-info">{{ avg_distance }}</div>
+            <div class="stat-desc">Semantic fit score</div>
+        </div>
+    </div>
+
+    <!-- Plotly Visualization -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <h2 class="card-title text-2xl">📊 Query Cluster Visualization</h2>
+            <p class="text-sm text-base-content/70 mb-4">
+                Interactive 2D projection showing query clusters. Click legend to show/hide clusters. Hover for details.
+            </p>
+            <div id="cluster-scatter-plot"></div>
+        </div>
+    </div>
+
+    <!-- TABBED VIEWS -->
+    <div role="tablist" class="tabs tabs-boxed tabs-lg bg-base-200 p-2 flex-nowrap overflow-x-auto">
+        <input type="radio" name="view_tabs" role="tab" class="tab whitespace-nowrap px-8 min-w-max"
+            aria-label="📊 Pulse of your Site ({{ total_clusters }})" checked />
+        <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6 mt-4">
+            {% include 'query-clustering/partial-clusters-view.html' %}
+        </div>
+
+        <input type="radio" name="view_tabs" role="tab" class="tab whitespace-nowrap px-8 min-w-max"
+            aria-label="📄 Action Plan by Page ({{ page_summary|length }})" />
+        <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6 mt-4">
+            {% include 'query-clustering/partial-pages-view.html' %}
+        </div>
+    </div>
+</div>
+
+<!-- Plotly and filter scripts remain the same -->
+{% include 'query-clustering/partial-plotly-script.html' %}

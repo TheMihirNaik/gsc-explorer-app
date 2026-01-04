@@ -1,0 +1,188 @@
+<script>
+    (function () {
+        try {
+            if (typeof Plotly === 'undefined') {
+                console.error('Plotly not loaded!');
+                document.getElementById('cluster-scatter-plot').innerHTML = '<div class="alert alert-error">Plotly library failed to load.</div>';
+                return;
+            }
+
+            var scatterData = {{ scatter_data| tojson | safe
+        }};
+    var clusterResults = {{ cluster_results| tojson | safe }};
+
+    if (!scatterData || scatterData.length === 0) {
+        document.getElementById('cluster-scatter-plot').innerHTML = '<div class="alert alert-warning">No visualization data.</div>';
+        return;
+    }
+
+    var clusterNames = {};
+    var clusterMetrics = {};
+    clusterResults.forEach(function (cluster) {
+        clusterNames[cluster.cluster_id] = cluster.cluster_name;
+        clusterMetrics[cluster.cluster_id] = {
+            impressions: cluster.total_impressions,
+            count: cluster.query_count
+        };
+    });
+
+    var sortedClusters = clusterResults.sort(function (a, b) {
+        return b.total_impressions - a.total_impressions;
+    });
+    var top10ClusterIds = sortedClusters.slice(0, 10).map(function (c) { return c.cluster_id; });
+
+    var clusterGroups = {};
+    scatterData.forEach(function (point) {
+        var cluster = point.cluster;
+        if (!clusterGroups[cluster]) {
+            clusterGroups[cluster] = { x: [], y: [], text: [], impressions: [] };
+        }
+        clusterGroups[cluster].x.push(point.x);
+        clusterGroups[cluster].y.push(point.y);
+        clusterGroups[cluster].text.push(point.query);
+        clusterGroups[cluster].impressions.push(point.impressions);
+    });
+
+    function normalizeSize(impressions, minSize, maxSize) {
+        var allImpressions = [];
+        Object.keys(clusterGroups).forEach(function (cluster) {
+            allImpressions = allImpressions.concat(clusterGroups[cluster].impressions);
+        });
+        var minImp = Math.min.apply(null, allImpressions);
+        var maxImp = Math.max.apply(null, allImpressions);
+        return impressions.map(function (imp) {
+            if (maxImp === minImp) return (minSize + maxSize) / 2;
+            return minSize + ((imp - minImp) / (maxImp - minImp)) * (maxSize - minSize);
+        });
+    }
+
+    var traces = [];
+
+    // Add traces in sorted order (High Impressions -> Low)
+    sortedClusters.forEach(function (clusterObj) {
+        var clusterId = clusterObj.cluster_id;
+        var clusterKey = String(clusterId);
+
+        if (clusterGroups[clusterKey]) {
+            var group = clusterGroups[clusterKey];
+            var m = clusterMetrics[clusterId];
+            var clusterName = clusterObj.cluster_name + ' (' + m.count + ' queries, ' + m.impressions.toLocaleString() + ' impr)';
+            var isTop10 = top10ClusterIds.indexOf(clusterId) !== -1;
+            var sizes = normalizeSize(group.impressions, 5, 30);
+
+            traces.push({
+                x: group.x,
+                y: group.y,
+                mode: 'markers',
+                type: 'scatter',
+                name: clusterName,
+                text: group.text,
+                customdata: group.impressions,
+                visible: isTop10 ? true : 'legendonly',
+                marker: {
+                    size: sizes,
+                    opacity: 0.7,
+                    line: { width: 0.5, color: 'white' }
+                },
+                hovertemplate: '<b>%{text}</b><br>Cluster: ' + clusterName + '<br>Impressions: %{customdata:,}<extra></extra>'
+            });
+        }
+    });
+
+    // Add Noise trace last
+    if (clusterGroups['Noise']) {
+        var group = clusterGroups['Noise'];
+        var sizes = normalizeSize(group.impressions, 5, 30);
+        traces.push({
+            x: group.x,
+            y: group.y,
+            mode: 'markers',
+            type: 'scatter',
+            name: 'Noise',
+            text: group.text,
+            customdata: group.impressions,
+            visible: 'legendonly',
+            marker: {
+                size: sizes,
+                opacity: 0.3,
+                color: '#cccccc',
+                line: { width: 0.5, color: 'white' }
+            },
+            hovertemplate: '<b>%{text}</b><br>Cluster: Noise<br>Impressions: %{customdata:,}<extra></extra>'
+        });
+    }
+
+    var layout = {
+        title: { text: 'Query Cluster Map (Semantic Similarity)', font: { size: 16 } },
+        xaxis: { title: 'Semantic Dimension 1 (Topic Similarity)', showgrid: false, zeroline: false },
+        yaxis: { title: 'Semantic Dimension 2 (Topic Similarity)', showgrid: false, zeroline: false },
+        hovermode: 'closest',
+        height: 450,
+        margin: { l: 50, r: 50, b: 50, t: 50 },
+        showlegend: true,
+        legend: { orientation: 'v', font: { size: 10 } }
+    };
+
+    Plotly.newPlot('cluster-scatter-plot', traces, layout, { responsive: true, displaylogo: false });
+        } catch (e) {
+        console.error('Plotly error:', e);
+    }
+    }) ();
+
+    // Filter Logic
+    const filterSelect = document.getElementById('filter-recommendation');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', function () {
+            const val = this.value;
+            console.log('Filtering by slug:', val);
+            document.querySelectorAll('.cluster-card').forEach(card => {
+                const cardSlug = card.dataset.recommendationSlug;
+                if (val === 'all' || cardSlug === val) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Search Logic
+    const searchInput = document.getElementById('search-clusters');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const term = this.value.toLowerCase().trim();
+            document.querySelectorAll('.cluster-card, .page-card').forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (term === '' || text.includes(term)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Sort Logic
+    const sortSelect = document.getElementById('sort-clusters');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function () {
+            const container = document.getElementById('cluster-cards');
+            if (!container) return;
+
+            const cards = Array.from(container.children).filter(child => child.classList.contains('cluster-card'));
+            const sortBy = this.value;
+
+            cards.sort((a, b) => {
+                let valA = parseFloat(a.dataset[sortBy]) || 0;
+                let valB = parseFloat(b.dataset[sortBy]) || 0;
+
+                if (sortBy === 'distance' || sortBy === 'position') {
+                    return valA - valB; // Ascending
+                }
+                return valB - valA; // Descending
+            });
+
+            cards.forEach(card => container.appendChild(card));
+        });
+    }
+</script>

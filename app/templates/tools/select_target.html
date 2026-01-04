@@ -77,26 +77,14 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="pagesTableBody">
-                            {% for page in pages %}
-                            <tr class="hover">
-                                <td class="text-sm break-all">
-                                    <div class="font-medium page-url">{{ page.PAGE }}</div>
-                                </td>
-                                <td>{{ page.clicks | int }}</td>
-                                <td>{{ page.impressions | int }}</td>
-                                <td>
-                                    <a href="/actionable-insights/{{ destination }}?page={{ page.PAGE }}"
-                                        class="btn btn-sm btn-ghost text-primary">Select</a>
-                                </td>
-                            </tr>
-                            {% else %}
+                        <tbody id="pagesTableBody" hx-get="/tools/select-target-data?destination={{ destination }}"
+                            hx-trigger="load" hx-swap="innerHTML">
                             <tr>
-                                <td colspan="3" class="text-center py-8 opacity-50">
-                                    No data available for the last 30 days. Please enter URL manually.
+                                <td colspan="4" class="text-center py-8 opacity-50">
+                                    <span class="loading loading-spinner loading-md"></span>
+                                    <span class="ml-2">Loading top pages...</span>
                                 </td>
                             </tr>
-                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

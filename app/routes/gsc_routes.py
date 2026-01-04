@@ -2,6 +2,10 @@ from app import app
 from flask import render_template, request, url_for, redirect, flash, session
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_api_auth import CLIENT_SECRETS_FILE, SCOPES, API_SERVICE_NAME, API_VERSION
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # google auth related
 import google.oauth2.credentials
@@ -144,3 +148,33 @@ def generate_regex_from_urls(urls):
     
     return expression_string
 
+
+def get_latest_available_date(service, property_url):
+    """
+    Queries GSC API to find the latest available data date.
+    Checks the last 10 days including 'all' data state (fresh data).
+    """
+    try:
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=10)
+        
+        request_body = {
+            'startDate': start_date.strftime('%Y-%m-%d'),
+            'endDate': end_date.strftime('%Y-%m-%d'),
+            'dimensions': ['date'],
+            'dataState': 'all',  # fetch fresh data if available
+            'rowLimit': 25
+        }
+        
+        response = service.searchAnalytics().query(siteUrl=property_url, body=request_body).execute()
+        
+        if 'rows' in response:
+            dates = [row['keys'][0] for row in response['rows']]
+            if dates:
+                return max(dates)
+                
+    except Exception as e:
+        logger.error(f"Error fetching latest date for {property_url}: {e}")
+    
+    # Fallback: 2 days ago if API fails or returns no data
+    return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
