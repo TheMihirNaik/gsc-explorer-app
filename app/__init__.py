@@ -60,19 +60,6 @@ if not app.debug:
     app.logger.setLevel(logging.INFO)
     app.logger.info('GSC Explorer startup')
 
-# Initialize MongoDB client
-#cluster = MongoClient(MONGO_URI)
-
-# fetch a database from cluster connection
-#database = cluster[MONGO_DB_NAME]
-
-# Import OpenAI and create client
-#from openai import OpenAI
-
-#client = OpenAI(
-#    api_key=OPENAI_API_KEY
-#    )
-
 # Import routes and models
 from app.routes import default_routes, customer_support, datatables, plotly, gsc_api_auth, gsc_routes
 
