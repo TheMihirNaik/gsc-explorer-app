@@ -8,11 +8,11 @@ and OpenAI embeddings to identify content opportunities.
 from flask import render_template, request, session, redirect, url_for, jsonify
 from app import app
 from app.routes.gsc_api_auth import build_gsc_service, fetch_search_console_data
-from app.routes.gsc_routes import format_dates, keyword_type, get_latest_available_date
+from app.utils import format_dates, keyword_type, get_latest_available_date
+from app.openai_utils import get_openai_client
 import logging
 import pandas as pd
 import numpy as np
-from openai import OpenAI
 import os
 import gc
 from dotenv import load_dotenv
@@ -435,7 +435,9 @@ def generate_query_embeddings(queries, api_key):
     Generate OpenAI embeddings for a list of queries
     Returns a dictionary mapping query -> embedding vector
     """
-    client = OpenAI(api_key=api_key)
+    client = get_openai_client(api_key=api_key)
+    if not client:
+        raise ValueError("OpenAI client could not be initialized. Please check your API key.")
     
     embeddings_dict = {}
     batch_size = 1000  # Process in batches (increased for better performance)
@@ -600,7 +602,9 @@ def calculate_semantic_distance_and_decide(cluster_results, df, webmasters_servi
     3. Score Candidates (Cosine Similarity vs Cluster Centroid).
     4. Determine Winner & Recommendation.
     """
-    client = OpenAI(api_key=api_key)
+    client = get_openai_client(api_key=api_key)
+    if not client:
+        raise ValueError("OpenAI client could not be initialized. Please check your API key.")
     
     logger.info("Starting Tournament Prediction Logic")
     

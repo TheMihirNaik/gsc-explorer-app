@@ -5,7 +5,8 @@ from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 from app.routes.gsc_api_auth import * 
 from app.routes.gsc_routes import *
-#from app.routes.openai import *
+from app.utils import format_dates, process_dates, keyword_type, get_latest_available_date
+from app.openai_utils import get_openai_client
 import plotly.express as px
 from app.tasks.celery_tasks import *
 from app.tasks.task_status import task_status
@@ -14,7 +15,6 @@ from collections import Counter
 from nltk.corpus import stopwords
 import nltk
 nltk.download('stopwords')
-from openai import OpenAI
 import google.auth.transport.requests
 import pandas as pd
 import flask
@@ -906,36 +906,6 @@ def organic_ctr():
                            brand_keywords=brand_keywords, countries=countries, latest_date=latest_date)
 
 
-# Helper to get latest available date
-def get_latest_available_date(service, property_url):
-    """
-    Queries GSC API to find the latest available data date.
-    Checks the last 10 days including 'all' data state (fresh data).
-    """
-    try:
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=10)
-        
-        request_body = {
-            'startDate': start_date.strftime('%Y-%m-%d'),
-            'endDate': end_date.strftime('%Y-%m-%d'),
-            'dimensions': ['date'],
-            'dataState': 'all',  # fetch fresh data if available
-            'rowLimit': 25
-        }
-        
-        response = service.searchAnalytics().query(siteUrl=property_url, body=request_body).execute()
-        
-        if 'rows' in response:
-            dates = [row['keys'][0] for row in response['rows']]
-            if dates:
-                return max(dates)
-                
-    except Exception as e:
-        logger.error(f"Error fetching latest date for {property_url}: {e}")
-    
-    # Fallback: 2 days ago if API fails or returns no data
-    return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
 
 
 # Reports Routes
@@ -1960,75 +1930,81 @@ def generate_ai_title():
 
             # Here you can perform any operations, such as generating the AI title
 
-            client = OpenAI(api_key=openai_api_key)
+            client = get_openai_client(api_key=openai_api_key)
+            if not client:
+                return "<div class='alert alert-error'>OpenAI client could not be initialized. Please check your API key.</div>"
 
-            system_prompt = """ 
-            You are a highly skilled AI assistant specialized in search engine optimization (SEO) and natural language processing. 
-            You assist users in analyzing and optimizing their webpage titles based on data provided from Google Search Console (GSC). 
-            Your responses are precise, actionable, and based on best practices in SEO. 
+            try:
+                system_prompt = """
+                You are a highly skilled AI assistant specialized in search engine optimization (SEO) and natural language processing.
+                You assist users in analyzing and optimizing their webpage titles based on data provided from Google Search Console (GSC).
+                Your responses are precise, actionable, and based on best practices in SEO.
 
-            Ensure recommendations align with the following principles:
-            - Write a new Title that's actionable. When user will see this in SERP, they should have a clear idea of next Action.
-            - Improve click-through rates (CTR).
-            - Highlight the most relevant and high-performing keywords.
-            - Maintain relevance to the webpage's content and intent.
-            - Ensure clarity, readability, and compelling value propositions in titles.
-            - If data is incomplete or unclear, suggest an alternative approach or prompt the user for clarification. 
-            Your tone is professional, concise, and helpful.
-                            """
+                Ensure recommendations align with the following principles:
+                - Write a new Title that's actionable. When user will see this in SERP, they should have a clear idea of next Action.
+                - Improve click-through rates (CTR).
+                - Highlight the most relevant and high-performing keywords.
+                - Maintain relevance to the webpage's content and intent.
+                - Ensure clarity, readability, and compelling value propositions in titles.
+                - If data is incomplete or unclear, suggest an alternative approach or prompt the user for clarification.
+                Your tone is professional, concise, and helpful.
+                                """
 
-            task_prompt = f"""
+                task_prompt = f"""
 
-                I've uploaded data from Google Search Console (GSC) to you.
+                    I've uploaded data from Google Search Console (GSC) to you.
 
-                Web Page URL: "{page}".
-                Current Title Tag: "{existing_title}".
-                Current H1 Tag: "{h1}"
+                    Web Page URL: "{page}".
+                    Current Title Tag: "{existing_title}".
+                    Current H1 Tag: "{h1}"
 
-                Analyze the following GSC information to help generate the new title. 
-                You don't have to use everything provided. This is for information and analysis purposes.
+                    Analyze the following GSC information to help generate the new title.
+                    You don't have to use everything provided. This is for information and analysis purposes.
 
 
-                Here is the format of the provided data for your analysis:
+                    Here is the format of the provided data for your analysis:
 
-                Term: <term> used in Search Query
-                Used <X> times in search queries.
-                Exists in the current title: <Yes/No>
-                Top 5 search queries: <Query 1>, <Query 2>, <Query 3>, <Query 4>, <Query 5>
+                    Term: <term> used in Search Query
+                    Used <X> times in search queries.
+                    Exists in the current title: <Yes/No>
+                    Top 5 search queries: <Query 1>, <Query 2>, <Query 3>, <Query 4>, <Query 5>
 
-                The following details include terms, their frequency in search queries, whether they exist in the current title, and the top 5 associated search queries.
-                The idea is, if you include the most recurrent terms in the title, it will be more likely to have higher CTR because it will be more relevant for user queries..
-                {formatted_tokens}
+                    The following details include terms, their frequency in search queries, whether they exist in the current title, and the top 5 associated search queries.
+                    The idea is, if you include the most recurrent terms in the title, it will be more likely to have higher CTR because it will be more relevant for user queries..
+                    {formatted_tokens}
 
-                Based on this data, optimize the Title Tag for better SEO performance. 
-                Provide a new Title Tag and don't generate anything other than title.
-                Ensure it's within the character limit and includes high-value keywords from the associated queries.
-                When you write Titles, make it Actionable. Always keep this in mind.
-                
-                To handle edge cases:
-                - If sufficient data is not available, suggest an alternative generic approach to crafting an optimized Title Tag.
+                    Based on this data, optimize the Title Tag for better SEO performance.
+                    Provide a new Title Tag and don't generate anything other than title.
+                    Ensure it's within the character limit and includes high-value keywords from the associated queries.
+                    When you write Titles, make it Actionable. Always keep this in mind.
 
+                    To handle edge cases:
+                    - If sufficient data is not available, suggest an alternative generic approach to crafting an optimized Title Tag.
+
+                    """
+
+                completion = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": task_prompt},
+                        ]
+                        )
+
+                ai_generated_title = completion.choices[0].message.content
+
+                ai_generated_title_html = f"""
+                <div class="p-5 bg-primary-content rounded-box">
+                    <p class="text-s accent-content">
+                    {ai_generated_title}
+                    </p>
+
+                </div>
                 """
-            
-            completion = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": task_prompt},
-                    ]
-                    )
-            
-            ai_generated_title = completion.choices[0].message.content
-
-            ai_generated_title_html = f"""
-            <div class="p-5 bg-primary-content rounded-box">
-                <p class="text-s accent-content">
-                {ai_generated_title}
-                </p>
-
-            </div>
-            """
-            return ai_generated_title_html
+                return ai_generated_title_html
+            except Exception as e:
+                logger.error(f"Error generating AI title: {str(e)}")
+                return f"<div class='alert alert-error'>Error from OpenAI: {str(e)}</div>"
 
         # GET request
         return redirect(url_for('dashboard'))
@@ -2075,72 +2051,75 @@ def generate_ai_meta_description():
 
             # Here you can perform any operations, such as generating the AI title
 
-            client = OpenAI(
-                api_key=openai_api_key
-                )
+            client = get_openai_client(api_key=openai_api_key)
+            if not client:
+                return "<div class='alert alert-error'>OpenAI client could not be initialized. Please check your API key.</div>"
+
+            try:
+                system_prompt = """
+                    You are an expert copywriter and SEO specialist who crafts highly compelling and optimized Meta Descriptions to improve click-through rates (CTR).
+                    Your task is to generate a new SEO Meta Description for a webpage using data provided from Google Search Console (GSC).
+                    Your responses are precise, actionable, and based on best practices in SEO.
+
+                    Ensure recommendations align with the following principles:
+                    - Write Meta Descriptions that are actionable and enticing, encouraging users to click.
+                    - Incorporate high-performing and relevant keywords that reflect the webpage's content.
+                    - Maintain readability and make the Meta Description engaging while adhering to the character limit (120-160 characters).
+                    - Use terms not included in the Title Tag to provide additional context or value to the user.
+                    - If data is incomplete or unclear, suggest a generic alternative or prompt for clarification.
+                    Your tone is professional, concise, and helpful.
+                    """
+
+                task_prompt = f"""
+
+                    Here is the Page URL: "{page}".
+                    Here is the Existing Title of the Page: "{existing_title}".
+                    Here is the Existing Meta Description of the Page: "{existing_meta_description}".
+                    Here is the Existing H1 of the Page: "{h1}".
+
+                    Use the following data for analysis:
+
+                    Here is the format of the provided data for your analysis:
+
+                    Term: <term> used in Search Query
+                    Used <X> times in search queries.
+                    Exists in the current title: <Yes/No>
+                    Top 5 search queries: <Query 1>, <Query 2>, <Query 3>, <Query 4>, <Query 5>
+
+                    The following details include terms, their frequency in search queries, whether they exist in the current title, and the top 5 associated search queries:
+                    {formatted_tokens}
+
+                    Important instructions:
+                    1) The new Meta Description should be in the same language as the existing title.
+                    2) Focus on terms not present in the existing title, but relevant to the page content, to differentiate the Meta Description and provide added value.
+                    3) Adhere to the Meta Description character limit of 120-160 characters.
+                    4) Provide only the new Meta Description and nothing else.
+                    5) If sufficient data is unavailable, suggest a generic yet engaging Meta Description.
+                    """
 
 
-            system_prompt = """ 
-                You are an expert copywriter and SEO specialist who crafts highly compelling and optimized Meta Descriptions to improve click-through rates (CTR). 
-                Your task is to generate a new SEO Meta Description for a webpage using data provided from Google Search Console (GSC). 
-                Your responses are precise, actionable, and based on best practices in SEO. 
+                completion = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": task_prompt},
+                        ]
+                        )
+                ai_generated_meta_description = completion.choices[0].message.content
 
-                Ensure recommendations align with the following principles:
-                - Write Meta Descriptions that are actionable and enticing, encouraging users to click.
-                - Incorporate high-performing and relevant keywords that reflect the webpage's content.
-                - Maintain readability and make the Meta Description engaging while adhering to the character limit (120-160 characters).
-                - Use terms not included in the Title Tag to provide additional context or value to the user.
-                - If data is incomplete or unclear, suggest a generic alternative or prompt for clarification.
-                Your tone is professional, concise, and helpful.
+                ai_generated_meta_description_html = f"""
+
+                <div class="p-5 bg-primary-content rounded-box">
+                    <p class="text-s accent-content">
+                    {ai_generated_meta_description}
+                    </p>
+
+                </div>
                 """
-
-            task_prompt = f"""
-
-                Here is the Page URL: "{page}".
-                Here is the Existing Title of the Page: "{existing_title}".
-                Here is the Existing Meta Description of the Page: "{existing_meta_description}".
-                Here is the Existing H1 of the Page: "{h1}".
-
-                Use the following data for analysis:
-
-                Here is the format of the provided data for your analysis:
-
-                Term: <term> used in Search Query
-                Used <X> times in search queries.
-                Exists in the current title: <Yes/No>
-                Top 5 search queries: <Query 1>, <Query 2>, <Query 3>, <Query 4>, <Query 5>
-
-                The following details include terms, their frequency in search queries, whether they exist in the current title, and the top 5 associated search queries:
-                {formatted_tokens}
-
-                Important instructions:
-                1) The new Meta Description should be in the same language as the existing title.
-                2) Focus on terms not present in the existing title, but relevant to the page content, to differentiate the Meta Description and provide added value.
-                3) Adhere to the Meta Description character limit of 120-160 characters.
-                4) Provide only the new Meta Description and nothing else.
-                5) If sufficient data is unavailable, suggest a generic yet engaging Meta Description.
-                """
-
-            
-            completion = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": task_prompt},
-                    ]
-                    )
-            ai_generated_meta_description = completion.choices[0].message.content
-
-            ai_generated_meta_description_html = f"""
-
-            <div class="p-5 bg-primary-content rounded-box">
-                <p class="text-s accent-content">
-                {ai_generated_meta_description}
-                </p>
-
-            </div>
-            """
-            return ai_generated_meta_description_html
+                return ai_generated_meta_description_html
+            except Exception as e:
+                logger.error(f"Error generating AI meta description: {str(e)}")
+                return f"<div class='alert alert-error'>Error from OpenAI: {str(e)}</div>"
 
         
         # GET request
