@@ -12,9 +12,8 @@ import google.auth.transport.requests
 import pandas as pd
 import os
 
-# This variable specifies the name of a file that contains the OAuth 2.0
-# information for this application, including its client_id and client_secret.
-CLIENT_SECRETS_FILE = "client_secrets.json"
+from app.routes.google_oauth_config import (
+    CLIENT_SECRETS_FILE, get_client_config, get_client_secret, is_configured)
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
@@ -29,8 +28,7 @@ def test_api_request():
     return flask.redirect('gsc_authorize')
 
   # Load credentials from the session.
-  credentials = google.oauth2.credentials.Credentials(
-      **flask.session['credentials'])
+  credentials = credentials_from_session()
 
   # Retrieve list of properties in account
   search_console_service = googleapiclient.discovery.build(
@@ -70,15 +68,15 @@ def test_api_request():
 @app.route('/gsc_authorize')
 def gsc_authorize():
   try:
-    # Verify client_secrets.json exists
-    if not os.path.exists(CLIENT_SECRETS_FILE):
-      app.logger.error(f"OAuth authorization error: Client secrets file not found at {CLIENT_SECRETS_FILE}")
+    # Verify OAuth credentials are configured (env vars, or client_secrets.json)
+    if not is_configured():
+      app.logger.error("OAuth authorization error: no OAuth client configured. Set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET.")
       flash("Authentication failed. Server configuration error. Please contact support.")
       return flask.redirect(url_for('home'))
       
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
-    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, scopes=SCOPES)
+    flow = google_auth_oauthlib.flow.Flow.from_client_config(
+        get_client_config(), scopes=SCOPES)
 
     # Get the current URL scheme and host
     scheme = request.headers.get('X-Forwarded-Proto', 'https')
@@ -142,14 +140,14 @@ def gsc_oauth2callback():
       flash("Authentication failed. Please try again. (Error: State mismatch)")
       return flask.redirect(url_for('home'))
 
-    # Verify client_secrets.json exists
-    if not os.path.exists(CLIENT_SECRETS_FILE):
-      app.logger.error(f"OAuth callback error: Client secrets file not found at {CLIENT_SECRETS_FILE}")
+    # Verify OAuth credentials are configured (env vars, or client_secrets.json)
+    if not is_configured():
+      app.logger.error("OAuth callback error: no OAuth client configured. Set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET.")
       flash("Authentication failed. Server configuration error. Please contact support.")
       return flask.redirect(url_for('home'))
 
-    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+    flow = google_auth_oauthlib.flow.Flow.from_client_config(
+        get_client_config(), scopes=SCOPES, state=state)
     
     # Get the current URL scheme and host
     scheme = request.headers.get('X-Forwarded-Proto', 'https')
@@ -197,8 +195,7 @@ def revoke():
   if 'credentials' not in flask.session:
     return redirect(url_for('home'))
 
-  credentials = google.oauth2.credentials.Credentials(
-    **flask.session['credentials'])
+  credentials = credentials_from_session()
 
   revoke = requests.post('https://oauth2.googleapis.com/revoke',
       params={'token': credentials.token},
@@ -224,8 +221,7 @@ def revoke_gsc_clear_session():
   if 'credentials' not in flask.session:
     return redirect(url_for('home'))
   
-  credentials = google.oauth2.credentials.Credentials(
-    **flask.session['credentials'])
+  credentials = credentials_from_session()
 
   revoke = requests.post('https://oauth2.googleapis.com/revoke',
       params={'token': credentials.token},
@@ -245,12 +241,30 @@ def revoke_gsc_clear_session():
 
   
 def credentials_to_dict(credentials):
+  """Serialise credentials for the session.
+
+  The client secret is deliberately omitted: it is application-level
+  configuration, identical for every user, and the Flask session is a signed
+  but unencrypted client-side cookie. It is re-attached server-side by
+  credentials_from_session().
+  """
   return {'token': credentials.token,
           'refresh_token': credentials.refresh_token,
           'token_uri': credentials.token_uri,
           'client_id': credentials.client_id,
-          'client_secret': credentials.client_secret,
           'scopes': credentials.scopes}
+
+
+def credentials_from_session():
+  """Rebuild Credentials from the session, re-attaching the client secret.
+
+  Sessions created before the secret was removed from the cookie may still
+  carry a stale client_secret; it is discarded in favour of the configured one.
+  """
+  data = dict(flask.session['credentials'])
+  data.pop('client_secret', None)
+  data['client_secret'] = get_client_secret()
+  return google.oauth2.credentials.Credentials(**data)
 
 def check_and_refresh_credentials():
   """
@@ -263,8 +277,7 @@ def check_and_refresh_credentials():
     return None, redirect(url_for('gsc_authorize'))
   
   try:
-    credentials = google.oauth2.credentials.Credentials(
-      **flask.session['credentials'])
+    credentials = credentials_from_session()
     
     # Check if the token is expired and refresh it if needed
     if not credentials.valid and credentials.expired and credentials.refresh_token:
@@ -317,8 +330,7 @@ def print_index_table():
 
 def build_gsc_service():
   # Load credentials from the session
-  credentials = google.oauth2.credentials.Credentials(
-      **flask.session['credentials'])
+  credentials = credentials_from_session()
   
   print(flask.session['credentials'])
 
