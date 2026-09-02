@@ -13,7 +13,7 @@ python-dotenv==1.0.1
 celery==5.3.4
 redis==5.0.1
 beautifulsoup4==4.12.3
-nltk==3.9.3
+nltk==3.10.3
 pytz==2024.1
 spacy==3.7.2
 hdbscan==0.8.33
