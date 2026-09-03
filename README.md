@@ -139,9 +139,21 @@ The application will be available at `https://127.0.0.1:5000` (with SSL in devel
 #### Production Mode
 
 ```bash
-# Using Gunicorn
-gunicorn run:app --timeout 180
+# Using Gunicorn (reads gunicorn.conf.py from the project root)
+gunicorn -c gunicorn.conf.py run:app
 ```
+
+The web process runs one worker with eight threads. The app is I/O bound --
+it spends most of each request waiting on the Google Search Console API --
+so threads let requests overlap without a second copy of the interpreter.
+
+Tune it with environment variables:
+
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `WEB_CONCURRENCY` | `1` | Worker processes. Each one duplicates the full import graph (pandas, scikit-learn, umap), so budget a few hundred MB per worker and check `ps -o rss=,cmd= -C gunicorn` before raising it. |
+| `GUNICORN_THREADS` | `8` | Concurrent requests per worker. Cheap -- a thread costs a stack, not a second interpreter. |
+| `GUNICORN_TIMEOUT` | `180` | Seconds before a stuck worker is killed. |
 
 ## 🐳 Deployment
 
@@ -161,6 +173,7 @@ The project includes configuration files for deployment:
    - `REDIS_URL` - Connection string for your Redis instance
    - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` (if not using file)
    - `OPENAI_API_KEY` (Optional)
+   - `WEB_CONCURRENCY` / `GUNICORN_THREADS` (Optional, see Production Mode)
 
 4. **Upload OAuth credentials**: `client_secrets.json` (or use env vars).
 
@@ -188,6 +201,7 @@ gsc-explorer-app/
 ├── client_secrets.json      # Google OAuth credentials
 ├── requirements.txt         # Python dependencies
 ├── Procfile                 # Process file for deployment
+├── gunicorn.conf.py         # Web server concurrency settings
 ├── runtime.txt              # Python version specification
 └── run.py                   # Application entry point
 ```
