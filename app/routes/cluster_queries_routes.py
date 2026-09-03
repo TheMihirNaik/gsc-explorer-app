@@ -8,13 +8,13 @@ and OpenAI embeddings to identify content opportunities.
 from flask import render_template, request, session, redirect, url_for, jsonify
 from app import app
 from app.routes.gsc_api_auth import build_gsc_service, fetch_search_console_data
-from app.routes.gsc_routes import format_dates, keyword_type, get_latest_available_date
+from app.routes.gsc_routes import (
+    format_dates, keyword_type, get_cached_latest_date)
 import logging
 import pandas as pd
 import numpy as np
 from openai import OpenAI
 import os
-import gc
 from dotenv import load_dotenv
 
 # Configure logging
@@ -110,7 +110,7 @@ def query_clustering():
         # Re-use webmasters_service if available, else build it
         if 'webmasters_service' not in locals():
             webmasters_service = build_gsc_service()
-        latest_date = get_latest_available_date(webmasters_service, selected_property)
+        latest_date = get_cached_latest_date(selected_property, webmasters_service)
     except Exception as e:
         logger.warning(f"Error fetching latest date: {e}")
     
@@ -199,9 +199,6 @@ def query_clustering_analyze():
         
         embeddings_dict = generate_query_embeddings(unique_queries, openai_api_key)
         
-        # Map embeddings back to dataframe
-        df['embedding'] = df['QUERY'].map(embeddings_dict)
-        
         # Perform HDBSCAN clustering
         logger.info("Performing HDBSCAN clustering")
         # Ensure strict alignment between queries and embeddings array
@@ -255,7 +252,6 @@ def query_clustering_analyze():
 
         # Cleanup large objects that are no longer needed
         del embeddings_dict
-        gc.collect()
         
         # Generate UMAP 2D projection for visualization
         logger.info("Generating UMAP 2D projection for scatter plot")
@@ -263,7 +259,6 @@ def query_clustering_analyze():
         
         # Cleanup embeddings array as it's no longer needed
         del embeddings_array
-        gc.collect()
         
         # Create scatter plot data with impression data
         scatter_data = create_scatter_plot_data(unique_queries, cluster_labels, umap_coords, df)
@@ -271,7 +266,6 @@ def query_clustering_analyze():
         # Cleanup UMAP coords and full DataFrame
         del umap_coords
         del df
-        gc.collect()
         
         # Filter scatter_data to only include queries from filtered clusters
         # This prevents showing "Cluster X" for filtered-out clusters
@@ -290,7 +284,6 @@ def query_clustering_analyze():
         
         # Cleanup intermediate results
         del cluster_results_final
-        gc.collect()
         
         # Calculate summary stats (granular)
         recommendation_counts = {

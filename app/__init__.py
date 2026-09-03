@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_compress import Compress
 #from pymongo import MongoClient
 from datetime import timedelta
 
@@ -34,6 +35,11 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=300)
 
 # Access environment variables
 app.config['SECRET_KEY'] = SECRET_KEY
+
+# Compress responses. The report routes ship large, highly repetitive payloads
+# (DataTables JSON, pandas to_html tables, clustering scatter data) that were
+# going out raw.
+Compress(app)
 
 # Configure logging
 import logging
