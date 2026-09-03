@@ -293,10 +293,6 @@ def sitewide_analysis():
         
         gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
         
-        # get earliest and latest date from gsc_data
-        earliest_date = gsc_data['DATE'].min()
-        latest_date = gsc_data['DATE'].max()
-
         #total numbers
         total_clicks = gsc_data['clicks'].sum()
         total_impressions = gsc_data['impressions'].sum()
@@ -519,23 +515,6 @@ def sitewide_analysis():
             non_brand_query_count = 0  # or any default value you prefer
 
         non_brand_numbers = [non_brand_clicks, non_brand_impressions, non_brand_ctr, non_brand_position, non_brand_query_count]
-
-        send_html = render_template('/sitewide-analysis/partial-gsc-data.html', 
-                                    total_data=total_data, 
-                                    brand_numbers=brand_numbers,
-                                    non_brand_numbers=non_brand_numbers, 
-                                    clicks_graph=clicks_graph,
-                                    impressions_graph=impressions_graph,
-                                    ctr_fig_graph=ctr_fig_graph,
-                                    position_fig_graph=position_fig_graph,
-                                    brand_query_count_graph=brand_query_count_graph,
-                                    non_brand_query_count_graph=non_brand_query_count_graph,
-                                    brand_position_bucket_graph=brand_position_bucket_graph,
-                                    non_brand_position_bucket_graph=non_brand_position_bucket_graph,
-                                    earliest_date=earliest_date,
-                                    latest_date=latest_date
-                                    )
-
 
         return render_template('/sitewide-analysis/partial-gsc-data.html', 
                                 total_data=total_data,
@@ -1239,7 +1218,7 @@ def sitewide_report():
 
 
 
-        send_html = render_template('/sitewide-report/partial.html', 
+        return render_template('/sitewide-report/partial.html', 
                                     #dates
                                     current_start_date=current_start_date,
                                     current_end_date=current_end_date,
@@ -1268,9 +1247,6 @@ def sitewide_report():
                                     merge_df_html=merge_df_html,
                                     merge_df_html_by_device=merge_df_html_by_device
                                     )
-        #print('send_html successful')
-
-        return send_html
 
     # GET request
     selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
