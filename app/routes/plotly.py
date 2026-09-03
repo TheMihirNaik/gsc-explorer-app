@@ -8,7 +8,7 @@ def plotly_graphs():
     if 'email' in session:
         df = px.data.iris() # iris is a pandas DataFrame
         fig = px.scatter(df, x="sepal_width", y="sepal_length")
-        graph = fig.to_html()
+        graph = fig.to_html(full_html=False, include_plotlyjs=False)
         return render_template("/integrations/plotly-graphs-example.html", graph=graph)
     
     # if email is not in session

@@ -351,7 +351,7 @@ def sitewide_analysis():
         )
 
 
-        clicks_graph = clicks_fig.to_html()
+        clicks_graph = clicks_fig.to_html(full_html=False, include_plotlyjs=False)
 
         impressions_fig = px.line(date_plot_df, x="date", y='impressions', color='Query Type')
         # Customize the layout
@@ -362,7 +362,7 @@ def sitewide_analysis():
             #xaxis_title='Sepal Length',            # Set the x-axis title
             #yaxis_title='Sepal Width'              # Set the y-axis title
         )
-        impressions_graph = impressions_fig.to_html()
+        impressions_graph = impressions_fig.to_html(full_html=False, include_plotlyjs=False)
 
         ctr_fig = px.line(date_plot_df, x="date", y='ctr', color='Query Type')
 
@@ -376,7 +376,7 @@ def sitewide_analysis():
         )
 
 
-        ctr_fig_graph = ctr_fig.to_html()
+        ctr_fig_graph = ctr_fig.to_html(full_html=False, include_plotlyjs=False)
 
 
         position_fig = px.line(date_plot_df, x="date", y='position', color='Query Type')
@@ -391,7 +391,7 @@ def sitewide_analysis():
         )
 
 
-        position_fig_graph = position_fig.to_html()
+        position_fig_graph = position_fig.to_html(full_html=False, include_plotlyjs=False)
 
 
 
@@ -409,7 +409,7 @@ def sitewide_analysis():
             #xaxis_title='Sepal Length',            # Set the x-axis title
             #yaxis_title='Sepal Width'              # Set the y-axis title
         )
-        brand_query_count_graph = brand_query_count_fig.to_html()
+        brand_query_count_graph = brand_query_count_fig.to_html(full_html=False, include_plotlyjs=False)
 
         # Query Count : For Non Brand Queries
 
@@ -425,7 +425,7 @@ def sitewide_analysis():
             #xaxis_title='Sepal Length',            # Set the x-axis title
             #yaxis_title='Sepal Width'              # Set the y-axis title
         )
-        non_brand_query_count_graph = non_brand_query_count_fig.to_html()
+        non_brand_query_count_graph = non_brand_query_count_fig.to_html(full_html=False, include_plotlyjs=False)
 
 
         # query count by position buckets
@@ -473,7 +473,7 @@ def sitewide_analysis():
             #yaxis_title='Sepal Width'              # Set the y-axis title
         )
 
-        brand_position_bucket_graph = brand_position_bucket_fig.to_html()
+        brand_position_bucket_graph = brand_position_bucket_fig.to_html(full_html=False, include_plotlyjs=False)
 
         non_brand_position_bucket_fig = px.bar(position_bucket_df[position_bucket_df['Query Type'] == 'Non Branded'], 
                                      x="date", y='count_queries',
@@ -489,7 +489,7 @@ def sitewide_analysis():
             #yaxis_title='Sepal Width'              # Set the y-axis title
         )
 
-        non_brand_position_bucket_graph = non_brand_position_bucket_fig.to_html()
+        non_brand_position_bucket_graph = non_brand_position_bucket_fig.to_html(full_html=False, include_plotlyjs=False)
 
  
 
@@ -653,7 +653,7 @@ def query_length_analysis():
                             labels={'word_count': 'Word Count', 'clicks': 'Clicks'},
                             title='Total Clicks by Word Count')
         clicks_fig.update_layout(plot_bgcolor='#F1F1F1', paper_bgcolor='#F1F1F1')
-        clicks_chart = clicks_fig.to_html(full_html=False, include_plotlyjs='cdn')
+        clicks_chart = clicks_fig.to_html(full_html=False, include_plotlyjs=False)
 
         # Impressions by Word Count
         imps_fig = px.bar(grouped_df, x='word_count', y='impressions',
@@ -825,7 +825,7 @@ def organic_ctr():
                         xaxis_title='Position',
                         uniformtext_minsize=8, uniformtext_mode='hide')
         
-        brand_ctr_fig_html = brand_ctr_fig.to_html()
+        brand_ctr_fig_html = brand_ctr_fig.to_html(full_html=False, include_plotlyjs=False)
 
         # Create a bar chart
         non_brand_ctr_fig = px.bar(non_brand_ctr_df, x='round_position', y='CTR',
@@ -839,7 +839,7 @@ def organic_ctr():
                         xaxis_title='Position',
                         uniformtext_minsize=8, uniformtext_mode='hide')
         
-        non_brand_ctr_fig_html = non_brand_ctr_fig.to_html()
+        non_brand_ctr_fig_html = non_brand_ctr_fig.to_html(full_html=False, include_plotlyjs=False)
 
 
 
