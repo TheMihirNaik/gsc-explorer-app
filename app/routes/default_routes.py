@@ -13,7 +13,6 @@ from bs4 import BeautifulSoup
 from collections import Counter
 from nltk.corpus import stopwords
 import nltk
-nltk.download('stopwords')
 from openai import OpenAI
 import google.auth.transport.requests
 import pandas as pd
@@ -27,6 +26,29 @@ import os
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _load_stopwords():
+    """English stopwords, resolved once per process instead of per token.
+
+    nltk.txt already provisions the corpus at build time, so the download is a
+    fallback rather than the normal path. If the corpus cannot be obtained at
+    all we carry on without stopword filtering: degraded output beats a worker
+    that will not start.
+    """
+    try:
+        return frozenset(stopwords.words('english'))
+    except LookupError:
+        try:
+            nltk.download('stopwords')
+            return frozenset(stopwords.words('english'))
+        except Exception:
+            logger.error("NLTK stopwords unavailable; continuing without "
+                         "stopword filtering")
+            return frozenset()
+
+
+STOPWORDS = _load_stopwords()
 
 # Flask template filters
 @app.template_filter('format_number')
@@ -69,7 +91,7 @@ def dashboard():
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
     try:
         webmasters_service = build_gsc_service()
-        latest_date = get_latest_available_date(webmasters_service, selected_property)
+        latest_date = get_cached_latest_date(selected_property, webmasters_service)
     except Exception as e:
         logger.error(f"Error fetching latest date for dashboard: {e}")
 
@@ -232,7 +254,7 @@ def suggest_brand_keywords():
         top_queries = sorted_data.head(30)
         
         # Extract individual tokens from the top queries
-        stop_words = set(stopwords.words('english'))
+        stop_words = STOPWORDS
         
         # Common words to exclude from brand tokens
         common_words = ['www', 'com', 'http', 'https', 'login', 'sign', 'in', 'contact', 'about', 'help', 
@@ -544,7 +566,7 @@ def sitewide_analysis():
     if selected_property != "You haven't selected a GSC Property yet":
         try:
             webmasters_service = build_gsc_service()
-            latest_date = get_latest_available_date(webmasters_service, selected_property)
+            latest_date = get_cached_latest_date(selected_property, webmasters_service)
         except Exception as e:
             logger.error(f"Error initializing service for latest date check: {e}")
 
@@ -702,7 +724,7 @@ def query_length_analysis():
     # Fetch latest available date
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
     try:
-        latest_date = get_latest_available_date(webmasters_service, selected_property)
+        latest_date = get_cached_latest_date(selected_property, webmasters_service)
     except Exception as e:
         logger.error(f"Error fetching latest date: {e}")
 
@@ -877,44 +899,12 @@ def organic_ctr():
     # Initialize vars with safe defaults
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
     try:
-        latest_date = get_latest_available_date(webmasters_service, selected_property)
+        latest_date = get_cached_latest_date(selected_property, webmasters_service)
     except Exception as e:
         logger.error(f"Error fetching latest date for organic-ctr: {e}")
 
     return render_template('/organic-ctr/main.html', selected_property=selected_property, 
                            brand_keywords=brand_keywords, countries=countries, latest_date=latest_date)
-
-
-# Helper to get latest available date
-def get_latest_available_date(service, property_url):
-    """
-    Queries GSC API to find the latest available data date.
-    Checks the last 10 days including 'all' data state (fresh data).
-    """
-    try:
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=10)
-        
-        request_body = {
-            'startDate': start_date.strftime('%Y-%m-%d'),
-            'endDate': end_date.strftime('%Y-%m-%d'),
-            'dimensions': ['date'],
-            'dataState': 'all',  # fetch fresh data if available
-            'rowLimit': 25
-        }
-        
-        response = service.searchAnalytics().query(siteUrl=property_url, body=request_body).execute()
-        
-        if 'rows' in response:
-            dates = [row['keys'][0] for row in response['rows']]
-            if dates:
-                return max(dates)
-                
-    except Exception as e:
-        logger.error(f"Error fetching latest date for {property_url}: {e}")
-    
-    # Fallback: 2 days ago if API fails or returns no data
-    return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
 
 
 # Reports Routes
@@ -933,7 +923,7 @@ def sitewide_report():
     if selected_property != "You haven't selected a GSC Property yet":
         try:
             webmasters_service = build_gsc_service()
-            latest_date = get_latest_available_date(webmasters_service, selected_property)
+            latest_date = get_cached_latest_date(selected_property, webmasters_service)
         except Exception as e:
             logger.error(f"Error initializing service for latest date check: {e}")
 
@@ -1417,7 +1407,7 @@ def query_aggregate_report():
     if selected_property != "You haven't selected a GSC Property yet":
         try:
             webmasters_service = build_gsc_service()
-            latest_date = get_latest_available_date(webmasters_service, selected_property)
+            latest_date = get_cached_latest_date(selected_property, webmasters_service)
         except Exception as e:
             logger.error(f"Error initializing service for latest date check: {e}")
 
@@ -1609,7 +1599,7 @@ def sitewide_pages():
     if selected_property != "You haven't selected a GSC Property yet":
         try:
             webmasters_service = build_gsc_service()
-            latest_date = get_latest_available_date(webmasters_service, selected_property)
+            latest_date = get_cached_latest_date(selected_property, webmasters_service)
         except Exception as e:
             logger.error(f"Error initializing service for latest date check: {e}")
 
@@ -1783,7 +1773,7 @@ def optimize_ctr():
         title_tokens = [token.lower() for token in title_tokens]
 
         # remove stop words
-        title_tokens = [token for token in title_tokens if token not in stopwords.words('english')]
+        title_tokens = [token for token in title_tokens if token not in STOPWORDS]
 
         
         meta_desc_tokens = meta_desc.split()
@@ -1795,7 +1785,7 @@ def optimize_ctr():
         meta_desc_tokens = [token.lower() for token in meta_desc_tokens]
 
         # remove stop words from meta_desc_tokens
-        meta_desc_tokens = [token for token in meta_desc_tokens if token not in stopwords.words('english')]
+        meta_desc_tokens = [token for token in meta_desc_tokens if token not in STOPWORDS]
 
         
         
@@ -1821,7 +1811,7 @@ def optimize_ctr():
         query_tokens_flat = [token.lower() for token in query_tokens_flat]
 
         # remove stop words from query_tokens_flat
-        query_tokens_flat = [token for token in query_tokens_flat if token not in stopwords.words('english')]
+        query_tokens_flat = [token for token in query_tokens_flat if token not in STOPWORDS]
 
         # count the frequency of each token
         query_tokens_count = Counter(query_tokens_flat)
@@ -1886,7 +1876,7 @@ def optimize_ctr():
     if selected_property != "You haven't selected a GSC Property yet":
         try:
             webmasters_service = build_gsc_service()
-            latest_date = get_latest_available_date(webmasters_service, selected_property)
+            latest_date = get_cached_latest_date(selected_property, webmasters_service)
         except Exception as e:
             logger.error(f"Error fetching latest date: {e}")
 
@@ -2239,7 +2229,7 @@ def optimize_page_content():
 
         # remove stop words from tokenized_queries
         logger.info("Removing stop words")
-        stop_words = set(stopwords.words('english'))
+        stop_words = STOPWORDS
         tokenized_queries = [[word for word in query if word.lower() not in stop_words] for query in tokenized_queries]
 
         # create a dictionary to store query tokens and their counts and examples
@@ -2411,7 +2401,7 @@ def optimize_page_content():
     if selected_property != "You haven't selected a GSC Property yet":
         try:
             webmasters_service = build_gsc_service()
-            latest_date = get_latest_available_date(webmasters_service, selected_property)
+            latest_date = get_cached_latest_date(selected_property, webmasters_service)
         except Exception as e:
             logger.error(f"Error fetching latest date: {e}")
 
@@ -2445,7 +2435,7 @@ def select_target():
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
     try:
         webmasters_service = build_gsc_service()
-        latest_date = get_latest_available_date(webmasters_service, selected_property)
+        latest_date = get_cached_latest_date(selected_property, webmasters_service)
     except Exception as e:
         logger.error(f"Error fetching latest date for tool selection: {e}")
 
