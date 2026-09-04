@@ -118,8 +118,9 @@
     var latestDateStr = "{{ latest_date }}";
     var latestDate = moment(latestDateStr, "YYYY-MM-DD");
 
-    // Default: Last 7 Days relative to LATEST DATA
-    var start = moment(latestDate).subtract(7, 'days');
+    // Default: Last 7 Days relative to LATEST DATA. Inclusive of both ends,
+    // so subtract 6 -- matching the "Last 7 Days" preset below.
+    var start = moment(latestDate).subtract(6, 'days');
     var end = moment(latestDate);
 
     function cb(start, end) {

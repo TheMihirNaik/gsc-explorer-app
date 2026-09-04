@@ -28,4 +28,4 @@ def get_completion():
         return render_template('/integrations/openai-example.html')
     
     # If email is not in session
-    return redirect(url_for('signin'))
+    return redirect(url_for('home'))

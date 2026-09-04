@@ -12,9 +12,6 @@
 
 <h2 class="text-3xl font-bold mb-12">Sitewide : Brand, Non Brand & Anonymized Queries Analysis</h2>
 
-{{ unique_brand_query_count}}
-{{ unique_non_brand_query_count}}
-
 <table class="table bg-neutral-content text-right w-fit">
     <tbody>
         <thead class="text-xl">
@@ -57,9 +54,13 @@
                     <i class="fa fa-comment"></i>
                 </div>
             </td>
-            <td>{{ (total_data[0] - non_brand_numbers[0] - brand_numbers[0])|format_number }}</td>
-            <td>{{ (total_data[1] - non_brand_numbers[1] - brand_numbers[1])|format_number }}</td>
-            <td>{{ ((total_data[0] - non_brand_numbers[0] - brand_numbers[0]) / (total_data[1] - non_brand_numbers[1] - brand_numbers[1]) * 100 )|round(2)}}</td>
+            {% set anon_clicks = total_data[0] - non_brand_numbers[0] - brand_numbers[0] %}
+            {% set anon_impressions = total_data[1] - non_brand_numbers[1] - brand_numbers[1] %}
+            <td>{{ anon_clicks|format_number }}</td>
+            <td>{{ anon_impressions|format_number }}</td>
+            {# Guarded: when brand + non-brand account for all impressions this
+               divisor is 0, and an unguarded divide raised inside the template. #}
+            <td>{{ ((anon_clicks / anon_impressions * 100)|round(2)) if anon_impressions else 0 }}</td>
             <td></td>
             <td></td>
         </tr>

@@ -22,6 +22,10 @@ import re
 import time
 import json
 import os
+import socket
+import ipaddress
+import threading
+from urllib.parse import quote, urlparse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -55,6 +59,129 @@ STOPWORDS = _load_stopwords()
 def format_number(value):
     # Assuming value is a number or can be converted to a number
     return '{:,.0f}'.format(float(value))
+
+
+@app.context_processor
+def inject_brand_keywords_display():
+    """Readable brand keywords for the property card on every page.
+
+    The session stores them as a list, so rendering the value directly put
+    "['nike', 'adidas']" -- Python's repr, brackets and quotes included -- in
+    front of the user on every logged-in page.
+    """
+    keywords = session.get("brand_keywords")
+    if isinstance(keywords, (list, tuple)):
+        display = ', '.join(keywords) if keywords else "No brand keywords set"
+    elif keywords:
+        display = keywords
+    else:
+        display = "No brand keywords set"
+    return {'brand_keywords_display': display}
+
+
+# Connect / read timeouts for fetching a user-supplied page. Without them a
+# slow host holds a gunicorn thread until the 180s worker timeout, and there
+# are only eight threads in the pool.
+PAGE_FETCH_TIMEOUT = (5, 20)
+
+# Populating a country dropdown used to cost a full paged Search Console fetch
+# over 15 months, on every page load, on two pages. The list changes slowly, so
+# use a shorter window and cache it in-process for an hour.
+COUNTRY_LIST_MONTHS = 3
+COUNTRY_CACHE_TTL_SECONDS = 3600
+_country_cache = {}
+_country_cache_lock = threading.Lock()
+
+
+def get_country_rows(webmasters_service, property_url, months=COUNTRY_LIST_MONTHS):
+    """Countries with impressions for a property, most impressions first.
+
+    Returns a list of {'code', 'impressions'}, empty when the property has no
+    data in the window.
+    """
+    key = (property_url, months)
+    now = time.time()
+
+    with _country_cache_lock:
+        cached = _country_cache.get(key)
+        if cached and now - cached[0] < COUNTRY_CACHE_TTL_SECONDS:
+            return cached[1]
+
+    end_date = datetime.today()
+    start_date = end_date - relativedelta(months=months)
+
+    country_df = fetch_search_console_data(
+        webmasters_service, property_url,
+        start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'),
+        ['COUNTRY'], [])
+
+    if country_df.empty or 'COUNTRY' not in country_df.columns:
+        logger.info(f"No country data available for {property_url}")
+        rows = []
+    else:
+        country_df = country_df.sort_values(by='impressions', ascending=False)
+        rows = [{'code': str(row['COUNTRY']).upper(),
+                 'impressions': int(row['impressions'])}
+                for _, row in country_df.iterrows()]
+
+    with _country_cache_lock:
+        _country_cache[key] = (now, rows)
+
+    return rows
+
+
+def is_fetchable_url(url):
+    """True when url is a public http(s) address we are willing to fetch.
+
+    The page URL arrives from a form, so without this check the server will
+    fetch whatever the user types -- localhost, the Redis port, a cloud
+    metadata endpoint -- and hand back what it found. This resolves the host
+    and rejects any non-public address.
+
+    Note this is a best-effort check: it cannot prevent a host that resolves
+    to a public address here and a private one when requests connects.
+    """
+    try:
+        parsed = urlparse(url or '')
+    except ValueError:
+        return False
+
+    if parsed.scheme not in ('http', 'https') or not parsed.hostname:
+        return False
+
+    try:
+        addresses = socket.getaddrinfo(parsed.hostname, None)
+    except (socket.gaierror, UnicodeError):
+        return False
+
+    for info in addresses:
+        try:
+            address = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            return False
+        if (address.is_private or address.is_loopback or address.is_link_local
+                or address.is_reserved or address.is_multicast
+                or address.is_unspecified):
+            return False
+
+    return bool(addresses)
+
+
+def rate(numerator, denominator, scale=100):
+    """Percentage rate that reads 0 rather than NaN for an empty group.
+
+    A segment with no rows sums to 0 impressions, and 0/0 on numpy scalars
+    yields NaN, which reaches the template and renders as the literal "nan".
+    """
+    if not denominator:
+        return 0.0
+    return numerator / denominator * scale
+
+
+def mean_or_zero(series):
+    """Mean of a possibly-empty series, as 0 rather than NaN."""
+    return float(series.mean()) if len(series) else 0.0
+
 
 # Homepage
 @app.route('/')
@@ -173,9 +300,12 @@ def suggest_brand_keywords():
     if not selected_property:
         return jsonify({'error': 'No property selected'}), 400
     
-    # Load credentials from the session
-    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-    
+    # Load credentials from the session. Constructing Credentials straight from
+    # the session dict omits the client secret -- which was deliberately kept
+    # out of the cookie -- so any refresh would fail. credentials_from_session()
+    # re-attaches it server-side.
+    credentials = credentials_from_session()
+
     # Check if the token is expired and refresh it if needed
     if not credentials.valid and credentials.expired and credentials.refresh_token:
         try:
@@ -183,6 +313,7 @@ def suggest_brand_keywords():
             # Save updated credentials back to session
             session['credentials'] = credentials_to_dict(credentials)
         except Exception as e:
+            logger.warning(f"Brand keyword suggestion token refresh failed: {e}")
             return jsonify({'error': 'Failed to refresh access token'}), 401
     
     # Build the Search Console service
@@ -318,8 +449,8 @@ def sitewide_analysis():
         #total numbers
         total_clicks = gsc_data['clicks'].sum()
         total_impressions = gsc_data['impressions'].sum()
-        total_ctr = total_clicks / total_impressions * 100
-        total_position = gsc_data['position'].mean()
+        total_ctr = rate(total_clicks, total_impressions)
+        total_position = mean_or_zero(gsc_data['position'])
 
         total_data = [total_clicks, total_impressions, total_ctr, total_position]
 
@@ -336,21 +467,26 @@ def sitewide_analysis():
 
         #prepare a dataframe to plot a chart - groupby
 
-        plot_df = query_df.groupby(['Query Type']).agg(
-            clicks = ('clicks', 'sum'),
-            impressions = ('impressions', 'sum'),
-            ctr = ('ctr', 'mean'),
-            position = ('position', 'mean'),
-            count_queries = ('query', 'count'),
-        ).reset_index()
+        # CTR and position are ratios, so they cannot be averaged across query
+        # rows: a tail of one-impression queries at 100% CTR drags the mean far
+        # above the real rate, and the charts then disagree with the summary
+        # table on this same page. Sum the components, then derive the ratio --
+        # CTR from clicks over impressions, position weighted by impressions.
+        query_df['position_weight'] = query_df['position'] * query_df['impressions']
 
         date_plot_df = query_df.groupby(['date', 'Query Type']).agg(
             clicks = ('clicks', 'sum'),
             impressions = ('impressions', 'sum'),
-            ctr = ('ctr', 'mean'),
-            position = ('position', 'mean'),
+            position_weight = ('position_weight', 'sum'),
             count_queries = ('query', 'count'),
         ).reset_index()
+
+        date_impressions = date_plot_df['impressions']
+        date_plot_df['ctr'] = (
+            date_plot_df['clicks'].div(date_impressions).where(date_impressions > 0, 0) * 100).round(2)
+        date_plot_df['position'] = (
+            date_plot_df['position_weight'].div(date_impressions).where(date_impressions > 0, 0)).round(2)
+        date_plot_df = date_plot_df.drop(columns='position_weight')
 
         #print(date_plot_df)
 
@@ -515,8 +651,8 @@ def sitewide_analysis():
 
         brand_clicks = brand_query_df['clicks'].sum()
         brand_impressions = brand_query_df['impressions'].sum()
-        brand_ctr = brand_clicks / brand_impressions * 100
-        brand_position = brand_query_df['position'].mean()
+        brand_ctr = rate(brand_clicks, brand_impressions)
+        brand_position = mean_or_zero(brand_query_df['position'])
 
         brand_query_count = brand_query_df['query'].nunique()
 
@@ -527,8 +663,8 @@ def sitewide_analysis():
 
         non_brand_clicks = non_brand_query_df['clicks'].sum()
         non_brand_impressions = non_brand_query_df['impressions'].sum()
-        non_brand_ctr = non_brand_clicks / non_brand_impressions * 100
-        non_brand_position = non_brand_query_df['position'].mean()
+        non_brand_ctr = rate(non_brand_clicks, non_brand_impressions)
+        non_brand_position = mean_or_zero(non_brand_query_df['position'])
 
         try:
             non_brand_query_count = non_brand_query_df['query'].nunique()
@@ -672,9 +808,23 @@ def query_length_analysis():
 
 
         # --- Detailed Table Data ---
-        # Provide the full list of queries for the table (DataTable will handle pagination/sorting client side)
-        table_data = filtered_df.to_dict('records')
-        
+        # Ship the rows as JSON and let DataTables build them, as every other
+        # report here does. Rendering them as server-side <tr> elements made a
+        # multi-megabyte response on a property with a long tail.
+        table_df = filtered_df[['query', 'word_count', 'clicks', 'impressions',
+                                'ctr', 'position']].copy()
+        table_df['ctr'] = (table_df['ctr'] * 100).round(2)
+        table_df['position'] = table_df['position'].round(1)
+        table_df = table_df.rename(columns={
+            'query': 'Query',
+            'word_count': 'Word Count',
+            'clicks': 'Clicks',
+            'impressions': 'Impressions',
+            'ctr': 'CTR (%)',
+            'position': 'Position',
+        })
+        data_json = table_df.to_json(orient='split', index=False)
+
         return render_template('/sitewide-analysis/partial-query-length-data.html',
                                total_queries=len(filtered_df),
                                min_words=min_words if min_words > 0 else None,
@@ -684,7 +834,7 @@ def query_length_analysis():
                                clicks_chart=clicks_chart,
                                impressions_chart=impressions_chart,
                                query_count_chart=query_count_chart,
-                               table_data=table_data)
+                               data_json=data_json)
 
 
     # GET Request Handler
@@ -695,31 +845,10 @@ def query_length_analysis():
 
     webmasters_service = build_gsc_service()
 
-    # Calculate end_date
-    end_date = datetime.today()
-    # Calculate start_date (15 months before today)
-    start_date = end_date - relativedelta(months=15)
-    
-    end_date_str = end_date.strftime('%Y-%m-%d')
-    start_date_str = start_date.strftime('%Y-%m-%d')
-    
-    dimensions = ['COUNTRY']
-    dimensionFilterGroups = []
-    
-    country_df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
-    
-    countries = []
-    if not country_df.empty and 'COUNTRY' in country_df.columns:
-        # Sort by impressions descending
-        country_df = country_df.sort_values(by='impressions', ascending=False)
-        
-        for _, row in country_df.iterrows():
-            country_code = str(row['COUNTRY']).upper()
-            impressions = int(row['impressions'])
-            countries.append({
-                'code': country_code,
-                'impressions_formatted': f"{impressions:,}"
-            })
+    countries = [
+        {'code': row['code'], 'impressions_formatted': f"{row['impressions']:,}"}
+        for row in get_country_rows(webmasters_service, selected_property)
+    ]
 
     # Fetch latest available date
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
@@ -866,30 +995,8 @@ def organic_ctr():
 
     webmasters_service = build_gsc_service()
     
-    # Calculate end_date
-    end_date = datetime.today()
-
-    # Calculate start_date (15 months before today)
-    start_date = end_date - relativedelta(months=15)
-
-    # Format the dates as YYYY-MM-DD
-    end_date_str = end_date.strftime('%Y-%m-%d')
-    start_date_str = start_date.strftime('%Y-%m-%d')
-
-    print("Start Date:", start_date_str)
-    print("End Date:", end_date_str)
-    
-    dimensions = ['COUNTRY']
-    
-    dimensionFilterGroups = [{"filters": [
-        #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-    ]}]
-
-    country_df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
-    
-    print(country_df)
-
-    countries = [country.upper() for country in country_df['COUNTRY'].to_list()]
+    countries = [row['code']
+                 for row in get_country_rows(webmasters_service, selected_property)]
     
     # read country-codes.csv file, and pass the data to create select form
     #countries = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'static', 'country-codes.csv'))
@@ -905,6 +1012,50 @@ def organic_ctr():
 
     return render_template('/organic-ctr/main.html', selected_property=selected_property, 
                            brand_keywords=brand_keywords, countries=countries, latest_date=latest_date)
+
+
+# get_latest_available_date lives in app.routes.gsc_routes and arrives via the
+# star import above. It used to be duplicated here verbatim, and the local copy
+# shadowed the imported one -- so a fix applied to only one of them appeared to
+# work in some routes and not others.
+
+
+# Column suffix -> header group, for the period-comparison tables.
+COMPARISON_GROUPS = [
+    ('_prev_p', 'Previous Period'),
+    ('_prev_y', 'Previous Year'),
+    ('_pop', 'Period over Period (in %)'),
+    ('_yoy', 'Year over Year (in %)'),
+]
+
+COMPARISON_METRICS = {
+    'clicks': 'Clicks',
+    'impressions': 'Impressions',
+    'ctr': 'CTR',
+    'position': 'Position',
+}
+
+
+def comparison_multiindex(columns, dimension):
+    """Build the two-level header for a period-comparison table by column name.
+
+    The frame's column order is whatever the merges and the later assignments
+    happened to produce, so a header written out positionally silently
+    mislabels a column as soon as either changes. Deriving each label from the
+    column's own name keeps the header attached to the data.
+    """
+    header = []
+    for column in columns:
+        if column == dimension:
+            header.append((dimension, dimension))
+            continue
+        for suffix, group in COMPARISON_GROUPS:
+            if column.endswith(suffix):
+                header.append((group, COMPARISON_METRICS[column[:-len(suffix)]]))
+                break
+        else:
+            header.append(('Current Period', COMPARISON_METRICS[column]))
+    return pd.MultiIndex.from_tuples(header)
 
 
 # Reports Routes
@@ -1001,40 +1152,16 @@ def sitewide_report():
         merge_df['clicks_pop'] = round((merge_df['clicks'] - merge_df['clicks_prev_p'])/merge_df['clicks_prev_p'] * 100,2)
         merge_df['impressions_pop'] = round((merge_df['impressions'] - merge_df['impressions_prev_p'])/merge_df['impressions_prev_p'] * 100,2)
         merge_df['ctr_pop'] = round((merge_df['ctr'] - merge_df['ctr_prev_p'])/merge_df['ctr_prev_p'] * 100,2)
-        merge_df['position_pop'] = round((merge_df['position_prev_p'] - merge_df['position'])/merge_df['position_prev_p'] * 100,2)
+        merge_df['position_pop'] = round((merge_df['position'] - merge_df['position_prev_p'])/merge_df['position_prev_p'] * 100,2)
 
         merge_df['clicks_yoy'] = round((merge_df['clicks'] - merge_df['clicks_prev_y'])/merge_df['clicks_prev_y'] * 100,2)
         merge_df['impressions_yoy'] = round((merge_df['impressions'] - merge_df['impressions_prev_y'])/merge_df['impressions_prev_y'] * 100,2)
         merge_df['ctr_yoy'] = round((merge_df['ctr'] - merge_df['ctr_prev_y'])/merge_df['ctr_prev_y'] * 100,2)
-        merge_df['position_yoy'] = round((merge_df['position_prev_y'] - merge_df['position'])/merge_df['position_prev_y'] * 100,2)
+        merge_df['position_yoy'] = round((merge_df['position'] - merge_df['position_prev_y'])/merge_df['position_prev_y'] * 100,2)
 
 
-        # Create a MultiIndex for the header
-        header = [
-        ('COUNTRY', 'COUNTRY'),
-        ('Previous Period', 'Clicks'),
-        ('Previous Period', 'Impressions'),
-        ('Previous Period', 'Position'),
-        ('Previous Period', 'CTR'),
-        ('Previous Year', 'Clicks'),
-        ('Previous Year', 'Impressions'),
-        ('Previous Year', 'Position'),
-        ('Previous Year', 'CTR'),
-        ('Current Period', 'Clicks'),
-        ('Current Period', 'Impressions'),
-        ('Current Period', 'Position'),
-        ('Current Period', 'CTR'),
-        ('Period over Period (in %)', 'Clicks'),
-        ('Period over Period (in %)', 'Impressions'),
-        ('Period over Period (in %)', 'Position'),
-        ('Period over Period (in %)', 'CTR'),
-        ('Year over Year (in %)', 'Clicks'),
-        ('Year over Year (in %)', 'Impressions'),
-        ('Year over Year (in %)', 'Position'),
-        ('Year over Year (in %)', 'CTR'),
-        ]
-
-        merge_df.columns = pd.MultiIndex.from_tuples(header)
+        # Header is derived from the column names, not their position.
+        merge_df.columns = comparison_multiindex(merge_df.columns, 'COUNTRY')
 
         # Fill NaN values with 0
         merge_df.fillna(0, inplace=True)
@@ -1123,40 +1250,16 @@ def sitewide_report():
         merge_df_by_device['clicks_pop'] = round((merge_df_by_device['clicks'] - merge_df_by_device['clicks_prev_p'])/merge_df_by_device['clicks_prev_p'] * 100,2)
         merge_df_by_device['impressions_pop'] = round((merge_df_by_device['impressions'] - merge_df_by_device['impressions_prev_p'])/merge_df_by_device['impressions_prev_p'] * 100,2)
         merge_df_by_device['ctr_pop'] = round((merge_df_by_device['ctr'] - merge_df_by_device['ctr_prev_p'])/merge_df_by_device['ctr_prev_p'] * 100,2)
-        merge_df_by_device['position_pop'] = round((merge_df_by_device['position_prev_p'] - merge_df_by_device['position'])/merge_df_by_device['position_prev_p'] * 100,2)
+        merge_df_by_device['position_pop'] = round((merge_df_by_device['position'] - merge_df_by_device['position_prev_p'])/merge_df_by_device['position_prev_p'] * 100,2)
 
         merge_df_by_device['clicks_yoy'] = round((merge_df_by_device['clicks'] - merge_df_by_device['clicks_prev_y'])/merge_df_by_device['clicks_prev_y'] * 100,2)
         merge_df_by_device['impressions_yoy'] = round((merge_df_by_device['impressions'] - merge_df_by_device['impressions_prev_y'])/merge_df_by_device['impressions_prev_y'] * 100,2)
         merge_df_by_device['ctr_yoy'] = round((merge_df_by_device['ctr'] - merge_df_by_device['ctr_prev_y'])/merge_df_by_device['ctr_prev_y'] * 100,2)
-        merge_df_by_device['position_yoy'] = round((merge_df_by_device['position_prev_y'] - merge_df_by_device['position'])/merge_df_by_device['position_prev_y'] * 100,2)
+        merge_df_by_device['position_yoy'] = round((merge_df_by_device['position'] - merge_df_by_device['position_prev_y'])/merge_df_by_device['position_prev_y'] * 100,2)
 
 
-        # Create a MultiIndex for the header
-        header = [
-        ('DEVICE', 'DEVICE'),
-        ('Previous Period', 'Clicks'),
-        ('Previous Period', 'Impressions'),
-        ('Previous Period', 'Position'),
-        ('Previous Period', 'CTR'),
-        ('Previous Year', 'Clicks'),
-        ('Previous Year', 'Impressions'),
-        ('Previous Year', 'Position'),
-        ('Previous Year', 'CTR'),
-        ('Current Period', 'Clicks'),
-        ('Current Period', 'Impressions'),
-        ('Current Period', 'Position'),
-        ('Current Period', 'CTR'),
-        ('Period over Period (in %)', 'Clicks'),
-        ('Period over Period (in %)', 'Impressions'),
-        ('Period over Period (in %)', 'Position'),
-        ('Period over Period (in %)', 'CTR'),
-        ('Year over Year (in %)', 'Clicks'),
-        ('Year over Year (in %)', 'Impressions'),
-        ('Year over Year (in %)', 'Position'),
-        ('Year over Year (in %)', 'CTR'),
-        ]
-
-        merge_df_by_device.columns = pd.MultiIndex.from_tuples(header)
+        # Header is derived from the column names, not their position.
+        merge_df_by_device.columns = comparison_multiindex(merge_df_by_device.columns, 'DEVICE')
 
         # Fill NaN values with 0
         merge_df_by_device.fillna(0, inplace=True)
@@ -1327,10 +1430,12 @@ def query_aggregate_report():
         merge_df['ctr_pop'] = ((merge_df['ctr'] - merge_df['ctr_prev_p']) / merge_df['ctr_prev_p'] * 100).round(2)
         merge_df['position_pop'] = ((merge_df['position'] - merge_df['position_prev_p']) / merge_df['position_prev_p'] * 100).round(2)
 
-        merge_df['clicks_yoy'] = ((merge_df['clicks_prev_p'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
-        merge_df['impressions_yoy'] = ((merge_df['impressions_prev_p'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
-        merge_df['ctr_yoy'] = ((merge_df['ctr_prev_p'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
-        merge_df['position_yoy'] = ((merge_df['position_prev_p'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
+        # Year over Year compares the CURRENT period against the same period a
+        # year ago -- not the previous period against it.
+        merge_df['clicks_yoy'] = ((merge_df['clicks'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
+        merge_df['impressions_yoy'] = ((merge_df['impressions'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
+        merge_df['ctr_yoy'] = ((merge_df['ctr'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
+        merge_df['position_yoy'] = ((merge_df['position'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
 
 
         merge_df = merge_df.rename(columns={
@@ -1485,24 +1590,29 @@ def sitewide_pages():
         merge_df['ctr_pop'] = ((merge_df['ctr'] - merge_df['ctr_prev_p']) / merge_df['ctr_prev_p'] * 100).round(2)
         merge_df['position_pop'] = ((merge_df['position'] - merge_df['position_prev_p']) / merge_df['position_prev_p'] * 100).round(2)
 
-        merge_df['clicks_yoy'] = ((merge_df['clicks_prev_p'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
-        merge_df['impressions_yoy'] = ((merge_df['impressions_prev_p'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
-        merge_df['ctr_yoy'] = ((merge_df['ctr_prev_p'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
-        merge_df['position_yoy'] = ((merge_df['position_prev_p'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
+        # Year over Year compares the CURRENT period against the same period a
+        # year ago -- not the previous period against it.
+        merge_df['clicks_yoy'] = ((merge_df['clicks'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
+        merge_df['impressions_yoy'] = ((merge_df['impressions'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
+        merge_df['ctr_yoy'] = ((merge_df['ctr'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
+        merge_df['position_yoy'] = ((merge_df['position'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
 
 
         # add one column named "Actions" to merge_df and add links to the "Optimize CTR" and "Another Action" in the column
+        # The page URL is percent-encoded: a page whose own URL carries a query
+        # string or fragment would otherwise truncate this link at its first
+        # '?', '&' or '#', sending the tool to the wrong page.
         merge_df['Actions'] = merge_df['PAGE'].apply(
             lambda x: (
                 f"""
-                    
-                        <a href='/actionable-insights/optimize-ctr?page={x}' target='_blank' class='badge badge-primary'>
+
+                        <a href='/actionable-insights/optimize-ctr?page={quote(str(x), safe='')}' target='_blank' class='badge badge-primary'>
                             <i class='fa-solid fa-wand-magic-sparkles'></i>  CTR
                         </a>
-                        
+
                         <div class="flex space-x-2" hidden>
-                        <a href='/actionable-insights/optimize-page-content?page={x}' target='_blank' class='badge badge-secondary'>
-                            <i class='fa-solid fa-file-pen'></i> Content 
+                        <a href='/actionable-insights/optimize-page-content?page={quote(str(x), safe='')}' target='_blank' class='badge badge-secondary'>
+                            <i class='fa-solid fa-file-pen'></i> Content
                         </a>
                         </div>
                 """
@@ -1677,8 +1787,9 @@ def optimize_ctr():
         #get gsc data
         date_query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
 
-        # only rows where position is less than 11
-        date_query_df = date_query_df.loc[date_query_df['position'] < 10]
+        # Positions 1-10, matching the "Top 10 Positions" heading on the
+        # results partial. This previously excluded position 10 itself.
+        date_query_df = date_query_df.loc[date_query_df['position'] <= 10]
 
         # filter rows where impressions is greater than date_query_df['impressions'].mean(), but also include rows where click is greater than 0 irrepesctive of impressions
         date_query_df = date_query_df.loc[(date_query_df['impressions'] > date_query_df['impressions'].mean()) | (date_query_df['clicks'] > 0)]
@@ -1705,13 +1816,24 @@ def optimize_ctr():
         # scrape current title & meta description of the URL using bs4
         url = page
 
+        if not is_fetchable_url(url):
+            logger.warning(f"Refusing to fetch non-public URL: {url}")
+            return ("<div class='alert alert-error'>That page URL cannot be "
+                    "fetched. Enter a full public http:// or https:// "
+                    "address.</div>")
+
         # Define headers with a real User-Agent
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
 
         # Send a GET request to the URL
-        response = requests.get(url, headers=headers)
+        try:
+            response = requests.get(url, headers=headers, timeout=PAGE_FETCH_TIMEOUT)
+        except requests.RequestException as e:
+            logger.warning(f"Could not fetch {url}: {e}")
+            return ("<div class='alert alert-error'>Could not load that page "
+                    f"({type(e).__name__}). Check the URL and try again.</div>")
 
         if response.status_code == 200:
             try:
@@ -1720,7 +1842,10 @@ def optimize_ctr():
                 
                 # Get the title
                 title_tag = soup.title
-                title = title_tag.string if title_tag else 'No title found'
+                # .string is None for a <title> containing nested markup,
+                # and the callers below call .split() on it.
+                title = title_tag.get_text(strip=True) if title_tag else 'No title found'
+                title = title or 'No title found'
                 
                 # Get the meta description
                 meta_desc = 'No description found'
@@ -1736,7 +1861,10 @@ def optimize_ctr():
                 try:
                     h1_tag = soup.find('h1')
                     if h1_tag:
-                        h1 = h1_tag.string.strip() if h1_tag.string else 'No H1 text found'
+                        # Same reason as the title: .string is None whenever the
+                        # heading wraps any markup, e.g. <h1><span>x</span></h1>,
+                        # which reported "No H1 text found" for a real heading.
+                        h1 = h1_tag.get_text(strip=True) or 'No H1 text found'
                 except Exception:
                     pass  # Ensure no errors are raised during H1 extraction
 
@@ -1904,11 +2032,10 @@ def generate_ai_title():
             title_query_tokens_count = data.get('titleQueryTokensCount')
             h1 = data.get('h1')
             openai_api_key = data.get('openai_api_key')
-            print(openai_api_key)
 
             # Print or log the captured data for debugging
-            logger.info('Existing Title:', existing_title)
-            logger.info('Page:', page)
+            logger.info("Existing title: %s", existing_title)
+            logger.info("Page: %s", page)
             #print('Title Query Tokens Count:', title_query_tokens_count)
 
             print(type(title_query_tokens_count))
@@ -2022,8 +2149,8 @@ def generate_ai_meta_description():
             openai_api_key = data.get('openai_api_key')
 
             # Print or log the captured data for debugging
-            logger.info('Existing Title:', existing_title)
-            logger.info('Page:', page)
+            logger.info("Existing title: %s", existing_title)
+            logger.info("Page: %s", page)
             #print('Title Query Tokens Count:', title_query_tokens_count)
 
             print(type(metaDescQueryTokensCount))
@@ -2138,6 +2265,12 @@ def optimize_page_content():
         url = page
         logger.info(f"Scraping content from URL: {url}")
 
+        if not is_fetchable_url(url):
+            logger.warning(f"Refusing to fetch non-public URL: {url}")
+            return ("<div class='alert alert-error'>That page URL cannot be "
+                    "fetched. Enter a full public http:// or https:// "
+                    "address.</div>")
+
         # Define headers with a real User-Agent
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -2145,7 +2278,12 @@ def optimize_page_content():
 
         # Send a GET request to the URL
         logger.info("Sending GET request to the URL")
-        response = requests.get(url, headers=headers)
+        try:
+            response = requests.get(url, headers=headers, timeout=PAGE_FETCH_TIMEOUT)
+        except requests.RequestException as e:
+            logger.warning(f"Could not fetch {url}: {e}")
+            return ("<div class='alert alert-error'>Could not load that page "
+                    f"({type(e).__name__}). Check the URL and try again.</div>")
         logger.info(f"Response status code: {response.status_code}")
 
         if response.status_code == 200:
@@ -2156,7 +2294,10 @@ def optimize_page_content():
                 
                 # Get the title
                 title_tag = soup.title
-                title = title_tag.string if title_tag else 'No title found'
+                # .string is None for a <title> containing nested markup,
+                # and the callers below call .split() on it.
+                title = title_tag.get_text(strip=True) if title_tag else 'No title found'
+                title = title or 'No title found'
                 logger.info(f"Extracted title: {title}")
                 
                 # Get the meta description
@@ -2215,9 +2356,22 @@ def optimize_page_content():
         logger.info(f"Fetched {len(query_df)} rows of GSC data")
 
         # remove brand queries from query_df
+        # Use the same classifier as the rest of the app: it matches on word
+        # boundaries and escapes each term, rather than joining the terms into
+        # a raw regex. With no brand terms configured there is nothing to strip
+        # -- joining an empty list produced '', which matched every query and
+        # left nothing to analyse.
         logger.info("Removing brand queries from results")
-        query_df = query_df[~query_df['QUERY'].str.contains('|'.join(brand_keywords), case=False)]
+        if brand_keywords and brand_keywords != "You haven't selected Brand Keywords.":
+            query_df = query_df[query_df['QUERY'].apply(
+                lambda q: keyword_type(q, brand_keywords)) == 'Non Branded']
         logger.info(f"After brand filtering: {len(query_df)} rows remain")
+
+        if query_df.empty:
+            logger.warning("No non-brand queries for this page in the selected range")
+            return ("<div class='alert alert-warning'>No non-brand search queries "
+                    "found for this page in the selected date range. Try widening "
+                    "the range, or check the page URL.</div>")
 
         # create a list of queries from query_df
         queries = query_df['QUERY'].tolist()
@@ -2250,28 +2404,25 @@ def optimize_page_content():
                         query_tokens_count[token]['examples'].append(example)
         logger.info(f"Found {len(query_tokens_count)} unique tokens")
 
-        # Generate semantic variations for each token 
+        # Generate semantic variations for each token
         # using spaCy for natural language processing
+        semantic_analysis_available = True
         try:
             import spacy
             import numpy as np
             from collections import defaultdict
-            
+
             logger.info("Starting semantic analysis with spaCy")
             analysis_start_time = time.time()
-            
-            # Load the English model
-            try:
-                nlp = spacy.load("en_core_web_md")
-                logger.info("Successfully loaded spaCy model")
-            except:
-                # If model not found, download and load it
-                logger.warning("spaCy model not found, downloading it")
-                import subprocess
-                subprocess.run(["python", "-m", "spacy", "download", "en_core_web_md"])
-                nlp = spacy.load("en_core_web_md")
-                logger.info("Successfully downloaded and loaded spaCy model")
-            
+
+            # Load the English model. The model is pinned in requirements.txt;
+            # it is not downloaded on demand here, because doing that inside a
+            # request meant a ~40MB fetch under the worker timeout, and on a
+            # read-only or egress-restricted container it simply failed -- and
+            # the failure was swallowed, so every score silently came back 0.
+            nlp = spacy.load("en_core_web_md")
+            logger.info("Successfully loaded spaCy model")
+
             # Process all tokens to get their vector representations - do this once
             logger.info("Processing tokens with spaCy")
             token_docs = {token: nlp(token) for token in query_tokens_count.keys()}
@@ -2363,8 +2514,11 @@ def optimize_page_content():
             logger.info(f"Semantic analysis completed in {analysis_end_time - analysis_start_time:.2f} seconds")
                 
         except Exception as e:
-            logger.error(f"Error during semantic analysis: {e}")
-            # If semantic analysis fails, add empty semantic data
+            logger.error(f"Error during semantic analysis: {e}", exc_info=True)
+            # Fall back to empty semantic data, and tell the template so the
+            # page can say the analysis did not run instead of presenting a
+            # column of zeroes as if it were a result.
+            semantic_analysis_available = False
             for token in query_tokens_count:
                 if 'semantic_variations' not in query_tokens_count[token]:
                     query_tokens_count[token]['semantic_variations'] = []
@@ -2374,13 +2528,17 @@ def optimize_page_content():
         # sort the query tokens by count in descending order
         logger.info("Sorting query tokens by count")
         sorted_query_tokens_count = sorted(query_tokens_count.items(), key=lambda x: x[1]['count'], reverse=True)
-        logger.info(f"Top token: {sorted_query_tokens_count[0][0]} with count {sorted_query_tokens_count[0][1]['count']}")
+        if sorted_query_tokens_count:
+            logger.info(f"Top token: {sorted_query_tokens_count[0][0]} with count {sorted_query_tokens_count[0][1]['count']}")
+        else:
+            logger.warning("No query tokens survived stop-word removal")
 
         logger.info("Rendering template with analysis results")
         return render_template('/actionable-insights/optimize-page-content/partial.html', 
                                title=title, meta_desc=meta_desc, content_html=content_html,
                                query_tokens=sorted_query_tokens_count,
-                               target_keyword=target_keyword
+                               target_keyword=target_keyword,
+                               semantic_analysis_available=semantic_analysis_available
                                )
     
     #get request

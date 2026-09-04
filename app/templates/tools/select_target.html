@@ -99,7 +99,11 @@
         let rows = document.querySelectorAll('#pagesTableBody tr');
 
         rows.forEach(function (row) {
-            let text = row.querySelector('.page-url').textContent.toLowerCase();
+            // The loading and "no data" rows carry no .page-url, and reading
+            // textContent off null threw on every keystroke, killing the filter.
+            let cell = row.querySelector('.page-url');
+            if (!cell) return;
+            let text = cell.textContent.toLowerCase();
             if (text.includes(filter)) {
                 row.style.display = '';
             } else {

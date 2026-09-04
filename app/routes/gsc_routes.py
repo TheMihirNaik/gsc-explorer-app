@@ -31,10 +31,11 @@ import os
 @app.route('/google-search-console/', methods=['POST', 'GET'])
 def google_search_console():
     if request.method == 'POST':
-        # Load credentials from the session.
-        credentials = google.oauth2.credentials.Credentials(
-            **session['credentials'])
-        
+        # Load credentials from the session. Use the helper so the client
+        # secret -- kept out of the session cookie on purpose -- is re-attached
+        # server-side; without it a refresh can never succeed.
+        credentials = credentials_from_session()
+
         # Check if the token is expired and refresh it if needed
         if not credentials.valid and credentials.expired and credentials.refresh_token:
             try:
@@ -104,7 +105,10 @@ def process_dates(start_date_str, end_date_str):
 # Function to determine keyword type
 def keyword_type(query, brand_terms):
     if not brand_terms or brand_terms == "You haven't selected Brand Keywords.":
-        return 'Branded'  # Default to branded if no brand terms defined
+        # A query is non-branded until a brand term proves otherwise. Defaulting
+        # the other way labelled 100% of traffic as branded whenever the user
+        # had not configured any keywords, leaving every Non-Brand figure at 0.
+        return 'Non Branded'
     
     # Convert query to lowercase for case-insensitive matching
     query_lower = query.lower()
@@ -166,7 +170,7 @@ def get_latest_available_date(service, property_url):
             'rowLimit': 25
         }
         
-        response = service.searchAnalytics().query(siteUrl=property_url, body=request_body).execute()
+        response = service.searchanalytics().query(siteUrl=property_url, body=request_body).execute()
         
         if 'rows' in response:
             dates = [row['keys'][0] for row in response['rows']]
@@ -174,7 +178,8 @@ def get_latest_available_date(service, property_url):
                 return max(dates)
                 
     except Exception as e:
-        logger.error(f"Error fetching latest date for {property_url}: {e}")
+        logger.error(
+            f"Error fetching latest date for {property_url}: {e}", exc_info=True)
     
     # Fallback: 2 days ago if API fails or returns no data
     return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')

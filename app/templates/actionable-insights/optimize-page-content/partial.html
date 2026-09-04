@@ -79,7 +79,15 @@
                         <div class="badge badge-secondary">{{ query_tokens|length }} keywords</div>
                     </h2>
                     <p class="text-sm mb-3">These are the top search terms users are using to find your page.</p>
-                    
+
+                    {% if semantic_analysis_available is defined and not semantic_analysis_available %}
+                    <div role="alert" class="alert alert-warning mb-3">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span class="text-sm">Semantic analysis did not run, so semantic scores and
+                            related terms are unavailable. Search term counts below are unaffected.</span>
+                    </div>
+                    {% endif %}
+
                     <!-- Status Filter Pills -->
                     <div class="flex flex-wrap gap-2 mb-3">
                         <button class="badge badge-lg badge-outline hover:bg-base-300 status-filter active" data-status="all">All</button>

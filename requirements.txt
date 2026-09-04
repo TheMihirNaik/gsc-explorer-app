@@ -1,5 +1,7 @@
 gunicorn==23.0.0
 Flask==3.0.0
+# Server-side sessions, so OAuth credentials stay out of the client cookie.
+Flask-Session==0.8.0
 Flask-Compress==1.24
 pymongo==4.7.0
 bcrypt==4.1.2
@@ -14,9 +16,16 @@ python-dotenv==1.0.1
 celery==5.3.4
 redis==5.0.1
 beautifulsoup4==4.12.3
+# Imported directly by the routes; previously present only as a
+# transitive dependency of the Google and pandas packages.
+requests==2.32.3
+python-dateutil==2.9.0.post0
 nltk==3.10.3
 pytz==2024.1
 spacy==3.7.2
+# Model used by the Content Optimizer's semantic analysis. Pinned here
+# rather than downloaded at request time, which failed silently.
+en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
 hdbscan==0.8.33
 scikit-learn==1.4.0
 umap-learn==0.5.5

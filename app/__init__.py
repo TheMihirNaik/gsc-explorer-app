@@ -33,7 +33,17 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=300)
 
-# Access environment variables
+# Access environment variables.
+#
+# Fail at startup rather than on the first request that touches the session:
+# with no key Flask raises deep inside a route, which reads as an application
+# bug rather than as missing configuration.
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY is not set. Generate one with "
+        "`python -c \"import secrets; print(secrets.token_hex(32))\"` "
+        "and set it in the environment (see .env.example).")
+
 app.config['SECRET_KEY'] = SECRET_KEY
 
 # Compress responses. The report routes ship large, highly repetitive payloads
@@ -65,6 +75,41 @@ if not app.debug:
     
     app.logger.setLevel(logging.INFO)
     app.logger.info('GSC Explorer startup')
+
+# Session storage.
+#
+# Flask's default session is a signed -- but not encrypted -- cookie, so the
+# Google OAuth credentials kept in it, refresh token included, travel to the
+# browser on every request and are readable by anyone holding the cookie.
+# When Redis is configured the session payload lives server-side and the
+# cookie carries only an opaque id. If Redis is unavailable we log loudly and
+# fall back to the cookie session rather than failing to boot.
+redis_url = os.getenv('REDIS_URL')
+
+if redis_url:
+    try:
+        import redis as redis_client_lib
+        from flask_session import Session
+
+        session_redis = redis_client_lib.from_url(redis_url)
+        session_redis.ping()
+
+        app.config['SESSION_TYPE'] = 'redis'
+        app.config['SESSION_REDIS'] = session_redis
+        app.config['SESSION_PERMANENT'] = True
+        app.config['SESSION_KEY_PREFIX'] = 'gscx_session:'
+        Session(app)
+
+        app.logger.info('Server-side sessions enabled (Redis)')
+    except Exception as session_error:
+        app.logger.warning(
+            'Could not enable server-side sessions (%s). Falling back to '
+            'cookie sessions -- OAuth credentials will be stored in the '
+            'client cookie.', session_error)
+else:
+    app.logger.warning(
+        'REDIS_URL is not set. Using cookie sessions -- OAuth credentials '
+        'will be stored in the client cookie.')
 
 # Initialize MongoDB client
 #cluster = MongoClient(MONGO_URI)

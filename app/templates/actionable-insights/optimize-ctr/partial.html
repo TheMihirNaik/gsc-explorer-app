@@ -68,7 +68,7 @@
         <h2 class="card-title mt-6 text-base">Terms Analysis:</h2>
 
         <ul class="mt-2">
-            {% for token in title_query_tokens_count %}
+            {% for token in meta_desc_query_tokens_count %}
 
             <div class="tooltip" data-tip="{{ token[3] }}">
 
@@ -86,7 +86,7 @@
             {{ meta_desc_query_tokens_count | tojson }}
         </div>
 
-        <div id="hidden-h1-data" style="display:none;">
+        <div id="hidden-h1-data-meta-desc" style="display:none;">
             {{ h1 }}
         </div>
         
@@ -130,8 +130,6 @@
   </div>
 
   <h2 class="text-2xl font-bold mb-12"> GSC Search Queries in Top 10 Positions</h2>
-
-  {{ query_list }}
 
   <!-- HTML Table -->
     <table id="byQuery" class="table table-xs">

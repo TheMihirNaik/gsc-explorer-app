@@ -10,6 +10,6 @@ def recieve_feedback():
         return 'Thank you for your feedback!'
     
     # GET request
-    return redirect(url_for('signin'))
+    return redirect(url_for('home'))
 
 # The issue with the code is that the return statement on the POST request is returning an f-string which is not valid. The return statement should return a string or a response object.

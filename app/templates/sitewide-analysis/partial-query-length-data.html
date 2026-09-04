@@ -46,37 +46,27 @@
 
 <div class="overflow-x-auto">
     <table class="table table-zebra w-full" id="queryTable">
-        <thead>
-            <tr>
-                <th>Query</th>
-                <th class="text-right">Word Count</th>
-                <th class="text-right">Clicks</th>
-                <th class="text-right">Impressions</th>
-                <th class="text-right">CTR (%)</th>
-                <th class="text-right">Position</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in table_data %}
-            <tr>
-                <td>{{ row.query }}</td>
-                <td class="text-right">{{ row.word_count }}</td>
-                <td class="text-right">{{ row.clicks|format_number }}</td>
-                <td class="text-right">{{ row.impressions|format_number }}</td>
-                <td class="text-right">{{ row.ctr|round(2) }}%</td>
-                <td class="text-right">{{ row.position|round(1) }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <thead></thead>
+        <tbody></tbody>
     </table>
 </div>
 
 <script>
-    // Initialize DataTable if needed, or simple table
-    $(document).ready(function () {
+    // Rows arrive as JSON and DataTables renders them; sending them as server
+    // side <tr> elements made the response enormous on long-tail properties.
+    (function () {
+        var payload = JSON.parse({{ data_json | tojson }});
         $('#queryTable').DataTable({
-            "order": [[2, "desc"]], // Sort by Clicks descending by default
-            "pageLength": 25
+            data: payload.data,
+            columns: payload.columns.map(function (name) {
+                return {
+                    title: name,
+                    className: name === 'Query' ? '' : 'text-right'
+                };
+            }),
+            order: [[2, 'desc']],   // Clicks, descending
+            pageLength: 25,
+            deferRender: true
         });
-    });
+    })();
 </script>

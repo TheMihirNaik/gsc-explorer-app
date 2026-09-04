@@ -11,4 +11,4 @@ def datatables():
         return render_template("/integrations/datatables-example.html", df=df.to_dict('records'))
     
     # If email is not in session
-    return redirect(url_for('signin'))
+    return redirect(url_for('home'))
