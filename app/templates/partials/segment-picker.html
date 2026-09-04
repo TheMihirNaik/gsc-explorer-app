@@ -1,0 +1,21 @@
+{#
+  Segment picker. Include inside a report's form so `segment_id` posts with it.
+  Reports that include this get every saved segment for free.
+#}
+<label class="form-control">
+    <span class="sr-only">Segment</span>
+    <select name="segment_id" class="select select-bordered select-sm"
+        title="Narrow this report to a saved segment">
+        <option value="">All pages &amp; queries</option>
+        {% for segment in segments %}
+        <option value="{{ segment.id }}" {% if segment.id==active_segment_id %}selected{% endif %}>
+            {{ segment.name }}
+        </option>
+        {% endfor %}
+    </select>
+</label>
+{% if not segments %}
+<a href="{{ url_for('segments_page') }}" class="text-xs link link-primary whitespace-nowrap">
+    + Add a segment
+</a>
+{% endif %}

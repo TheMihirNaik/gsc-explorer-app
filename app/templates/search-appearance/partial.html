@@ -1,0 +1,58 @@
+<div role="alert" class="alert alert-info shadow-sm mb-6">
+    <i class="fa-solid fa-circle-info"></i>
+    <span class="text-sm">
+        {{ current_start }} to {{ current_end }}, compared with {{ previous_start }} to {{ previous_end }}.
+        {% if segment_summary %}<br>Segment: <span class="font-mono text-xs">{{ segment_summary }}</span>{% endif %}
+    </span>
+</div>
+
+<div class="overflow-x-auto">
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Appearance</th>
+                <th class="w-1/4">Share of clicks</th>
+                <th class="text-right">Clicks</th>
+                <th class="text-right">vs previous</th>
+                <th class="text-right">Impressions</th>
+                <th class="text-right">CTR</th>
+                <th class="text-right">Position</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr class="hover">
+                <td class="font-medium whitespace-nowrap">{{ row.label }}</td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="h-2 rounded-sm bg-primary" style="width: {{ (row.clicks / max_clicks * 100)|round(1) }}%; min-width: 2px;"></div>
+                        <span class="text-xs opacity-60 tabular-nums">{{ row.share }}%</span>
+                    </div>
+                </td>
+                <td class="text-right tabular-nums">{{ '{:,}'.format(row.clicks) }}</td>
+                <td class="text-right tabular-nums text-xs">
+                    {% if row.clicks_change == 'new' %}
+                    <span class="badge badge-ghost badge-sm">new</span>
+                    {% elif row.clicks_change is none %}
+                    <span class="opacity-40">&mdash;</span>
+                    {% elif row.clicks_change > 0 %}
+                    <span class="text-success">+{{ row.clicks_change }}%</span>
+                    {% elif row.clicks_change < 0 %}
+                    <span class="text-error">{{ row.clicks_change }}%</span>
+                    {% else %}
+                    <span class="opacity-60">0%</span>
+                    {% endif %}
+                </td>
+                <td class="text-right tabular-nums">{{ '{:,}'.format(row.impressions) }}</td>
+                <td class="text-right tabular-nums">{{ row.ctr }}%</td>
+                <td class="text-right tabular-nums">{{ row.position }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p class="text-xs opacity-60 mt-4 max-w-2xl leading-relaxed">
+    A page can appear in more than one way for the same impression, so these rows overlap and
+    will not sum to your site total. Read each row against itself over time, not against the others.
+</p>

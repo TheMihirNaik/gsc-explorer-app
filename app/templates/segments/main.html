@@ -1,0 +1,163 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %}Segments : {{ selected_property }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 max-w-5xl py-4">
+
+  {% include 'partials/property-cards.html' %}
+
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">Segments</h1>
+    <p class="text-sm text-base-content/70 max-w-2xl">
+      A segment is a saved filter on page URL or search query. Once saved, it appears on every
+      report, so you can run the same analysis against your blog, your product pages, or just
+      question queries without rebuilding the filter each time.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+    <!-- Create -->
+    <div class="lg:col-span-2">
+      <div class="card bg-base-100 shadow-sm border border-base-200">
+        <div class="card-body p-5">
+          <h2 class="card-title text-base mb-1">New segment</h2>
+
+          <form method="POST" action="{{ url_for('create_segment') }}" class="flex flex-col gap-3">
+            <label class="form-control">
+              <span class="label-text text-xs font-semibold uppercase tracking-wide opacity-60 mb-1">Name</span>
+              <input type="text" name="name" required maxlength="60" placeholder="Blog posts"
+                class="input input-bordered input-sm" />
+            </label>
+
+            <label class="form-control">
+              <span class="label-text text-xs font-semibold uppercase tracking-wide opacity-60 mb-1">Filter on</span>
+              <select name="dimension" id="seg-dimension" class="select select-bordered select-sm">
+                {% for value, label in dimensions.items() %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+
+            <label class="form-control">
+              <span class="label-text text-xs font-semibold uppercase tracking-wide opacity-60 mb-1">Match</span>
+              <select name="operator" id="seg-operator" class="select select-bordered select-sm">
+                {% for value, label in operators.items() %}
+                <option value="{{ value }}" {% if value=='includingRegex' %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+
+            <label class="form-control">
+              <span class="label-text text-xs font-semibold uppercase tracking-wide opacity-60 mb-1">Pattern</span>
+              <input type="text" name="expression" id="seg-expression" required placeholder="/blog/"
+                class="input input-bordered input-sm font-mono text-xs" />
+              <span class="label-text-alt opacity-60 mt-1 leading-snug" id="seg-hint">
+                Regex is evaluated by Google (RE2) and is case-insensitive.
+              </span>
+            </label>
+
+            <div class="flex items-center gap-3 pt-1">
+              <button type="submit" class="btn btn-primary btn-sm">Save segment</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="seg-preview-btn"
+                hx-post="{{ url_for('preview_segment') }}" hx-include="#seg-dimension, #seg-operator, #seg-expression"
+                hx-target="#seg-preview" hx-swap="innerHTML">
+                Test it first
+              </button>
+              <span class="loading loading-dots loading-sm htmx-indicator"></span>
+            </div>
+          </form>
+
+          <div id="seg-preview" class="mt-3"></div>
+        </div>
+      </div>
+
+      <div class="text-xs opacity-60 mt-3 leading-relaxed">
+        Segments are stored with your sign-in session, so they stay until you sign out and
+        don't follow you to another device.
+      </div>
+    </div>
+
+    <!-- Saved -->
+    <div class="lg:col-span-3">
+      <h2 class="text-base font-semibold mb-3">
+        Saved segments
+        {% if saved_segments %}<span class="badge badge-ghost badge-sm ml-1">{{ saved_segments|length }}</span>{% endif %}
+      </h2>
+
+      {% if not saved_segments %}
+      <div class="rounded-lg border border-dashed border-base-300 p-8 text-center">
+        <div class="text-3xl mb-2 opacity-40"><i class="fa-solid fa-filter"></i></div>
+        <p class="font-medium mb-1">No segments yet</p>
+        <p class="text-sm opacity-70 max-w-md mx-auto">
+          Try <code class="font-mono text-xs bg-base-200 px-1 rounded">/blog/</code> on page URL to
+          isolate your blog, or <code class="font-mono text-xs bg-base-200 px-1 rounded">^(how|what|why|when|where|who)\b</code>
+          on search query to isolate questions.
+        </p>
+      </div>
+      {% else %}
+      <div class="overflow-x-auto">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Rule</th>
+              <th class="w-px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for segment in saved_segments %}
+            <tr class="hover">
+              <td class="font-medium align-top">{{ segment.name }}</td>
+              <td class="align-top">
+                <span class="text-xs opacity-70">{{ dimensions[segment.dimension] }}
+                  {{ operators[segment.operator] }}</span>
+                <div class="font-mono text-xs break-all">{{ segment.expression }}</div>
+              </td>
+              <td class="align-top">
+                <form method="POST" action="{{ url_for('delete_segment', segment_id=segment.id) }}"
+                  onsubmit="return confirm('Delete the segment “{{ segment.name }}”?');">
+                  <button type="submit" class="btn btn-ghost btn-xs text-error"
+                    title="Delete {{ segment.name }}">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // The hint and placeholder should describe the operator that's actually selected.
+  (function () {
+    var operator = document.getElementById('seg-operator');
+    var expression = document.getElementById('seg-expression');
+    var dimension = document.getElementById('seg-dimension');
+    var hint = document.getElementById('seg-hint');
+    if (!operator || !expression || !dimension || !hint) return;
+
+    var examples = {
+      PAGE: { regex: '/blog/|/guides/', plain: '/blog/' },
+      QUERY: { regex: '^(how|what|why)\\b', plain: 'pricing' }
+    };
+
+    function update() {
+      var isRegex = operator.value.indexOf('Regex') !== -1;
+      var example = examples[dimension.value] || examples.PAGE;
+      expression.placeholder = isRegex ? example.regex : example.plain;
+      hint.textContent = isRegex
+        ? 'Regex is evaluated by Google (RE2) and is case-insensitive.'
+        : 'Plain text, matched case-insensitively.';
+    }
+
+    operator.addEventListener('change', update);
+    dimension.addEventListener('change', update);
+    update();
+  })();
+</script>
+{% endblock %}

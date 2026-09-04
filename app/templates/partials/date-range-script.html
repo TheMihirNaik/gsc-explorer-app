@@ -1,0 +1,50 @@
+{#
+  Shared date-range picker wiring.
+
+  Every report page had its own near-identical copy of this, which is how they
+  drifted: default ranges of 7, 8, 28, 30 and 31 days across pages that all
+  claimed the same thing, and a maxDate of today, which let people select days
+  Search Console has no data for and then read the empty tail as a traffic drop.
+
+  Include once per page, after a `#reportrange` trigger element and a form
+  containing `#start_date` and `#end_date` hidden inputs.
+
+  Set `default_days` before including to change the opening range (default 28).
+#}
+<script type="text/javascript">
+  $(function () {
+    var latestDateStr = "{{ latest_date }}";
+    var latestDate = latestDateStr && latestDateStr !== "None"
+      ? moment(latestDateStr, "YYYY-MM-DD")
+      : moment().subtract(2, 'days');
+
+    // Inclusive of both ends, so a 28-day range subtracts 27.
+    var defaultDays = {{ default_days | default(28) }};
+    var start = moment(latestDate).subtract(defaultDays - 1, 'days');
+    var end = moment(latestDate);
+
+    function cb(start, end) {
+      $('#reportrange span').html(
+        start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+      $('#start_date').val(start.format('MM/DD/YYYY'));
+      $('#end_date').val(end.format('MM/DD/YYYY'));
+    }
+
+    $('#reportrange').daterangepicker({
+      startDate: start,
+      endDate: end,
+      // Never past the newest day with data -- picking beyond it returns
+      // nothing and reads as a drop.
+      maxDate: moment(latestDate),
+      ranges: {
+        'Last 7 Days': [moment(latestDate).subtract(6, 'days'), moment(latestDate)],
+        'Last 28 Days': [moment(latestDate).subtract(27, 'days'), moment(latestDate)],
+        'Last 90 Days': [moment(latestDate).subtract(89, 'days'), moment(latestDate)],
+        'Last 180 Days': [moment(latestDate).subtract(179, 'days'), moment(latestDate)],
+        'Last 365 Days': [moment(latestDate).subtract(364, 'days'), moment(latestDate)]
+      }
+    }, cb);
+
+    cb(start, end);
+  });
+</script>

@@ -1,6 +1,8 @@
 {% extends "/default/loggedin-base.html" %}
 
-{% block title %} Sitewide Queries for {{ selected_property}} {% endblock %}
+{% block title %} Sitewide Queries for {{ selected_property}} {% set default_days = 28 %}
+{% include 'partials/date-range-script.html' %}
+{% endblock %}
 
 {% block content %}
 
@@ -27,6 +29,7 @@
           hx-target="#query-aggregate-data" class="inline-flex items-center gap-3">
           <input type="hidden" name="start_date" id="start_date">
           <input type="hidden" name="end_date" id="end_date">
+          {% include 'partials/segment-picker.html' %}
           <button type="submit" class="btn btn-primary">Fetch Data</button>
           <span class="loading loading-dots loading-lg htmx-indicator"></span>
         </form>
@@ -72,41 +75,7 @@
 <!--  Date Picker Script -->
 
 <script type="text/javascript">
-  $(function () {
-
-    // Parse the latest_date passed from backend (YYYY-MM-DD)
-    var latestDateStr = "{{ latest_date }}";
-    var latestDate = moment(latestDateStr, "YYYY-MM-DD");
-
-    // Default: Last 30 Days relative to LATEST DATA
-    var start = moment(latestDate).subtract(30, 'days');
-    var end = moment(latestDate);
-
-    function cb(start, end) {
-      $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-      $('#start_date').val(start.format('MM/DD/YYYY'));
-      $('#end_date').val(end.format('MM/DD/YYYY'));
-    }
-
-    $('#reportrange').daterangepicker({
-      startDate: start,
-      endDate: end,
-      maxDate: moment(),
-      ranges: {
-        'Today': [moment(), moment()],
-        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-        'Last 7 Days': [moment(latestDate).subtract(6, 'days'), moment(latestDate)],
-        'Last 28 Days': [moment(latestDate).subtract(27, 'days'), moment(latestDate)],
-        'This Month': [moment().startOf('month'), moment().endOf('month')],
-        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-        'Last 90 Days': [moment(latestDate).subtract(89, 'days'), moment(latestDate)],
-        'Last 365 Days': [moment(latestDate).subtract(364, 'days'), moment(latestDate)]
-      }
-    }, cb);
-
-    cb(start, end);
-
-  });
+    /* picker wiring lives in partials/date-range-script.html */
 </script>
 
 

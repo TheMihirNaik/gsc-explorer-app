@@ -153,36 +153,61 @@ def generate_regex_from_urls(urls):
     return expression_string
 
 
-def get_latest_available_date(service, property_url):
+def get_data_freshness(service, property_url):
+    """How current this property's data is, from the API's own metadata.
+
+    A `dataState: 'all'` response carries `metadata.firstIncompleteDate` -- the
+    first day Google is still collecting. The day before it is the last day
+    whose numbers will not move again, which is what a date picker should
+    default to; the newest row is how fresh the preliminary data runs.
+
+    Returns {'final_date', 'fresh_date'}. Both fall back to two days ago, which
+    is roughly Search Console's usual lag, if the call fails.
     """
-    Queries GSC API to find the latest available data date.
-    Checks the last 10 days including 'all' data state (fresh data).
-    """
+    fallback = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    freshness = {'final_date': fallback, 'fresh_date': fallback}
+
     try:
         end_date = datetime.now()
         start_date = end_date - timedelta(days=10)
-        
+
         request_body = {
             'startDate': start_date.strftime('%Y-%m-%d'),
             'endDate': end_date.strftime('%Y-%m-%d'),
             'dimensions': ['date'],
-            'dataState': 'all',  # fetch fresh data if available
+            'dataState': 'all',  # so the response carries freshness metadata
             'rowLimit': 25
         }
-        
+
         response = service.searchanalytics().query(siteUrl=property_url, body=request_body).execute()
-        
-        if 'rows' in response:
-            dates = [row['keys'][0] for row in response['rows']]
-            if dates:
-                return max(dates)
-                
+
+        dates = sorted(row['keys'][0] for row in response.get('rows') or [])
+        if dates:
+            freshness['fresh_date'] = dates[-1]
+            # Nothing in the window is still being collected unless the
+            # metadata below says so, in which case every row is already final.
+            freshness['final_date'] = dates[-1]
+
+        first_incomplete = (response.get('metadata') or {}).get('firstIncompleteDate')
+        if first_incomplete:
+            try:
+                incomplete = datetime.strptime(first_incomplete, '%Y-%m-%d')
+                freshness['final_date'] = (incomplete - timedelta(days=1)).strftime('%Y-%m-%d')
+            except ValueError:
+                logger.warning(
+                    "Unparseable firstIncompleteDate %r for %s",
+                    first_incomplete, property_url)
+
     except Exception as e:
         logger.error(
-            f"Error fetching latest date for {property_url}: {e}", exc_info=True)
-    
-    # Fallback: 2 days ago if API fails or returns no data
-    return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+            f"Error fetching data freshness for {property_url}: {e}", exc_info=True)
+
+    return freshness
+
+
+def get_latest_available_date(service, property_url):
+    """Latest date with final (non-preliminary) data for this property."""
+    return get_data_freshness(service, property_url)['final_date']
 
 
 # GSC advances the latest available date roughly once a day, so querying it on
@@ -190,8 +215,8 @@ def get_latest_available_date(service, property_url):
 LATEST_DATE_CACHE_TTL = timedelta(hours=6)
 
 
-def get_cached_latest_date(property_url, service=None):
-    """Latest date GSC has data for, cached per property in the session.
+def get_cached_freshness(property_url, service=None):
+    """Data freshness for a property, cached per property in the session.
 
     Falls back to a live query on a miss. `service` is reused when the caller
     already has one, so a miss costs no extra discovery build.
@@ -203,15 +228,40 @@ def get_cached_latest_date(property_url, service=None):
         except (KeyError, TypeError, ValueError):
             fetched_at = None
         if fetched_at and datetime.now() - fetched_at < LATEST_DATE_CACHE_TTL:
-            return cache['date']
+            return {
+                'final_date': cache['date'],
+                # Sessions written before fresh_date existed only carry one date.
+                'fresh_date': cache.get('fresh_date', cache['date']),
+            }
 
     if service is None:
         service = build_gsc_service()
 
-    latest_date = get_latest_available_date(service, property_url)
+    freshness = get_data_freshness(service, property_url)
     session['latest_date_cache'] = {
         'property': property_url,
-        'date': latest_date,
+        'date': freshness['final_date'],
+        'fresh_date': freshness['fresh_date'],
         'fetched_at': datetime.now().isoformat(),
     }
-    return latest_date
+    return freshness
+
+
+def peek_cached_freshness(property_url):
+    """Freshness from the session cache only -- never makes an API call.
+
+    For render paths (the property card on every page) that want to show the
+    dates but must not spend a round trip to do it.
+    """
+    cache = session.get('latest_date_cache')
+    if cache and cache.get('property') == property_url and cache.get('date'):
+        return {
+            'final_date': cache['date'],
+            'fresh_date': cache.get('fresh_date', cache['date']),
+        }
+    return None
+
+
+def get_cached_latest_date(property_url, service=None):
+    """Latest date with final data, cached per property in the session."""
+    return get_cached_freshness(property_url, service)['final_date']

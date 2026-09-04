@@ -1,0 +1,28 @@
+{% if error %}
+<div role="alert" class="alert alert-warning">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span class="text-sm">{{ error }}</span>
+</div>
+{% elif matched == 0 %}
+<div role="alert" class="alert alert-warning">
+    <i class="fa-solid fa-circle-info"></i>
+    <span class="text-sm">Nothing matched in the last 28 days. The segment will save, but every
+        report using it will come back empty.</span>
+</div>
+{% else %}
+<div class="rounded-lg border border-success/30 bg-success/10 p-4">
+    <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1 mb-3">
+        <span class="text-sm font-semibold">
+            Matches {{ '{:,}'.format(matched) }} {{ dimension|lower }}{{ 's' if matched != 1 else '' }}
+        </span>
+        <span class="text-xs opacity-70">{{ '{:,}'.format(clicks) }} clicks ·
+            {{ '{:,}'.format(impressions) }} impressions · last 28 days</span>
+    </div>
+    <div class="text-xs opacity-60 mb-1">Top matches by impressions</div>
+    <ul class="text-xs font-mono space-y-0.5">
+        {% for example in examples %}
+        <li class="truncate" title="{{ example }}">{{ example }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

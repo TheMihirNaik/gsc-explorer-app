@@ -1,0 +1,127 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %}Sitemaps : {{ selected_property }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 max-w-6xl py-4">
+
+  {% include 'partials/property-cards.html' %}
+
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">Sitemaps</h1>
+    <p class="text-sm text-base-content/70 max-w-2xl">
+      What Google has on file for this property, when it last read each file, and what it
+      complained about. Sitemaps that error or go unread are a quiet way for new pages to
+      never get discovered.
+    </p>
+  </div>
+
+  {% if fetch_error %}
+  <div role="alert" class="alert alert-error mb-6">
+    <i class="fa-solid fa-circle-exclamation"></i>
+    <div>
+      <div class="font-semibold">Couldn't load sitemaps</div>
+      <div class="text-sm opacity-80">{{ fetch_error }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if sitemaps %}
+  <div class="flex flex-wrap gap-2 mb-6">
+    <div class="rounded-lg border border-base-300 px-4 py-2">
+      <div class="text-[10px] font-bold uppercase tracking-wider opacity-60">Sitemaps</div>
+      <div class="text-xl font-bold tabular-nums">{{ totals.count }}</div>
+    </div>
+    <div class="rounded-lg border border-base-300 px-4 py-2">
+      <div class="text-[10px] font-bold uppercase tracking-wider opacity-60">URLs submitted</div>
+      <div class="text-xl font-bold tabular-nums">{{ '{:,}'.format(totals.submitted) }}</div>
+    </div>
+    <div class="rounded-lg px-4 py-2 border {{ 'border-error/40 bg-error/10' if totals.errors else 'border-base-300' }}">
+      <div class="text-[10px] font-bold uppercase tracking-wider opacity-60">Errors</div>
+      <div class="text-xl font-bold tabular-nums {{ 'text-error' if totals.errors }}">{{ totals.errors }}</div>
+    </div>
+    <div class="rounded-lg px-4 py-2 border {{ 'border-warning/40 bg-warning/10' if totals.warnings else 'border-base-300' }}">
+      <div class="text-[10px] font-bold uppercase tracking-wider opacity-60">Warnings</div>
+      <div class="text-xl font-bold tabular-nums {{ 'text-warning' if totals.warnings }}">{{ totals.warnings }}</div>
+    </div>
+    {% if totals.pending %}
+    <div class="rounded-lg px-4 py-2 border border-info/40 bg-info/10">
+      <div class="text-[10px] font-bold uppercase tracking-wider opacity-60">Not read yet</div>
+      <div class="text-xl font-bold tabular-nums text-info">{{ totals.pending }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Sitemap</th>
+          <th>Type</th>
+          <th class="text-right">URLs</th>
+          <th class="text-right">Errors</th>
+          <th class="text-right">Warnings</th>
+          <th>Last read</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sitemap in sitemaps %}
+        <tr class="hover">
+          <td>
+            {% if sitemap.state == 'error' %}
+            <span class="badge badge-error badge-sm gap-1"><i class="fa-solid fa-circle-exclamation"></i> {{ sitemap.state_label }}</span>
+            {% elif sitemap.state == 'warning' %}
+            <span class="badge badge-warning badge-sm gap-1"><i class="fa-solid fa-triangle-exclamation"></i> {{ sitemap.state_label }}</span>
+            {% elif sitemap.state == 'pending' %}
+            <span class="badge badge-info badge-sm gap-1"><i class="fa-solid fa-hourglass-half"></i> {{ sitemap.state_label }}</span>
+            {% else %}
+            <span class="badge badge-ghost badge-sm gap-1"><i class="fa-solid fa-check"></i> {{ sitemap.state_label }}</span>
+            {% endif %}
+          </td>
+          <td class="max-w-md">
+            <a href="{{ sitemap.path }}" target="_blank" rel="noopener"
+              class="link link-hover font-mono text-xs break-all">{{ sitemap.path }}</a>
+            {% if sitemap.is_index %}
+            <span class="badge badge-outline badge-xs ml-1 align-middle">index</span>
+            {% endif %}
+          </td>
+          <td class="text-xs opacity-70 whitespace-nowrap">{{ sitemap.content_types }}</td>
+          <td class="text-right tabular-nums">{{ '{:,}'.format(sitemap.submitted) }}</td>
+          <td class="text-right tabular-nums {{ 'text-error font-semibold' if sitemap.errors }}">{{ sitemap.errors }}</td>
+          <td class="text-right tabular-nums {{ 'text-warning font-semibold' if sitemap.warnings }}">{{ sitemap.warnings }}</td>
+          <td class="text-xs whitespace-nowrap">
+            {% if sitemap.last_downloaded %}
+            {{ sitemap.last_downloaded.strftime('%b %-d, %Y') }}
+            {% if sitemap.stale_days is not none and sitemap.stale_days > 30 %}
+            <span class="text-warning" title="Google hasn't re-read this file in a while">
+              ({{ sitemap.stale_days }}d ago)</span>
+            {% endif %}
+            {% else %}
+            <span class="opacity-50">Never</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="text-xs opacity-60 mt-4 max-w-2xl leading-relaxed">
+    URLs submitted is what each file declares, not what Google indexed &mdash; the API's
+    per-sitemap indexed count is deprecated and no longer reported. To see what actually got
+    indexed, check individual URLs in Search Console.
+  </p>
+
+  {% elif not fetch_error %}
+  <div class="rounded-lg border border-dashed border-base-300 p-10 text-center">
+    <div class="text-3xl mb-2 opacity-40"><i class="fa-solid fa-sitemap"></i></div>
+    <p class="font-medium mb-1">No sitemaps submitted for this property</p>
+    <p class="text-sm opacity-70 max-w-md mx-auto">
+      Google can still find pages by crawling links, but a sitemap is how you tell it about
+      pages nothing links to yet. Submit one in Search Console and it will show up here.
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "/default/loggedin-base.html" %}
+
+{% block title %}Search Appearance : {{ selected_property }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 max-w-6xl py-4">
+
+  {% include 'partials/property-cards.html' %}
+
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">Search Appearance</h1>
+    <p class="text-sm text-base-content/70 max-w-2xl">
+      How your results looked in search &mdash; FAQ, video, review snippets, merchant listings and
+      the rest &mdash; and what each one actually earned. Valid markup and markup that earns clicks
+      are different things; this is the second one.
+    </p>
+  </div>
+
+  <div class="mb-6">
+    <div class="flex flex-wrap items-center gap-3">
+      <div id="reportrange"
+        class="bg-base-100 cursor-pointer px-3 py-2 border border-base-300 rounded-lg hover:bg-base-200 transition-colors text-sm">
+        <i class="fa fa-calendar"></i>&nbsp;<span></span> <i class="fa fa-caret-down"></i>
+      </div>
+
+      <form id="dateRangeForm" hx-post="{{ url_for('search_appearance_report') }}" hx-swap="innerHTML"
+        hx-target="#appearance-data" hx-indicator="#appearance-loading"
+        class="inline-flex items-center gap-3 flex-wrap">
+        <input type="hidden" name="start_date" id="start_date">
+        <input type="hidden" name="end_date" id="end_date">
+        {% include 'partials/segment-picker.html' %}
+        <button type="submit" class="btn btn-primary btn-sm">Fetch Data</button>
+        <span class="loading loading-dots loading-md htmx-indicator" id="appearance-loading"></span>
+      </form>
+    </div>
+  </div>
+
+  <div id="appearance-data">
+    <div class="rounded-lg border border-dashed border-base-300 p-8 text-center">
+      <div class="text-3xl mb-2 opacity-40"><i class="fa-solid fa-star-half-stroke"></i></div>
+      <p class="font-medium mb-1">Pick a date range and fetch</p>
+      <p class="text-sm opacity-70 max-w-lg mx-auto">
+        Each row is compared against the period immediately before it, so a 28-day range is
+        compared with the 28 days before that.
+      </p>
+    </div>
+  </div>
+</div>
+
+{% set default_days = 28 %}
+{% include 'partials/date-range-script.html' %}
+{% endblock %}

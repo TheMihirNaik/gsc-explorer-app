@@ -1,6 +1,8 @@
 {% extends "/default/loggedin-base.html" %}
 
-{% block title %} Long-Tail Opportunities for {{ selected_property}} {% endblock %}
+{% block title %} Long-Tail Opportunities for {{ selected_property}} {% set default_days = 28 %}
+{% include 'partials/date-range-script.html' %}
+{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
@@ -28,6 +30,7 @@
           </div>
           <input type="hidden" name="start_date" id="start_date">
           <input type="hidden" name="end_date" id="end_date">
+          {% include 'partials/segment-picker.html' %}
 
           <!-- Country Filter -->
           <select name="country" class="select select-bordered w-full max-w-xs">
@@ -109,30 +112,7 @@
 </div>
 
 <script type="text/javascript">
-  $(function () {
-    var start = moment().subtract(29, 'days');
-    var end = moment().subtract(2, 'days'); // GSC data is usually 2 days delayed
-
-    function cb(start, end) {
-      $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-      $('#start_date').val(start.format('MM/DD/YYYY'));
-      $('#end_date').val(end.format('MM/DD/YYYY'));
-    }
-
-    $('#reportrange').daterangepicker({
-      startDate: start,
-      endDate: end,
-      ranges: {
-        'Last 7 Days': [moment().subtract(8, 'days'), moment().subtract(2, 'days')], // Adjust for GSC delay
-        'Last 28 Days': [moment().subtract(29, 'days'), moment().subtract(2, 'days')],
-        'Last 3 Months': [moment().subtract(3, 'month').subtract(2, 'days'), moment().subtract(2, 'days')],
-        'This Month': [moment().startOf('month'), moment().endOf('month')],
-        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-      }
-    }, cb);
-
-    cb(start, end);
-  });
+    /* picker wiring lives in partials/date-range-script.html */
 
   // Show skeleton screen when HTMX request starts
   document.body.addEventListener('htmx:beforeRequest', function (event) {

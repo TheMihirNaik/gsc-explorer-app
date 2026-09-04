@@ -26,6 +26,7 @@ import socket
 import ipaddress
 import threading
 from urllib.parse import quote, urlparse
+from app.routes.segments import active_segment, apply_segment, segment_summary
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -77,6 +78,20 @@ def inject_brand_keywords_display():
     else:
         display = "No brand keywords set"
     return {'brand_keywords_display': display}
+
+
+@app.context_processor
+def inject_data_freshness():
+    """Cached freshness for the property card, without spending an API call.
+
+    Reads the session cache only. Whichever route the user is on has already
+    populated it, so the card can show both dates for free; on a cold session
+    it renders whatever the route passed in and this adds nothing.
+    """
+    selected_property = session.get("selected_property")
+    if not selected_property:
+        return {'data_freshness': None}
+    return {'data_freshness': peek_cached_freshness(selected_property)}
 
 
 # Connect / read timeouts for fetching a user-supplied page. Without them a
@@ -438,12 +453,11 @@ def sitewide_analysis():
         #total numbers make GSC API Call
         country = []
         dimensions = ['DATE']
-        dimensionFilterGroups = [
-            #{"filters": [
-            #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-        #]}
-        ]
-        
+        dimensionFilterGroups = []
+        # Narrow to the chosen saved segment, if the user picked one.
+        segment = active_segment()
+        dimensionFilterGroups = apply_segment(dimensionFilterGroups, segment)
+
         gsc_data = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
         
         #total numbers
@@ -754,6 +768,10 @@ def query_length_analysis():
                 ]
             })
 
+        # Narrow to the chosen saved segment, if the user picked one.
+        segment = active_segment()
+        dimensionFilterGroups = apply_segment(dimensionFilterGroups, segment)
+
         # Fetch Data
         df = fetch_search_console_data(
             webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups
@@ -901,6 +919,10 @@ def organic_ctr():
                     
         #print(dimensionFilterGroups)
         
+        # Narrow to the chosen saved segment, if the user picked one.
+        segment = active_segment()
+        dimensionFilterGroups = apply_segment(dimensionFilterGroups, segment)
+
         query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
         
         #print(query_df)
@@ -1093,10 +1115,11 @@ def sitewide_report():
         #total numbers make GSC API Call
         country = []
         dimensions = ['DATE', 'COUNTRY', 'DEVICE']
-        dimensionFilterGroups = [{"filters": [
-            #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-        ]}]
-        
+        dimensionFilterGroups = []
+        # Narrow to the chosen saved segment, if the user picked one.
+        segment = active_segment()
+        dimensionFilterGroups = apply_segment(dimensionFilterGroups, segment)
+
         current_period_df = fetch_search_console_data(webmasters_service, selected_property, current_start_date, current_end_date, dimensions, dimensionFilterGroups)
 
         previous_period_df = fetch_search_console_data(webmasters_service, selected_property, previous_period_start_date, previous_period_end_date, dimensions, dimensionFilterGroups)
@@ -1393,10 +1416,11 @@ def query_aggregate_report():
         #total numbers make GSC API Call
         country = []
         dimensions = ['QUERY']
-        dimensionFilterGroups = [{"filters": [
-            #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-        ]}]
-        
+        dimensionFilterGroups = []
+        # Narrow to the chosen saved segment, if the user picked one.
+        segment = active_segment()
+        dimensionFilterGroups = apply_segment(dimensionFilterGroups, segment)
+
         current_period_df = fetch_search_console_data(webmasters_service, selected_property, current_start_date, current_end_date, dimensions, dimensionFilterGroups)
         #print(current_period_df)
         previous_period_df = fetch_search_console_data(webmasters_service, selected_property, previous_period_start_date, previous_period_end_date, dimensions, dimensionFilterGroups)
@@ -1564,10 +1588,11 @@ def sitewide_pages():
         #total numbers make GSC API Call
         country = []
         dimensions = ['PAGE']
-        dimensionFilterGroups = [{"filters": [
-            #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-        ]}]
-        
+        dimensionFilterGroups = []
+        # Narrow to the chosen saved segment, if the user picked one.
+        segment = active_segment()
+        dimensionFilterGroups = apply_segment(dimensionFilterGroups, segment)
+
         print('Scraping current_period_df')
         current_period_df = fetch_search_console_data(webmasters_service, selected_property, current_start_date, current_end_date, dimensions, dimensionFilterGroups)
 

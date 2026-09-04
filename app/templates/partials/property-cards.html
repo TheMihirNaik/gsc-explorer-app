@@ -39,9 +39,15 @@
         <div class="min-w-0">
             <div
                 class="text-[10px] font-bold uppercase tracking-wider opacity-60 leading-tight mb-0.5 text-base-content whitespace-nowrap">
-                Latest Data</div>
+                Final Data Through</div>
             <div class="font-bold text-xs leading-tight text-base-content" id="latest-data-display">{{ latest_date }}
             </div>
+            {% if data_freshness and data_freshness.fresh_date != data_freshness.final_date %}
+            <div class="text-[10px] leading-tight opacity-60 text-base-content whitespace-nowrap"
+                title="Google is still collecting data for these days, so the numbers can still change.">
+                preliminary to <span id="fresh-data-display">{{ data_freshness.fresh_date }}</span>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -54,6 +60,10 @@
         if (latestDateStr && latestDateStr !== "None") {
             var latestDate = moment(latestDateStr, "YYYY-MM-DD");
             $('#latest-data-display').text(latestDate.format('MMM D, YYYY'));
+        }
+        var freshDateStr = $('#fresh-data-display').text().trim();
+        if (freshDateStr) {
+            $('#fresh-data-display').text(moment(freshDateStr, "YYYY-MM-DD").format('MMM D'));
         }
 
         // 2. Handle Favicon Loading
