@@ -63,7 +63,7 @@
                 <td class="text-right">{{ row.word_count }}</td>
                 <td class="text-right">{{ row.clicks|format_number }}</td>
                 <td class="text-right">{{ row.impressions|format_number }}</td>
-                <td class="text-right">{{ row.ctr|round(2) }}%</td>
+                <td class="text-right">{{ (row.ctr * 100)|round(2) }}%</td>
                 <td class="text-right">{{ row.position|round(1) }}</td>
             </tr>
             {% endfor %}

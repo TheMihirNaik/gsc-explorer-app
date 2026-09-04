@@ -216,6 +216,13 @@
             .catch(error => {
                 console.error('Error fetching suggested keywords:', error);
                 brandKeywordsLoading.classList.add('hidden');
+                // Say something, rather than just removing the spinner and
+                // leaving the user waiting for suggestions that never arrive.
+                suggestedKeywordsList.innerHTML = '';
+                suggestedKeywordsContainer.classList.remove('hidden');
+                suggestedKeywordsList.innerHTML =
+                    '<p class="text-sm text-warning">Couldn\'t suggest keywords right now. ' +
+                    'Enter your brand terms below and continue.</p>';
             });
         });
         

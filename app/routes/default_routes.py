@@ -23,6 +23,7 @@ import re
 import time
 import json
 import os
+from urllib.parse import quote
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +34,23 @@ logger = logging.getLogger(__name__)
 def format_number(value):
     # Assuming value is a number or can be converted to a number
     return '{:,.0f}'.format(float(value))
+
+
+def rate(numerator, denominator, scale=100):
+    """Percentage rate that reads 0 rather than NaN for an empty group.
+
+    A segment with no rows sums to 0 impressions, and 0/0 on numpy scalars
+    yields NaN, which reaches the template and renders as the literal "nan".
+    """
+    if not denominator:
+        return 0.0
+    return numerator / denominator * scale
+
+
+def mean_or_zero(series):
+    """Mean of a possibly-empty series, as 0 rather than NaN."""
+    return float(series.mean()) if len(series) else 0.0
+
 
 # Homepage
 @app.route('/')
@@ -151,9 +169,12 @@ def suggest_brand_keywords():
     if not selected_property:
         return jsonify({'error': 'No property selected'}), 400
     
-    # Load credentials from the session
-    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-    
+    # Load credentials from the session. Constructing Credentials straight from
+    # the session dict omits the client secret -- which was deliberately kept
+    # out of the cookie -- so any refresh would fail. credentials_from_session()
+    # re-attaches it server-side.
+    credentials = credentials_from_session()
+
     # Check if the token is expired and refresh it if needed
     if not credentials.valid and credentials.expired and credentials.refresh_token:
         try:
@@ -161,6 +182,7 @@ def suggest_brand_keywords():
             # Save updated credentials back to session
             session['credentials'] = credentials_to_dict(credentials)
         except Exception as e:
+            logger.warning(f"Brand keyword suggestion token refresh failed: {e}")
             return jsonify({'error': 'Failed to refresh access token'}), 401
     
     # Build the Search Console service
@@ -296,8 +318,8 @@ def sitewide_analysis():
         #total numbers
         total_clicks = gsc_data['clicks'].sum()
         total_impressions = gsc_data['impressions'].sum()
-        total_ctr = total_clicks / total_impressions * 100
-        total_position = gsc_data['position'].mean()
+        total_ctr = rate(total_clicks, total_impressions)
+        total_position = mean_or_zero(gsc_data['position'])
 
         total_data = [total_clicks, total_impressions, total_ctr, total_position]
 
@@ -314,21 +336,26 @@ def sitewide_analysis():
 
         #prepare a dataframe to plot a chart - groupby
 
-        plot_df = query_df.groupby(['Query Type']).agg(
-            clicks = ('clicks', 'sum'),
-            impressions = ('impressions', 'sum'),
-            ctr = ('ctr', 'mean'),
-            position = ('position', 'mean'),
-            count_queries = ('query', 'count'),
-        ).reset_index()
+        # CTR and position are ratios, so they cannot be averaged across query
+        # rows: a tail of one-impression queries at 100% CTR drags the mean far
+        # above the real rate, and the charts then disagree with the summary
+        # table on this same page. Sum the components, then derive the ratio --
+        # CTR from clicks over impressions, position weighted by impressions.
+        query_df['position_weight'] = query_df['position'] * query_df['impressions']
 
         date_plot_df = query_df.groupby(['date', 'Query Type']).agg(
             clicks = ('clicks', 'sum'),
             impressions = ('impressions', 'sum'),
-            ctr = ('ctr', 'mean'),
-            position = ('position', 'mean'),
+            position_weight = ('position_weight', 'sum'),
             count_queries = ('query', 'count'),
         ).reset_index()
+
+        date_impressions = date_plot_df['impressions']
+        date_plot_df['ctr'] = (
+            date_plot_df['clicks'].div(date_impressions).where(date_impressions > 0, 0) * 100).round(2)
+        date_plot_df['position'] = (
+            date_plot_df['position_weight'].div(date_impressions).where(date_impressions > 0, 0)).round(2)
+        date_plot_df = date_plot_df.drop(columns='position_weight')
 
         #print(date_plot_df)
 
@@ -493,8 +520,8 @@ def sitewide_analysis():
 
         brand_clicks = brand_query_df['clicks'].sum()
         brand_impressions = brand_query_df['impressions'].sum()
-        brand_ctr = brand_clicks / brand_impressions * 100
-        brand_position = brand_query_df['position'].mean()
+        brand_ctr = rate(brand_clicks, brand_impressions)
+        brand_position = mean_or_zero(brand_query_df['position'])
 
         brand_query_count = brand_query_df['query'].nunique()
 
@@ -505,8 +532,8 @@ def sitewide_analysis():
 
         non_brand_clicks = non_brand_query_df['clicks'].sum()
         non_brand_impressions = non_brand_query_df['impressions'].sum()
-        non_brand_ctr = non_brand_clicks / non_brand_impressions * 100
-        non_brand_position = non_brand_query_df['position'].mean()
+        non_brand_ctr = rate(non_brand_clicks, non_brand_impressions)
+        non_brand_position = mean_or_zero(non_brand_query_df['position'])
 
         try:
             non_brand_query_count = non_brand_query_df['query'].nunique()
@@ -1497,17 +1524,20 @@ def sitewide_pages():
 
 
         # add one column named "Actions" to merge_df and add links to the "Optimize CTR" and "Another Action" in the column
+        # The page URL is percent-encoded: a page whose own URL carries a query
+        # string or fragment would otherwise truncate this link at its first
+        # '?', '&' or '#', sending the tool to the wrong page.
         merge_df['Actions'] = merge_df['PAGE'].apply(
             lambda x: (
                 f"""
-                    
-                        <a href='/actionable-insights/optimize-ctr?page={x}' target='_blank' class='badge badge-primary'>
+
+                        <a href='/actionable-insights/optimize-ctr?page={quote(str(x), safe='')}' target='_blank' class='badge badge-primary'>
                             <i class='fa-solid fa-wand-magic-sparkles'></i>  CTR
                         </a>
-                        
+
                         <div class="flex space-x-2" hidden>
-                        <a href='/actionable-insights/optimize-page-content?page={x}' target='_blank' class='badge badge-secondary'>
-                            <i class='fa-solid fa-file-pen'></i> Content 
+                        <a href='/actionable-insights/optimize-page-content?page={quote(str(x), safe='')}' target='_blank' class='badge badge-secondary'>
+                            <i class='fa-solid fa-file-pen'></i> Content
                         </a>
                         </div>
                 """

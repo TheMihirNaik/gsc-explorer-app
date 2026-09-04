@@ -328,6 +328,36 @@ def print_index_table():
           '    API request</a> again, you should go back to the auth flow.' +
           '</td></tr></table>')
 
+class GSCReauthRequired(Exception):
+  """The stored credentials are unusable and the user must reconnect.
+
+  build_gsc_service() used to return a redirect response on a failed refresh,
+  but every caller assigns the result to a service object and immediately
+  calls .searchanalytics() on it -- so the user got a 500 at exactly the
+  moment they should have been sent back through sign-in. Raising instead
+  lets the error handler below turn it into a redirect for every caller.
+  """
+
+
+@app.errorhandler(GSCReauthRequired)
+def handle_gsc_reauth_required(error):
+  """Send the user back through the OAuth flow instead of erroring out."""
+  flask.session.pop('credentials', None)
+  flash("Your Google Search Console session has expired. Please reconnect.")
+  target = url_for('gsc_authorize')
+
+  # HTMX swaps a redirect's body into the target element, and the OAuth
+  # redirect is cross-origin, so hand HTMX an explicit navigation instead.
+  if request.headers.get('HX-Request'):
+    response = flask.make_response(
+        "<div class='alert alert-warning'>Your Google Search Console session "
+        "has expired. Reconnecting&hellip;</div>")
+    response.headers['HX-Redirect'] = target
+    return response
+
+  return flask.redirect(target)
+
+
 def build_gsc_service():
   # Load credentials from the session
   credentials = credentials_from_session()
@@ -337,8 +367,10 @@ def build_gsc_service():
       try:
           credentials.refresh(google.auth.transport.requests.Request())
       except Exception as e:
-          flash("Failed to refresh access token. Please reauthorize.")
-          return flask.redirect(url_for('gsc_authorize'))
+          app.logger.info(f"Token refresh failed, reauthorization needed: {e}")
+          raise GSCReauthRequired(
+              "Your Google Search Console session has expired. "
+              "Please reconnect your account.")
 
       # Save updated credentials back to session
       flask.session['credentials'] = credentials_to_dict(credentials)
