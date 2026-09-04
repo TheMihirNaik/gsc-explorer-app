@@ -265,3 +265,41 @@ def peek_cached_freshness(property_url):
 def get_cached_latest_date(property_url, service=None):
     """Latest date with final data, cached per property in the session."""
     return get_cached_freshness(property_url, service)['final_date']
+
+
+def report_errors(view):
+    """Turn an unhandled failure in a report into a message, not a 500.
+
+    Report POSTs return HTML fragments that HTMX swaps into the page, so an
+    exception gives the user a spinner that stops and nothing else -- the
+    traceback goes to the log and the page just sits there. Search Console
+    fails for ordinary reasons (rate limits, a permission that changed, a
+    regex it will not accept), so those need to reach the person who can act
+    on them.
+
+    Reauthorization is deliberately not caught here: GSCReauthRequired has its
+    own handler that redirects into the OAuth flow.
+    """
+    from functools import wraps
+
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        try:
+            return view(*args, **kwargs)
+        except GSCReauthRequired:
+            raise
+        except Exception as exc:
+            logger.error("Report %s failed: %s", view.__name__, exc, exc_info=True)
+            message = str(exc)
+            if 'quota' in message.lower() or 'rate limit' in message.lower():
+                hint = ("Search Console is rate-limiting this property. "
+                        "Wait a minute and try a shorter date range.")
+            elif 'filter' in message.lower() or 'expression' in message.lower():
+                hint = ("Search Console rejected a filter. If you applied a "
+                        "segment, check its pattern on the Segments page.")
+            else:
+                hint = "Try a shorter date range, or reload the page."
+            return render_template('/partials/report-error.html',
+                                   message=message, hint=hint)
+
+    return wrapper

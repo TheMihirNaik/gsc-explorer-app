@@ -14,7 +14,8 @@ from flask import render_template, request, redirect, url_for, flash, session
 
 from app import app
 from app.routes.gsc_api_auth import build_gsc_service, fetch_search_console_data
-from app.routes.gsc_routes import format_dates, get_cached_latest_date, process_dates
+from app.routes.gsc_routes import (format_dates, get_cached_latest_date,
+                                   process_dates, report_errors)
 from app.routes.segments import active_segment, apply_segment, segment_summary
 
 # Google returns machine names; these are what Search Console calls them.
@@ -90,6 +91,7 @@ def _fetch(service, property_url, start, end, filter_groups):
 
 
 @app.route('/reports/search-appearance/', methods=['GET', 'POST'])
+@report_errors
 def search_appearance_report():
     if 'credentials' not in session:
         return redirect(url_for('gsc_authorize'))

@@ -431,6 +431,7 @@ def suggest_brand_keywords():
 
 # Charts Routes
 @app.route('/charts/sitewide-brand-vs-non-brand/', methods=['GET', 'POST'])
+@report_errors
 def sitewide_analysis():
     if 'credentials' not in session:
         # GSC is not logged in.
@@ -731,6 +732,7 @@ def sitewide_analysis():
 
 
 @app.route('/reports/query-length-analysis/', methods=['GET', 'POST'])
+@report_errors
 def query_length_analysis():
     if 'credentials' not in session:
         return redirect(url_for('gsc_authorize'))
@@ -883,6 +885,7 @@ def query_length_analysis():
 
 
 @app.route('/charts/organic-ctr/', methods=['GET', 'POST'])
+@report_errors
 def organic_ctr():
     if 'credentials' not in session:
         return redirect(url_for('gsc_authorize'))
@@ -1082,6 +1085,7 @@ def comparison_multiindex(columns, dimension):
 
 # Reports Routes
 @app.route('/reports/sitewide-overview/', methods=['GET', 'POST'])
+@report_errors
 def sitewide_report():
     if 'credentials' not in session:
         # GSC is not logged in.
@@ -1380,6 +1384,7 @@ def sitewide_report():
                            latest_date=latest_date)
 
 @app.route('/reports/sitewide-queries/', methods=['GET', 'POST'])
+@report_errors
 def query_aggregate_report():
     if 'credentials' not in session:
         # GSC is not logged in.
@@ -1552,6 +1557,7 @@ def query_aggregate_report():
                         latest_date=latest_date)
 
 @app.route('/reports/sitewide-pages/', methods=['GET', 'POST'])
+@report_errors
 def sitewide_pages():
     if 'credentials' not in session:
         return redirect(url_for('gsc_authorize'))
@@ -1785,6 +1791,7 @@ def gsc_celery_test():
 
 
 @app.route('/actionable-insights/optimize-ctr', methods=['GET', 'POST'])
+@report_errors
 def optimize_ctr():
     if 'credentials' not in session:
         return redirect(url_for('gsc_authorize'))
@@ -2266,6 +2273,7 @@ def generate_ai_meta_description():
     
 
 @app.route('/actionable-insights/optimize-page-content', methods=['GET', 'POST'])
+@report_errors
 def optimize_page_content():
     logger.info("Starting optimize_page_content route")
     if 'credentials' not in session:
