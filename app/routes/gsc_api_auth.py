@@ -331,8 +331,6 @@ def print_index_table():
 def build_gsc_service():
   # Load credentials from the session
   credentials = credentials_from_session()
-  
-  print(flask.session['credentials'])
 
   # Check if the token is expired and refresh it if needed
   if not credentials.valid and credentials.expired and credentials.refresh_token:

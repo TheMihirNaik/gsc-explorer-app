@@ -903,7 +903,7 @@ def get_latest_available_date(service, property_url):
             'rowLimit': 25
         }
         
-        response = service.searchAnalytics().query(siteUrl=property_url, body=request_body).execute()
+        response = service.searchanalytics().query(siteUrl=property_url, body=request_body).execute()
         
         if 'rows' in response:
             dates = [row['keys'][0] for row in response['rows']]
@@ -911,10 +911,49 @@ def get_latest_available_date(service, property_url):
                 return max(dates)
                 
     except Exception as e:
-        logger.error(f"Error fetching latest date for {property_url}: {e}")
+        logger.error(
+            f"Error fetching latest date for {property_url}: {e}", exc_info=True)
     
     # Fallback: 2 days ago if API fails or returns no data
     return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+
+
+# Column suffix -> header group, for the period-comparison tables.
+COMPARISON_GROUPS = [
+    ('_prev_p', 'Previous Period'),
+    ('_prev_y', 'Previous Year'),
+    ('_pop', 'Period over Period (in %)'),
+    ('_yoy', 'Year over Year (in %)'),
+]
+
+COMPARISON_METRICS = {
+    'clicks': 'Clicks',
+    'impressions': 'Impressions',
+    'ctr': 'CTR',
+    'position': 'Position',
+}
+
+
+def comparison_multiindex(columns, dimension):
+    """Build the two-level header for a period-comparison table by column name.
+
+    The frame's column order is whatever the merges and the later assignments
+    happened to produce, so a header written out positionally silently
+    mislabels a column as soon as either changes. Deriving each label from the
+    column's own name keeps the header attached to the data.
+    """
+    header = []
+    for column in columns:
+        if column == dimension:
+            header.append((dimension, dimension))
+            continue
+        for suffix, group in COMPARISON_GROUPS:
+            if column.endswith(suffix):
+                header.append((group, COMPARISON_METRICS[column[:-len(suffix)]]))
+                break
+        else:
+            header.append(('Current Period', COMPARISON_METRICS[column]))
+    return pd.MultiIndex.from_tuples(header)
 
 
 # Reports Routes
@@ -1011,40 +1050,16 @@ def sitewide_report():
         merge_df['clicks_pop'] = round((merge_df['clicks'] - merge_df['clicks_prev_p'])/merge_df['clicks_prev_p'] * 100,2)
         merge_df['impressions_pop'] = round((merge_df['impressions'] - merge_df['impressions_prev_p'])/merge_df['impressions_prev_p'] * 100,2)
         merge_df['ctr_pop'] = round((merge_df['ctr'] - merge_df['ctr_prev_p'])/merge_df['ctr_prev_p'] * 100,2)
-        merge_df['position_pop'] = round((merge_df['position_prev_p'] - merge_df['position'])/merge_df['position_prev_p'] * 100,2)
+        merge_df['position_pop'] = round((merge_df['position'] - merge_df['position_prev_p'])/merge_df['position_prev_p'] * 100,2)
 
         merge_df['clicks_yoy'] = round((merge_df['clicks'] - merge_df['clicks_prev_y'])/merge_df['clicks_prev_y'] * 100,2)
         merge_df['impressions_yoy'] = round((merge_df['impressions'] - merge_df['impressions_prev_y'])/merge_df['impressions_prev_y'] * 100,2)
         merge_df['ctr_yoy'] = round((merge_df['ctr'] - merge_df['ctr_prev_y'])/merge_df['ctr_prev_y'] * 100,2)
-        merge_df['position_yoy'] = round((merge_df['position_prev_y'] - merge_df['position'])/merge_df['position_prev_y'] * 100,2)
+        merge_df['position_yoy'] = round((merge_df['position'] - merge_df['position_prev_y'])/merge_df['position_prev_y'] * 100,2)
 
 
-        # Create a MultiIndex for the header
-        header = [
-        ('COUNTRY', 'COUNTRY'),
-        ('Previous Period', 'Clicks'),
-        ('Previous Period', 'Impressions'),
-        ('Previous Period', 'Position'),
-        ('Previous Period', 'CTR'),
-        ('Previous Year', 'Clicks'),
-        ('Previous Year', 'Impressions'),
-        ('Previous Year', 'Position'),
-        ('Previous Year', 'CTR'),
-        ('Current Period', 'Clicks'),
-        ('Current Period', 'Impressions'),
-        ('Current Period', 'Position'),
-        ('Current Period', 'CTR'),
-        ('Period over Period (in %)', 'Clicks'),
-        ('Period over Period (in %)', 'Impressions'),
-        ('Period over Period (in %)', 'Position'),
-        ('Period over Period (in %)', 'CTR'),
-        ('Year over Year (in %)', 'Clicks'),
-        ('Year over Year (in %)', 'Impressions'),
-        ('Year over Year (in %)', 'Position'),
-        ('Year over Year (in %)', 'CTR'),
-        ]
-
-        merge_df.columns = pd.MultiIndex.from_tuples(header)
+        # Header is derived from the column names, not their position.
+        merge_df.columns = comparison_multiindex(merge_df.columns, 'COUNTRY')
 
         # Fill NaN values with 0
         merge_df.fillna(0, inplace=True)
@@ -1133,40 +1148,16 @@ def sitewide_report():
         merge_df_by_device['clicks_pop'] = round((merge_df_by_device['clicks'] - merge_df_by_device['clicks_prev_p'])/merge_df_by_device['clicks_prev_p'] * 100,2)
         merge_df_by_device['impressions_pop'] = round((merge_df_by_device['impressions'] - merge_df_by_device['impressions_prev_p'])/merge_df_by_device['impressions_prev_p'] * 100,2)
         merge_df_by_device['ctr_pop'] = round((merge_df_by_device['ctr'] - merge_df_by_device['ctr_prev_p'])/merge_df_by_device['ctr_prev_p'] * 100,2)
-        merge_df_by_device['position_pop'] = round((merge_df_by_device['position_prev_p'] - merge_df_by_device['position'])/merge_df_by_device['position_prev_p'] * 100,2)
+        merge_df_by_device['position_pop'] = round((merge_df_by_device['position'] - merge_df_by_device['position_prev_p'])/merge_df_by_device['position_prev_p'] * 100,2)
 
         merge_df_by_device['clicks_yoy'] = round((merge_df_by_device['clicks'] - merge_df_by_device['clicks_prev_y'])/merge_df_by_device['clicks_prev_y'] * 100,2)
         merge_df_by_device['impressions_yoy'] = round((merge_df_by_device['impressions'] - merge_df_by_device['impressions_prev_y'])/merge_df_by_device['impressions_prev_y'] * 100,2)
         merge_df_by_device['ctr_yoy'] = round((merge_df_by_device['ctr'] - merge_df_by_device['ctr_prev_y'])/merge_df_by_device['ctr_prev_y'] * 100,2)
-        merge_df_by_device['position_yoy'] = round((merge_df_by_device['position_prev_y'] - merge_df_by_device['position'])/merge_df_by_device['position_prev_y'] * 100,2)
+        merge_df_by_device['position_yoy'] = round((merge_df_by_device['position'] - merge_df_by_device['position_prev_y'])/merge_df_by_device['position_prev_y'] * 100,2)
 
 
-        # Create a MultiIndex for the header
-        header = [
-        ('DEVICE', 'DEVICE'),
-        ('Previous Period', 'Clicks'),
-        ('Previous Period', 'Impressions'),
-        ('Previous Period', 'Position'),
-        ('Previous Period', 'CTR'),
-        ('Previous Year', 'Clicks'),
-        ('Previous Year', 'Impressions'),
-        ('Previous Year', 'Position'),
-        ('Previous Year', 'CTR'),
-        ('Current Period', 'Clicks'),
-        ('Current Period', 'Impressions'),
-        ('Current Period', 'Position'),
-        ('Current Period', 'CTR'),
-        ('Period over Period (in %)', 'Clicks'),
-        ('Period over Period (in %)', 'Impressions'),
-        ('Period over Period (in %)', 'Position'),
-        ('Period over Period (in %)', 'CTR'),
-        ('Year over Year (in %)', 'Clicks'),
-        ('Year over Year (in %)', 'Impressions'),
-        ('Year over Year (in %)', 'Position'),
-        ('Year over Year (in %)', 'CTR'),
-        ]
-
-        merge_df_by_device.columns = pd.MultiIndex.from_tuples(header)
+        # Header is derived from the column names, not their position.
+        merge_df_by_device.columns = comparison_multiindex(merge_df_by_device.columns, 'DEVICE')
 
         # Fill NaN values with 0
         merge_df_by_device.fillna(0, inplace=True)
@@ -1337,10 +1328,12 @@ def query_aggregate_report():
         merge_df['ctr_pop'] = ((merge_df['ctr'] - merge_df['ctr_prev_p']) / merge_df['ctr_prev_p'] * 100).round(2)
         merge_df['position_pop'] = ((merge_df['position'] - merge_df['position_prev_p']) / merge_df['position_prev_p'] * 100).round(2)
 
-        merge_df['clicks_yoy'] = ((merge_df['clicks_prev_p'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
-        merge_df['impressions_yoy'] = ((merge_df['impressions_prev_p'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
-        merge_df['ctr_yoy'] = ((merge_df['ctr_prev_p'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
-        merge_df['position_yoy'] = ((merge_df['position_prev_p'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
+        # Year over Year compares the CURRENT period against the same period a
+        # year ago -- not the previous period against it.
+        merge_df['clicks_yoy'] = ((merge_df['clicks'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
+        merge_df['impressions_yoy'] = ((merge_df['impressions'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
+        merge_df['ctr_yoy'] = ((merge_df['ctr'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
+        merge_df['position_yoy'] = ((merge_df['position'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
 
 
         merge_df = merge_df.rename(columns={
@@ -1495,10 +1488,12 @@ def sitewide_pages():
         merge_df['ctr_pop'] = ((merge_df['ctr'] - merge_df['ctr_prev_p']) / merge_df['ctr_prev_p'] * 100).round(2)
         merge_df['position_pop'] = ((merge_df['position'] - merge_df['position_prev_p']) / merge_df['position_prev_p'] * 100).round(2)
 
-        merge_df['clicks_yoy'] = ((merge_df['clicks_prev_p'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
-        merge_df['impressions_yoy'] = ((merge_df['impressions_prev_p'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
-        merge_df['ctr_yoy'] = ((merge_df['ctr_prev_p'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
-        merge_df['position_yoy'] = ((merge_df['position_prev_p'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
+        # Year over Year compares the CURRENT period against the same period a
+        # year ago -- not the previous period against it.
+        merge_df['clicks_yoy'] = ((merge_df['clicks'] - merge_df['clicks_prev_y']) / merge_df['clicks_prev_y'] * 100).round(2)
+        merge_df['impressions_yoy'] = ((merge_df['impressions'] - merge_df['impressions_prev_y']) / merge_df['impressions_prev_y'] * 100).round(2)
+        merge_df['ctr_yoy'] = ((merge_df['ctr'] - merge_df['ctr_prev_y']) / merge_df['ctr_prev_y'] * 100).round(2)
+        merge_df['position_yoy'] = ((merge_df['position'] - merge_df['position_prev_y']) / merge_df['position_prev_y'] * 100).round(2)
 
 
         # add one column named "Actions" to merge_df and add links to the "Optimize CTR" and "Another Action" in the column
@@ -1914,7 +1909,6 @@ def generate_ai_title():
             title_query_tokens_count = data.get('titleQueryTokensCount')
             h1 = data.get('h1')
             openai_api_key = data.get('openai_api_key')
-            print(openai_api_key)
 
             # Print or log the captured data for debugging
             logger.info('Existing Title:', existing_title)
@@ -2225,9 +2219,22 @@ def optimize_page_content():
         logger.info(f"Fetched {len(query_df)} rows of GSC data")
 
         # remove brand queries from query_df
+        # Use the same classifier as the rest of the app: it matches on word
+        # boundaries and escapes each term, rather than joining the terms into
+        # a raw regex. With no brand terms configured there is nothing to strip
+        # -- joining an empty list produced '', which matched every query and
+        # left nothing to analyse.
         logger.info("Removing brand queries from results")
-        query_df = query_df[~query_df['QUERY'].str.contains('|'.join(brand_keywords), case=False)]
+        if brand_keywords and brand_keywords != "You haven't selected Brand Keywords.":
+            query_df = query_df[query_df['QUERY'].apply(
+                lambda q: keyword_type(q, brand_keywords)) == 'Non Branded']
         logger.info(f"After brand filtering: {len(query_df)} rows remain")
+
+        if query_df.empty:
+            logger.warning("No non-brand queries for this page in the selected range")
+            return ("<div class='alert alert-warning'>No non-brand search queries "
+                    "found for this page in the selected date range. Try widening "
+                    "the range, or check the page URL.</div>")
 
         # create a list of queries from query_df
         queries = query_df['QUERY'].tolist()
@@ -2384,7 +2391,10 @@ def optimize_page_content():
         # sort the query tokens by count in descending order
         logger.info("Sorting query tokens by count")
         sorted_query_tokens_count = sorted(query_tokens_count.items(), key=lambda x: x[1]['count'], reverse=True)
-        logger.info(f"Top token: {sorted_query_tokens_count[0][0]} with count {sorted_query_tokens_count[0][1]['count']}")
+        if sorted_query_tokens_count:
+            logger.info(f"Top token: {sorted_query_tokens_count[0][0]} with count {sorted_query_tokens_count[0][1]['count']}")
+        else:
+            logger.warning("No query tokens survived stop-word removal")
 
         logger.info("Rendering template with analysis results")
         return render_template('/actionable-insights/optimize-page-content/partial.html', 

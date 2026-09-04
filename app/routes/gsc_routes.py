@@ -166,7 +166,7 @@ def get_latest_available_date(service, property_url):
             'rowLimit': 25
         }
         
-        response = service.searchAnalytics().query(siteUrl=property_url, body=request_body).execute()
+        response = service.searchanalytics().query(siteUrl=property_url, body=request_body).execute()
         
         if 'rows' in response:
             dates = [row['keys'][0] for row in response['rows']]
@@ -174,7 +174,8 @@ def get_latest_available_date(service, property_url):
                 return max(dates)
                 
     except Exception as e:
-        logger.error(f"Error fetching latest date for {property_url}: {e}")
+        logger.error(
+            f"Error fetching latest date for {property_url}: {e}", exc_info=True)
     
     # Fallback: 2 days ago if API fails or returns no data
     return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
