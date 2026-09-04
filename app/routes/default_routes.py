@@ -23,7 +23,9 @@ import re
 import time
 import json
 import os
-from urllib.parse import quote
+import socket
+import ipaddress
+from urllib.parse import quote, urlparse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +36,67 @@ logger = logging.getLogger(__name__)
 def format_number(value):
     # Assuming value is a number or can be converted to a number
     return '{:,.0f}'.format(float(value))
+
+
+@app.context_processor
+def inject_brand_keywords_display():
+    """Readable brand keywords for the property card on every page.
+
+    The session stores them as a list, so rendering the value directly put
+    "['nike', 'adidas']" -- Python's repr, brackets and quotes included -- in
+    front of the user on every logged-in page.
+    """
+    keywords = session.get("brand_keywords")
+    if isinstance(keywords, (list, tuple)):
+        display = ', '.join(keywords) if keywords else "No brand keywords set"
+    elif keywords:
+        display = keywords
+    else:
+        display = "No brand keywords set"
+    return {'brand_keywords_display': display}
+
+
+# Connect / read timeouts for fetching a user-supplied page. Without them a
+# slow host holds a gunicorn thread until the 180s worker timeout, and there
+# are only eight threads in the pool.
+PAGE_FETCH_TIMEOUT = (5, 20)
+
+
+def is_fetchable_url(url):
+    """True when url is a public http(s) address we are willing to fetch.
+
+    The page URL arrives from a form, so without this check the server will
+    fetch whatever the user types -- localhost, the Redis port, a cloud
+    metadata endpoint -- and hand back what it found. This resolves the host
+    and rejects any non-public address.
+
+    Note this is a best-effort check: it cannot prevent a host that resolves
+    to a public address here and a private one when requests connects.
+    """
+    try:
+        parsed = urlparse(url or '')
+    except ValueError:
+        return False
+
+    if parsed.scheme not in ('http', 'https') or not parsed.hostname:
+        return False
+
+    try:
+        addresses = socket.getaddrinfo(parsed.hostname, None)
+    except (socket.gaierror, UnicodeError):
+        return False
+
+    for info in addresses:
+        try:
+            address = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            return False
+        if (address.is_private or address.is_loopback or address.is_link_local
+                or address.is_reserved or address.is_multicast
+                or address.is_unspecified):
+            return False
+
+    return bool(addresses)
 
 
 def rate(numerator, denominator, scale=100):
@@ -892,9 +955,14 @@ def organic_ctr():
 
     country_df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
     
-    print(country_df)
-
-    countries = [country.upper() for country in country_df['COUNTRY'].to_list()]
+    # A property with no data in the window returns an empty frame with no
+    # COUNTRY column, so guard before indexing it.
+    if country_df.empty or 'COUNTRY' not in country_df.columns:
+        logger.info(f"No country data available for {selected_property}")
+        countries = []
+    else:
+        country_df = country_df.sort_values(by='impressions', ascending=False)
+        countries = [country.upper() for country in country_df['COUNTRY'].to_list()]
     
     # read country-codes.csv file, and pass the data to create select form
     #countries = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'static', 'country-codes.csv'))
@@ -1740,13 +1808,24 @@ def optimize_ctr():
         # scrape current title & meta description of the URL using bs4
         url = page
 
+        if not is_fetchable_url(url):
+            logger.warning(f"Refusing to fetch non-public URL: {url}")
+            return ("<div class='alert alert-error'>That page URL cannot be "
+                    "fetched. Enter a full public http:// or https:// "
+                    "address.</div>")
+
         # Define headers with a real User-Agent
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
 
         # Send a GET request to the URL
-        response = requests.get(url, headers=headers)
+        try:
+            response = requests.get(url, headers=headers, timeout=PAGE_FETCH_TIMEOUT)
+        except requests.RequestException as e:
+            logger.warning(f"Could not fetch {url}: {e}")
+            return ("<div class='alert alert-error'>Could not load that page "
+                    f"({type(e).__name__}). Check the URL and try again.</div>")
 
         if response.status_code == 200:
             try:
@@ -1755,7 +1834,10 @@ def optimize_ctr():
                 
                 # Get the title
                 title_tag = soup.title
-                title = title_tag.string if title_tag else 'No title found'
+                # .string is None for a <title> containing nested markup,
+                # and the callers below call .split() on it.
+                title = title_tag.get_text(strip=True) if title_tag else 'No title found'
+                title = title or 'No title found'
                 
                 # Get the meta description
                 meta_desc = 'No description found'
@@ -1771,7 +1853,10 @@ def optimize_ctr():
                 try:
                     h1_tag = soup.find('h1')
                     if h1_tag:
-                        h1 = h1_tag.string.strip() if h1_tag.string else 'No H1 text found'
+                        # Same reason as the title: .string is None whenever the
+                        # heading wraps any markup, e.g. <h1><span>x</span></h1>,
+                        # which reported "No H1 text found" for a real heading.
+                        h1 = h1_tag.get_text(strip=True) or 'No H1 text found'
                 except Exception:
                     pass  # Ensure no errors are raised during H1 extraction
 
@@ -1941,8 +2026,8 @@ def generate_ai_title():
             openai_api_key = data.get('openai_api_key')
 
             # Print or log the captured data for debugging
-            logger.info('Existing Title:', existing_title)
-            logger.info('Page:', page)
+            logger.info("Existing title: %s", existing_title)
+            logger.info("Page: %s", page)
             #print('Title Query Tokens Count:', title_query_tokens_count)
 
             print(type(title_query_tokens_count))
@@ -2056,8 +2141,8 @@ def generate_ai_meta_description():
             openai_api_key = data.get('openai_api_key')
 
             # Print or log the captured data for debugging
-            logger.info('Existing Title:', existing_title)
-            logger.info('Page:', page)
+            logger.info("Existing title: %s", existing_title)
+            logger.info("Page: %s", page)
             #print('Title Query Tokens Count:', title_query_tokens_count)
 
             print(type(metaDescQueryTokensCount))
@@ -2172,6 +2257,12 @@ def optimize_page_content():
         url = page
         logger.info(f"Scraping content from URL: {url}")
 
+        if not is_fetchable_url(url):
+            logger.warning(f"Refusing to fetch non-public URL: {url}")
+            return ("<div class='alert alert-error'>That page URL cannot be "
+                    "fetched. Enter a full public http:// or https:// "
+                    "address.</div>")
+
         # Define headers with a real User-Agent
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -2179,7 +2270,12 @@ def optimize_page_content():
 
         # Send a GET request to the URL
         logger.info("Sending GET request to the URL")
-        response = requests.get(url, headers=headers)
+        try:
+            response = requests.get(url, headers=headers, timeout=PAGE_FETCH_TIMEOUT)
+        except requests.RequestException as e:
+            logger.warning(f"Could not fetch {url}: {e}")
+            return ("<div class='alert alert-error'>Could not load that page "
+                    f"({type(e).__name__}). Check the URL and try again.</div>")
         logger.info(f"Response status code: {response.status_code}")
 
         if response.status_code == 200:
@@ -2190,7 +2286,10 @@ def optimize_page_content():
                 
                 # Get the title
                 title_tag = soup.title
-                title = title_tag.string if title_tag else 'No title found'
+                # .string is None for a <title> containing nested markup,
+                # and the callers below call .split() on it.
+                title = title_tag.get_text(strip=True) if title_tag else 'No title found'
+                title = title or 'No title found'
                 logger.info(f"Extracted title: {title}")
                 
                 # Get the meta description
@@ -2297,28 +2396,25 @@ def optimize_page_content():
                         query_tokens_count[token]['examples'].append(example)
         logger.info(f"Found {len(query_tokens_count)} unique tokens")
 
-        # Generate semantic variations for each token 
+        # Generate semantic variations for each token
         # using spaCy for natural language processing
+        semantic_analysis_available = True
         try:
             import spacy
             import numpy as np
             from collections import defaultdict
-            
+
             logger.info("Starting semantic analysis with spaCy")
             analysis_start_time = time.time()
-            
-            # Load the English model
-            try:
-                nlp = spacy.load("en_core_web_md")
-                logger.info("Successfully loaded spaCy model")
-            except:
-                # If model not found, download and load it
-                logger.warning("spaCy model not found, downloading it")
-                import subprocess
-                subprocess.run(["python", "-m", "spacy", "download", "en_core_web_md"])
-                nlp = spacy.load("en_core_web_md")
-                logger.info("Successfully downloaded and loaded spaCy model")
-            
+
+            # Load the English model. The model is pinned in requirements.txt;
+            # it is not downloaded on demand here, because doing that inside a
+            # request meant a ~40MB fetch under the worker timeout, and on a
+            # read-only or egress-restricted container it simply failed -- and
+            # the failure was swallowed, so every score silently came back 0.
+            nlp = spacy.load("en_core_web_md")
+            logger.info("Successfully loaded spaCy model")
+
             # Process all tokens to get their vector representations - do this once
             logger.info("Processing tokens with spaCy")
             token_docs = {token: nlp(token) for token in query_tokens_count.keys()}
@@ -2410,8 +2506,11 @@ def optimize_page_content():
             logger.info(f"Semantic analysis completed in {analysis_end_time - analysis_start_time:.2f} seconds")
                 
         except Exception as e:
-            logger.error(f"Error during semantic analysis: {e}")
-            # If semantic analysis fails, add empty semantic data
+            logger.error(f"Error during semantic analysis: {e}", exc_info=True)
+            # Fall back to empty semantic data, and tell the template so the
+            # page can say the analysis did not run instead of presenting a
+            # column of zeroes as if it were a result.
+            semantic_analysis_available = False
             for token in query_tokens_count:
                 if 'semantic_variations' not in query_tokens_count[token]:
                     query_tokens_count[token]['semantic_variations'] = []
@@ -2430,7 +2529,8 @@ def optimize_page_content():
         return render_template('/actionable-insights/optimize-page-content/partial.html', 
                                title=title, meta_desc=meta_desc, content_html=content_html,
                                query_tokens=sorted_query_tokens_count,
-                               target_keyword=target_keyword
+                               target_keyword=target_keyword,
+                               semantic_analysis_available=semantic_analysis_available
                                )
     
     #get request

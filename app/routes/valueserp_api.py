@@ -42,4 +42,4 @@ def valueserp_api():
    
     # if email is not in session
     flash('Please Sign In.')
-    return redirect(url_for('signin'))
+    return redirect(url_for('home'))

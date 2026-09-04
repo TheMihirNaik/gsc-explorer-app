@@ -345,31 +345,48 @@ def fetch_granular_gsc_data(webmasters_service, property_url, start_date, end_da
     Fetch daily granular GSC data with DATE, QUERY, PAGE dimensions (aggregated across countries)
     """
     dimensions = ['DATE', 'QUERY', 'PAGE']
-    
-    # Build dimension filters
-    dimensionFilterGroups = []
-    
-    # Add country filters if specified
-    if countries and 'all' not in [c.lower() for c in countries]:
-        country_filters = []
-        for country in countries:
-            country_filters.append({
-                "dimension": "COUNTRY",
-                "expression": country,
-                "operator": "equals"
-            })
-        dimensionFilterGroups.append({"filters": country_filters})
-    
-    # Fetch data
-    df = fetch_search_console_data(
-        webmasters_service,
-        property_url,
-        start_date,
-        end_date,
-        dimensions,
-        dimensionFilterGroups
-    )
-    
+
+    selected_countries = [c for c in (countries or []) if c and c.lower() != 'all']
+
+    if selected_countries:
+        # The Search Console API only supports groupType AND within a filter
+        # group, and ANDs the groups together, so several COUNTRY filters in
+        # one request mean "country is USA and country is GBR" -- always empty.
+        # Fetch each country separately and concatenate instead.
+        frames = []
+        for country in selected_countries:
+            logger.info(f"Fetching GSC data for country: {country}")
+            country_df = fetch_search_console_data(
+                webmasters_service,
+                property_url,
+                start_date,
+                end_date,
+                dimensions,
+                [{"filters": [{
+                    "dimension": "COUNTRY",
+                    "expression": country,
+                    "operator": "equals",
+                }]}]
+            )
+            if not country_df.empty:
+                frames.append(country_df)
+
+        if frames:
+            df = pd.concat(frames, ignore_index=True)
+        else:
+            df = pd.DataFrame(
+                columns=dimensions + ['clicks', 'impressions', 'ctr', 'position'])
+    else:
+        df = fetch_search_console_data(
+            webmasters_service,
+            property_url,
+            start_date,
+            end_date,
+            dimensions,
+            []
+        )
+
+
     
     # Normalize PAGE column: remove fragment identifiers (e.g., #slug)
     if 'PAGE' in df.columns:

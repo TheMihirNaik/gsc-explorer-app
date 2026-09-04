@@ -203,11 +203,15 @@ def revoke():
 
   status_code = getattr(revoke, 'status_code')
 
+  # Clear the session either way: the token has been sent for revocation, so
+  # keeping it makes the user look connected until the next API call fails.
+  flask.session.pop('credentials', None)
+
   if status_code == 200:
     flash('Your GSC credentials are revoked.')
-    return redirect(url_for('dashboard'))
   else:
-    return redirect(url_for('home'))
+    flash('Could not confirm revocation with Google, but your session has been cleared.')
+  return redirect(url_for('home'))
 
 @app.route('/gsc_clear')
 def clear_credentials():
