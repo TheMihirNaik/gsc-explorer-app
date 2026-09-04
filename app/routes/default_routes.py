@@ -25,6 +25,7 @@ import json
 import os
 import socket
 import ipaddress
+import threading
 from urllib.parse import quote, urlparse
 
 # Configure logging
@@ -60,6 +61,51 @@ def inject_brand_keywords_display():
 # slow host holds a gunicorn thread until the 180s worker timeout, and there
 # are only eight threads in the pool.
 PAGE_FETCH_TIMEOUT = (5, 20)
+
+# Populating a country dropdown used to cost a full paged Search Console fetch
+# over 15 months, on every page load, on two pages. The list changes slowly, so
+# use a shorter window and cache it in-process for an hour.
+COUNTRY_LIST_MONTHS = 3
+COUNTRY_CACHE_TTL_SECONDS = 3600
+_country_cache = {}
+_country_cache_lock = threading.Lock()
+
+
+def get_country_rows(webmasters_service, property_url, months=COUNTRY_LIST_MONTHS):
+    """Countries with impressions for a property, most impressions first.
+
+    Returns a list of {'code', 'impressions'}, empty when the property has no
+    data in the window.
+    """
+    key = (property_url, months)
+    now = time.time()
+
+    with _country_cache_lock:
+        cached = _country_cache.get(key)
+        if cached and now - cached[0] < COUNTRY_CACHE_TTL_SECONDS:
+            return cached[1]
+
+    end_date = datetime.today()
+    start_date = end_date - relativedelta(months=months)
+
+    country_df = fetch_search_console_data(
+        webmasters_service, property_url,
+        start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'),
+        ['COUNTRY'], [])
+
+    if country_df.empty or 'COUNTRY' not in country_df.columns:
+        logger.info(f"No country data available for {property_url}")
+        rows = []
+    else:
+        country_df = country_df.sort_values(by='impressions', ascending=False)
+        rows = [{'code': str(row['COUNTRY']).upper(),
+                 'impressions': int(row['impressions'])}
+                for _, row in country_df.iterrows()]
+
+    with _country_cache_lock:
+        _country_cache[key] = (now, rows)
+
+    return rows
 
 
 def is_fetchable_url(url):
@@ -740,9 +786,23 @@ def query_length_analysis():
 
 
         # --- Detailed Table Data ---
-        # Provide the full list of queries for the table (DataTable will handle pagination/sorting client side)
-        table_data = filtered_df.to_dict('records')
-        
+        # Ship the rows as JSON and let DataTables build them, as every other
+        # report here does. Rendering them as server-side <tr> elements made a
+        # multi-megabyte response on a property with a long tail.
+        table_df = filtered_df[['query', 'word_count', 'clicks', 'impressions',
+                                'ctr', 'position']].copy()
+        table_df['ctr'] = (table_df['ctr'] * 100).round(2)
+        table_df['position'] = table_df['position'].round(1)
+        table_df = table_df.rename(columns={
+            'query': 'Query',
+            'word_count': 'Word Count',
+            'clicks': 'Clicks',
+            'impressions': 'Impressions',
+            'ctr': 'CTR (%)',
+            'position': 'Position',
+        })
+        data_json = table_df.to_json(orient='split', index=False)
+
         return render_template('/sitewide-analysis/partial-query-length-data.html',
                                total_queries=len(filtered_df),
                                min_words=min_words if min_words > 0 else None,
@@ -752,7 +812,7 @@ def query_length_analysis():
                                clicks_chart=clicks_chart,
                                impressions_chart=impressions_chart,
                                query_count_chart=query_count_chart,
-                               table_data=table_data)
+                               data_json=data_json)
 
 
     # GET Request Handler
@@ -763,31 +823,10 @@ def query_length_analysis():
 
     webmasters_service = build_gsc_service()
 
-    # Calculate end_date
-    end_date = datetime.today()
-    # Calculate start_date (15 months before today)
-    start_date = end_date - relativedelta(months=15)
-    
-    end_date_str = end_date.strftime('%Y-%m-%d')
-    start_date_str = start_date.strftime('%Y-%m-%d')
-    
-    dimensions = ['COUNTRY']
-    dimensionFilterGroups = []
-    
-    country_df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
-    
-    countries = []
-    if not country_df.empty and 'COUNTRY' in country_df.columns:
-        # Sort by impressions descending
-        country_df = country_df.sort_values(by='impressions', ascending=False)
-        
-        for _, row in country_df.iterrows():
-            country_code = str(row['COUNTRY']).upper()
-            impressions = int(row['impressions'])
-            countries.append({
-                'code': country_code,
-                'impressions_formatted': f"{impressions:,}"
-            })
+    countries = [
+        {'code': row['code'], 'impressions_formatted': f"{row['impressions']:,}"}
+        for row in get_country_rows(webmasters_service, selected_property)
+    ]
 
     # Fetch latest available date
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
@@ -934,35 +973,8 @@ def organic_ctr():
 
     webmasters_service = build_gsc_service()
     
-    # Calculate end_date
-    end_date = datetime.today()
-
-    # Calculate start_date (15 months before today)
-    start_date = end_date - relativedelta(months=15)
-
-    # Format the dates as YYYY-MM-DD
-    end_date_str = end_date.strftime('%Y-%m-%d')
-    start_date_str = start_date.strftime('%Y-%m-%d')
-
-    print("Start Date:", start_date_str)
-    print("End Date:", end_date_str)
-    
-    dimensions = ['COUNTRY']
-    
-    dimensionFilterGroups = [{"filters": [
-        #{"dimension": "COUNTRY", "expression": country, "operator": "equals"},
-    ]}]
-
-    country_df = fetch_search_console_data(webmasters_service, selected_property, start_date_str, end_date_str, dimensions, dimensionFilterGroups)
-    
-    # A property with no data in the window returns an empty frame with no
-    # COUNTRY column, so guard before indexing it.
-    if country_df.empty or 'COUNTRY' not in country_df.columns:
-        logger.info(f"No country data available for {selected_property}")
-        countries = []
-    else:
-        country_df = country_df.sort_values(by='impressions', ascending=False)
-        countries = [country.upper() for country in country_df['COUNTRY'].to_list()]
+    countries = [row['code']
+                 for row in get_country_rows(webmasters_service, selected_property)]
     
     # read country-codes.csv file, and pass the data to create select form
     #countries = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'static', 'country-codes.csv'))
@@ -980,37 +992,10 @@ def organic_ctr():
                            brand_keywords=brand_keywords, countries=countries, latest_date=latest_date)
 
 
-# Helper to get latest available date
-def get_latest_available_date(service, property_url):
-    """
-    Queries GSC API to find the latest available data date.
-    Checks the last 10 days including 'all' data state (fresh data).
-    """
-    try:
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=10)
-        
-        request_body = {
-            'startDate': start_date.strftime('%Y-%m-%d'),
-            'endDate': end_date.strftime('%Y-%m-%d'),
-            'dimensions': ['date'],
-            'dataState': 'all',  # fetch fresh data if available
-            'rowLimit': 25
-        }
-        
-        response = service.searchanalytics().query(siteUrl=property_url, body=request_body).execute()
-        
-        if 'rows' in response:
-            dates = [row['keys'][0] for row in response['rows']]
-            if dates:
-                return max(dates)
-                
-    except Exception as e:
-        logger.error(
-            f"Error fetching latest date for {property_url}: {e}", exc_info=True)
-    
-    # Fallback: 2 days ago if API fails or returns no data
-    return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+# get_latest_available_date lives in app.routes.gsc_routes and arrives via the
+# star import above. It used to be duplicated here verbatim, and the local copy
+# shadowed the imported one -- so a fix applied to only one of them appeared to
+# work in some routes and not others.
 
 
 # Column suffix -> header group, for the period-comparison tables.
@@ -1780,8 +1765,9 @@ def optimize_ctr():
         #get gsc data
         date_query_df = fetch_search_console_data(webmasters_service, selected_property, start_date_formatted, end_date_formatted, dimensions, dimensionFilterGroups)
 
-        # only rows where position is less than 11
-        date_query_df = date_query_df.loc[date_query_df['position'] < 10]
+        # Positions 1-10, matching the "Top 10 Positions" heading on the
+        # results partial. This previously excluded position 10 itself.
+        date_query_df = date_query_df.loc[date_query_df['position'] <= 10]
 
         # filter rows where impressions is greater than date_query_df['impressions'].mean(), but also include rows where click is greater than 0 irrepesctive of impressions
         date_query_df = date_query_df.loc[(date_query_df['impressions'] > date_query_df['impressions'].mean()) | (date_query_df['clicks'] > 0)]

@@ -16,7 +16,7 @@
   <!-- H1 Heading -->
   <div class="mb-8">
     <h1 class="text-4xl font-bold mb-4">Optimize Title & Meta Descriptions</h1>
-    <p class="mb-6">Selected Page : <a href="{{ page }}" target="_blank" class="link" id="page">{{ page }}</a></p>
+    <p class="mb-6">Selected Page : <a href="{{ page }}" target="_blank" class="link" id="page-url">{{ page }}</a></p>
 
     <!-- GSC Data Form -->
     <div class="mb-8">
@@ -142,7 +142,7 @@
 
     // Get the values from the DOM
     const existingTitleElement = document.querySelector('#existing_title').textContent;
-    const page = document.querySelector('#page').textContent;
+    const page = document.querySelector('#page-url').textContent;
     const h1 = document.querySelector('#hidden-h1-data').textContent;
 
     // Parse the JSON data into a JavaScript object
@@ -203,9 +203,9 @@
     console.log(existingTitleElement);
     const existingMetaDescriptionElement = document.querySelector('#existing_meta_desc').textContent;
     console.log(existingMetaDescriptionElement);
-    const page = document.querySelector('#page').textContent;
+    const page = document.querySelector('#page-url').textContent;
     console.log(page);
-    const h1 = document.querySelector('#hidden-h1-data').textContent;
+    const h1 = document.querySelector('#hidden-h1-data-meta-desc').textContent;
     console.log(h1);
 
     // Parse the JSON data into a JavaScript object

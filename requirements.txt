@@ -15,6 +15,10 @@ python-dotenv==1.0.1
 celery==5.3.4
 redis==5.0.1
 beautifulsoup4==4.12.3
+# Imported directly by the routes; previously present only as a
+# transitive dependency of the Google and pandas packages.
+requests==2.32.3
+python-dateutil==2.9.0.post0
 nltk==3.10.3
 pytz==2024.1
 spacy==3.7.2

@@ -32,7 +32,17 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=300)
 
-# Access environment variables
+# Access environment variables.
+#
+# Fail at startup rather than on the first request that touches the session:
+# with no key Flask raises deep inside a route, which reads as an application
+# bug rather than as missing configuration.
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY is not set. Generate one with "
+        "`python -c \"import secrets; print(secrets.token_hex(32))\"` "
+        "and set it in the environment (see .env.example).")
+
 app.config['SECRET_KEY'] = SECRET_KEY
 
 # Configure logging
