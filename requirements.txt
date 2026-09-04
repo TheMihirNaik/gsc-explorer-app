@@ -2,6 +2,7 @@ gunicorn==23.0.0
 Flask==3.0.0
 # Server-side sessions, so OAuth credentials stay out of the client cookie.
 Flask-Session==0.8.0
+Flask-Compress==1.24
 pymongo==4.7.0
 bcrypt==4.1.2
 openai==1.57.0

@@ -296,12 +296,9 @@ def check_and_refresh_credentials():
         flash("Your session has expired. Please log in again.")
         return None, redirect(url_for('gsc_authorize'))
     
-    # Test the credentials with a simple API call
-    search_console_service = googleapiclient.discovery.build(
-      API_SERVICE_NAME, API_VERSION, credentials=credentials)
-    # Simple API call to verify credentials work
-    search_console_service.sites().list().execute()
-    
+    # No liveness probe here: it cost a round trip on every page load to
+    # prove what the first real API call reports anyway. Callers already
+    # handle an auth failure from their own request.
     return credentials, None
   
   except Exception as e:
@@ -363,6 +360,14 @@ def handle_gsc_reauth_required(error):
 
 
 def build_gsc_service():
+  # One service per request. Building it parses the API discovery document,
+  # and several routes ask for the service more than once while handling a
+  # single request.
+  if flask.has_request_context():
+    cached = getattr(flask.g, 'gsc_service', None)
+    if cached is not None:
+      return cached
+
   # Load credentials from the session
   credentials = credentials_from_session()
 
@@ -382,7 +387,10 @@ def build_gsc_service():
   # Build the Google Search Console API service
   search_console_service = googleapiclient.discovery.build(
       API_SERVICE_NAME, API_VERSION, credentials=credentials)
-  
+
+  if flask.has_request_context():
+    flask.g.gsc_service = search_console_service
+
   return search_console_service
 
 def fetch_search_console_data(webmasters_service, website_url, start_date, end_date, dimensions, dimensionFilterGroups):

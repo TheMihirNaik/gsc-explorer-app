@@ -183,3 +183,35 @@ def get_latest_available_date(service, property_url):
     
     # Fallback: 2 days ago if API fails or returns no data
     return (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+
+
+# GSC advances the latest available date roughly once a day, so querying it on
+# every page render spends a round trip on a value that has not moved.
+LATEST_DATE_CACHE_TTL = timedelta(hours=6)
+
+
+def get_cached_latest_date(property_url, service=None):
+    """Latest date GSC has data for, cached per property in the session.
+
+    Falls back to a live query on a miss. `service` is reused when the caller
+    already has one, so a miss costs no extra discovery build.
+    """
+    cache = session.get('latest_date_cache')
+    if cache and cache.get('property') == property_url and cache.get('date'):
+        try:
+            fetched_at = datetime.fromisoformat(cache['fetched_at'])
+        except (KeyError, TypeError, ValueError):
+            fetched_at = None
+        if fetched_at and datetime.now() - fetched_at < LATEST_DATE_CACHE_TTL:
+            return cache['date']
+
+    if service is None:
+        service = build_gsc_service()
+
+    latest_date = get_latest_available_date(service, property_url)
+    session['latest_date_cache'] = {
+        'property': property_url,
+        'date': latest_date,
+        'fetched_at': datetime.now().isoformat(),
+    }
+    return latest_date
