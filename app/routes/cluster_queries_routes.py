@@ -16,6 +16,9 @@ import numpy as np
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+from app.routes.guards import (requires_gsc, requires_property,
+                               selected_property as current_property,
+                               brand_keywords as current_brand_keywords)
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -33,18 +36,16 @@ except ImportError as e:
 
 
 @app.route('/tools/query-clustering/', methods=['GET'])
+@requires_property
 def query_clustering():
     """
     Main page for Query Clustering tool with country impression data
     """
     logger.info("Query Clustering page accessed")
     
-    if 'credentials' not in session:
-        logger.warning("No credentials in session, redirecting to GSC authorize")
-        return redirect(url_for('gsc_authorize'))
     
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
     
     # Fetch country data with impressions for the dropdown
     countries_with_impressions = []
@@ -148,7 +149,7 @@ def query_clustering_analyze():
     try:
         # Get user inputs
         selected_property = session.get("selected_property", "")
-        brand_keywords = session.get("brand_keywords", "")
+        brand_keywords = current_brand_keywords()
         
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')

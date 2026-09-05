@@ -19,6 +19,9 @@ from flask import (render_template, request, redirect, url_for, flash, session,
                    jsonify)
 
 from app import app
+from app.routes.guards import (requires_gsc, requires_property,
+                               selected_property as current_property,
+                               brand_keywords as current_brand_keywords)
 
 # Operators the Search Console API accepts for a dimension filter, mapped to
 # what they mean for someone building a segment.
@@ -140,12 +143,9 @@ def inject_segments():
 
 
 @app.route('/segments/', methods=['GET'])
+@requires_gsc
 def segments_page():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
-
-    selected_property = session.get(
-        "selected_property", "You haven't selected a GSC Property yet")
+    selected_property = current_property()
 
     return render_template('/segments/main.html',
                            selected_property=selected_property,
@@ -157,10 +157,8 @@ def segments_page():
 
 
 @app.route('/segments/create', methods=['POST'])
+@requires_gsc
 def create_segment():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
-
     name = (request.form.get('name') or '').strip()
     dimension = request.form.get('dimension') or ''
     operator = request.form.get('operator') or ''
@@ -189,10 +187,8 @@ def create_segment():
 
 
 @app.route('/segments/<segment_id>/delete', methods=['POST'])
+@requires_gsc
 def delete_segment(segment_id):
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
-
     segments = get_segments()
     remaining = [s for s in segments if s.get('id') != segment_id]
 

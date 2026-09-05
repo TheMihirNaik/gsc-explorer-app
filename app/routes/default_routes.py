@@ -27,6 +27,9 @@ import ipaddress
 import threading
 from urllib.parse import quote, urlparse
 from app.routes.segments import active_segment, apply_segment, segment_summary
+from app.routes.guards import (requires_gsc, requires_property,
+                               selected_property as current_property,
+                               brand_keywords as current_brand_keywords)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -213,20 +216,17 @@ def home():
 
 #Dashboard
 @app.route('/dashboard/')
+@requires_property
 def dashboard():
     # Check and refresh credentials
     credentials, redirect_response = check_and_refresh_credentials()
     if redirect_response:
         return redirect_response
     
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
 
     # if GSC property is not selected then send user to GSC property selection page
-    if selected_property == "You haven't selected a GSC Property yet":
-        # show a message
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
     
     
     # Initialize vars with safe defaults
@@ -243,6 +243,7 @@ def dashboard():
                            latest_date=latest_date)
 
 @app.route('/gsc-property-selection/', methods=['GET', 'POST'])
+@requires_gsc
 def gsc_property_selection():
     if request.method == 'POST':
         #save the selected website and country in session
@@ -289,7 +290,7 @@ def gsc_property_selection():
         flash("There was an issue with your authentication. Please log in again.")
         return redirect(url_for('gsc_authorize'))
 
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    brand_keywords = current_brand_keywords()
 
     brand_keywords_string = ''
 
@@ -431,15 +432,13 @@ def suggest_brand_keywords():
 
 # Charts Routes
 @app.route('/charts/sitewide-brand-vs-non-brand/', methods=['GET', 'POST'])
+@requires_property
 @report_errors
 def sitewide_analysis():
-    if 'credentials' not in session:
-        # GSC is not logged in.
-        return redirect(url_for('gsc_authorize'))
     
     if request.method == 'POST':
-        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+        selected_property = current_property()
+        brand_keywords = current_brand_keywords()
 
         webmasters_service = build_gsc_service()
 
@@ -506,8 +505,6 @@ def sitewide_analysis():
         #print(date_plot_df)
 
 
-
-
         clicks_fig = px.line(date_plot_df, x="date", y='clicks', color='Query Type')
 
         # Customize the layout
@@ -561,7 +558,6 @@ def sitewide_analysis():
 
 
         position_fig_graph = position_fig.to_html(full_html=False, include_plotlyjs=False)
-
 
 
         # Query Count : For Brand Queries
@@ -708,22 +704,19 @@ def sitewide_analysis():
                                 )
 
     # GET request
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
 
     # Initialize vars with safe defaults
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
     
-    if selected_property != "You haven't selected a GSC Property yet":
+    if selected_property:
         try:
             webmasters_service = build_gsc_service()
             latest_date = get_cached_latest_date(selected_property, webmasters_service)
         except Exception as e:
             logger.error(f"Error initializing service for latest date check: {e}")
 
-    if selected_property == "You haven't selected a GSC Property yet":
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
     
     return render_template('/sitewide-analysis/mainpage.html', 
                            selected_property=selected_property,
@@ -732,13 +725,12 @@ def sitewide_analysis():
 
 
 @app.route('/reports/query-length-analysis/', methods=['GET', 'POST'])
+@requires_property
 @report_errors
 def query_length_analysis():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
     
     if request.method == 'POST':
-        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
+        selected_property = current_property()
         webmasters_service = build_gsc_service()
 
         start_date_str = request.form.get('start_date')
@@ -858,10 +850,7 @@ def query_length_analysis():
 
 
     # GET Request Handler
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    if selected_property == "You haven't selected a GSC Property yet":
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
+    selected_property = current_property()
 
     webmasters_service = build_gsc_service()
 
@@ -879,21 +868,20 @@ def query_length_analysis():
 
     return render_template('/sitewide-analysis/query-length-analysis.html', 
                            selected_property=selected_property, 
-                           brand_keywords=session.get("brand_keywords", "You haven't selected Brand Keywords."),
+                           brand_keywords=current_brand_keywords(),
                            countries=countries,
                            latest_date=latest_date)
 
 
 @app.route('/charts/organic-ctr/', methods=['GET', 'POST'])
+@requires_property
 @report_errors
 def organic_ctr():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
     
     
     if request.method == 'POST':
-        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+        selected_property = current_property()
+        brand_keywords = current_brand_keywords()
 
         webmasters_service = build_gsc_service()
 
@@ -997,7 +985,6 @@ def organic_ctr():
         non_brand_ctr_fig_html = non_brand_ctr_fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-
         brand_ctr_df = brand_ctr_df.rename(columns={'round_position': 'Position'})
         non_brand_ctr_df = non_brand_ctr_df.rename(columns={'round_position': 'Position'})
 
@@ -1009,14 +996,10 @@ def organic_ctr():
                                brand_ctr_html=brand_ctr_html, non_brand_ctr_html=non_brand_ctr_html )
 
     # GET request
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
 
     # if GSC property is not selected then send user to GSC property selection page
-    if selected_property == "You haven't selected a GSC Property yet":
-        # show a message
-        flash('Please Select your GSC Property before clicking on Organic CTR Tab.')
-        return redirect(url_for('gsc_property_selection'))
 
     webmasters_service = build_gsc_service()
     
@@ -1085,19 +1068,16 @@ def comparison_multiindex(columns, dimension):
 
 # Reports Routes
 @app.route('/reports/sitewide-overview/', methods=['GET', 'POST'])
+@requires_property
 @report_errors
 def sitewide_report():
-    if 'credentials' not in session:
-        # GSC is not logged in.
-        return redirect(url_for('gsc_authorize'))
-
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
     
     # Initialize vars with safe defaults
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
     
-    if selected_property != "You haven't selected a GSC Property yet":
+    if selected_property:
         try:
             webmasters_service = build_gsc_service()
             latest_date = get_cached_latest_date(selected_property, webmasters_service)
@@ -1106,8 +1086,8 @@ def sitewide_report():
 
     if request.method == 'POST':
         #get request
-        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+        selected_property = current_property()
+        brand_keywords = current_brand_keywords()
 
         webmasters_service = build_gsc_service()
 
@@ -1239,7 +1219,6 @@ def sitewide_report():
         merge_df_html = merge_df.to_html(classes='table table-striped', table_id="byCountry", index=False)
 
 
-
         #preparing data by DEVICE
         current_period_by_device = current_period_df.groupby('DEVICE').agg(
             clicks = ('clicks', 'sum'),
@@ -1337,7 +1316,6 @@ def sitewide_report():
         merge_df_html_by_device = merge_df_by_device.to_html(classes='table table-striped', table_id="byDevice", index=False)
 
 
-
         return render_template('/sitewide-report/partial.html', 
                                     #dates
                                     current_start_date=current_start_date,
@@ -1350,7 +1328,6 @@ def sitewide_report():
                                     pp_latest_date=pp_latest_date,
                                     py_earliest_date=py_earliest_date,
                                     py_latest_date=py_latest_date,
-
 
 
                                     previous_period_start_date=previous_period_start_date,
@@ -1369,14 +1346,10 @@ def sitewide_report():
                                     )
 
     # GET request
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
 
     # if GSC property is not selected then send user to GSC property selection page
-    if selected_property == "You haven't selected a GSC Property yet":
-        # show a message
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
 
     return render_template('/sitewide-report/main.html',
                            selected_property=selected_property,
@@ -1384,16 +1357,14 @@ def sitewide_report():
                            latest_date=latest_date)
 
 @app.route('/reports/sitewide-queries/', methods=['GET', 'POST'])
+@requires_property
 @report_errors
 def query_aggregate_report():
-    if 'credentials' not in session:
-        # GSC is not logged in.
-        return redirect(url_for('gsc_authorize'))
      
     if request.method == 'POST':
         #get request
-        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+        selected_property = current_property()
+        brand_keywords = current_brand_keywords()
 
         webmasters_service = build_gsc_service()
 
@@ -1532,13 +1503,13 @@ def query_aggregate_report():
                                )
     
     # GET request
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
 
     # Initialize vars with safe defaults
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
     
-    if selected_property != "You haven't selected a GSC Property yet":
+    if selected_property:
         try:
             webmasters_service = build_gsc_service()
             latest_date = get_cached_latest_date(selected_property, webmasters_service)
@@ -1546,10 +1517,6 @@ def query_aggregate_report():
             logger.error(f"Error initializing service for latest date check: {e}")
 
     # if GSC property is not selected then send user to GSC property selection page
-    if selected_property == "You haven't selected a GSC Property yet":
-        # show a message
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
 
     return render_template('/query-aggregate-report/main.html',
                         selected_property=selected_property,
@@ -1557,16 +1524,15 @@ def query_aggregate_report():
                         latest_date=latest_date)
 
 @app.route('/reports/sitewide-pages/', methods=['GET', 'POST'])
+@requires_property
 @report_errors
 def sitewide_pages():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
     
     if request.method == 'POST':
 
         #get request
-        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+        selected_property = current_property()
+        brand_keywords = current_brand_keywords()
 
         webmasters_service = build_gsc_service()
 
@@ -1731,13 +1697,13 @@ def sitewide_pages():
                                )
     
     # GET request
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
 
     # Initialize vars with safe defaults
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
     
-    if selected_property != "You haven't selected a GSC Property yet":
+    if selected_property:
         try:
             webmasters_service = build_gsc_service()
             latest_date = get_cached_latest_date(selected_property, webmasters_service)
@@ -1745,10 +1711,6 @@ def sitewide_pages():
             logger.error(f"Error initializing service for latest date check: {e}")
 
     # if GSC property is not selected then send user to GSC property selection page
-    if selected_property == "You haven't selected a GSC Property yet":
-        # show a message
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
 
     return render_template('/sitewide-pages/main.html',
                         selected_property=selected_property,
@@ -1757,10 +1719,8 @@ def sitewide_pages():
 
 
 @app.route('/gsc-celery-test/', methods=['GET', 'POST'])
+@requires_gsc
 def gsc_celery_test():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
-
     if request.method == 'POST':
         credentials_data = flask.session['credentials']
         selected_property = session.get("selected_property", "default_value")
@@ -1782,8 +1742,8 @@ def gsc_celery_test():
         return jsonify({'task_id': result.id})
 
     #get request
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
 
     return render_template('gsc-celery-test.html', 
                            selected_property=selected_property,
@@ -1791,15 +1751,14 @@ def gsc_celery_test():
 
 
 @app.route('/actionable-insights/optimize-ctr', methods=['GET', 'POST'])
+@requires_gsc
 @report_errors
 def optimize_ctr():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
     
     if request.method == 'POST':
 
-        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+        selected_property = current_property()
+        brand_keywords = current_brand_keywords()
 
         #build gsc service
         webmasters_service = build_gsc_service()
@@ -1922,7 +1881,6 @@ def optimize_ctr():
             body_text = 'No body content found'
 
 
-
         # tokenize title and meta description - split with space
         title_tokens = title.split()
 
@@ -1983,7 +1941,6 @@ def optimize_ctr():
         query_tokens_count = query_tokens_count[:20]
 
 
-
         # classify each token in query_tokens_count if it exist in title_tokens and keep the count numbers as well
         title_query_tokens_count = []
 
@@ -2024,8 +1981,8 @@ def optimize_ctr():
                                 )
     
     #get request
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
 
     #capture variable <page> from url path
     page = request.args.get('page', default='')
@@ -2033,7 +1990,7 @@ def optimize_ctr():
 
     # Fetch latest available date
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
-    if selected_property != "You haven't selected a GSC Property yet":
+    if selected_property:
         try:
             webmasters_service = build_gsc_service()
             latest_date = get_cached_latest_date(selected_property, webmasters_service)
@@ -2048,243 +2005,237 @@ def optimize_ctr():
 
 
 @app.route('/optimize-ctr/generate-ai-title/', methods=['POST', 'GET'])
+@requires_gsc
 def generate_ai_title():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
-    else:
-        # POST request
-        if request.method == 'POST':
+    # POST request
+    if request.method == 'POST':
+        
+        # Capture the incoming JSON data from the request
+        data = request.get_json()
+
+        # Extract the data from the JSON
+        existing_title = data.get('existing_title')
+        page = data.get('page')
+        title_query_tokens_count = data.get('titleQueryTokensCount')
+        h1 = data.get('h1')
+        openai_api_key = data.get('openai_api_key')
+
+        # Print or log the captured data for debugging
+        logger.info("Existing title: %s", existing_title)
+        logger.info("Page: %s", page)
+        #print('Title Query Tokens Count:', title_query_tokens_count)
+
+        print(type(title_query_tokens_count))
+
+        # Format the information for the prompt
+        formatted_tokens = ""
+        for term, count, exists_in_title, examples in title_query_tokens_count:
+            formatted_tokens += f"Term: {term}\n"
+            formatted_tokens += f"Used {count} times in search queries.\n"
+            formatted_tokens += f"Exists in the current title: {'Yes' if exists_in_title else 'No'}\n"
+            formatted_tokens += f"Top 5 search queries: {', '.join(examples)}\n"
+            formatted_tokens += "\n"  # Adding a line break between entries
+
+        logger.info(formatted_tokens)
+
+        # Here you can perform any operations, such as generating the AI title
+
+        client = OpenAI(api_key=openai_api_key)
+
+        system_prompt = """ 
+        You are a highly skilled AI assistant specialized in search engine optimization (SEO) and natural language processing. 
+        You assist users in analyzing and optimizing their webpage titles based on data provided from Google Search Console (GSC). 
+        Your responses are precise, actionable, and based on best practices in SEO. 
+
+        Ensure recommendations align with the following principles:
+        - Write a new Title that's actionable. When user will see this in SERP, they should have a clear idea of next Action.
+        - Improve click-through rates (CTR).
+        - Highlight the most relevant and high-performing keywords.
+        - Maintain relevance to the webpage's content and intent.
+        - Ensure clarity, readability, and compelling value propositions in titles.
+        - If data is incomplete or unclear, suggest an alternative approach or prompt the user for clarification. 
+        Your tone is professional, concise, and helpful.
+                        """
+
+        task_prompt = f"""
+
+            I've uploaded data from Google Search Console (GSC) to you.
+
+            Web Page URL: "{page}".
+            Current Title Tag: "{existing_title}".
+            Current H1 Tag: "{h1}"
+
+            Analyze the following GSC information to help generate the new title. 
+            You don't have to use everything provided. This is for information and analysis purposes.
+
+
+            Here is the format of the provided data for your analysis:
+
+            Term: <term> used in Search Query
+            Used <X> times in search queries.
+            Exists in the current title: <Yes/No>
+            Top 5 search queries: <Query 1>, <Query 2>, <Query 3>, <Query 4>, <Query 5>
+
+            The following details include terms, their frequency in search queries, whether they exist in the current title, and the top 5 associated search queries.
+            The idea is, if you include the most recurrent terms in the title, it will be more likely to have higher CTR because it will be more relevant for user queries..
+            {formatted_tokens}
+
+            Based on this data, optimize the Title Tag for better SEO performance. 
+            Provide a new Title Tag and don't generate anything other than title.
+            Ensure it's within the character limit and includes high-value keywords from the associated queries.
+            When you write Titles, make it Actionable. Always keep this in mind.
             
-            # Capture the incoming JSON data from the request
-            data = request.get_json()
+            To handle edge cases:
+            - If sufficient data is not available, suggest an alternative generic approach to crafting an optimized Title Tag.
 
-            # Extract the data from the JSON
-            existing_title = data.get('existing_title')
-            page = data.get('page')
-            title_query_tokens_count = data.get('titleQueryTokensCount')
-            h1 = data.get('h1')
-            openai_api_key = data.get('openai_api_key')
+            """
+        
+        completion = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": task_prompt},
+                ]
+                )
+        
+        ai_generated_title = completion.choices[0].message.content
 
-            # Print or log the captured data for debugging
-            logger.info("Existing title: %s", existing_title)
-            logger.info("Page: %s", page)
-            #print('Title Query Tokens Count:', title_query_tokens_count)
+        ai_generated_title_html = f"""
+        <div class="p-5 bg-primary-content rounded-box">
+            <p class="text-s accent-content">
+            {ai_generated_title}
+            </p>
 
-            print(type(title_query_tokens_count))
+        </div>
+        """
+        return ai_generated_title_html
 
-            # Format the information for the prompt
-            formatted_tokens = ""
-            for term, count, exists_in_title, examples in title_query_tokens_count:
-                formatted_tokens += f"Term: {term}\n"
-                formatted_tokens += f"Used {count} times in search queries.\n"
-                formatted_tokens += f"Exists in the current title: {'Yes' if exists_in_title else 'No'}\n"
-                formatted_tokens += f"Top 5 search queries: {', '.join(examples)}\n"
-                formatted_tokens += "\n"  # Adding a line break between entries
+    # GET request
+    return redirect(url_for('dashboard'))
 
-            logger.info(formatted_tokens)
 
-            # Here you can perform any operations, such as generating the AI title
+@app.route('/optimize-ctr/generate-ai-meta-description/', methods=['POST', 'GET'])
+@requires_gsc
+def generate_ai_meta_description():
+    # POST request
+    if request.method == 'POST':
 
-            client = OpenAI(api_key=openai_api_key)
+        
+        # Capture the incoming JSON data from the request
+        data = request.get_json()
 
-            system_prompt = """ 
-            You are a highly skilled AI assistant specialized in search engine optimization (SEO) and natural language processing. 
-            You assist users in analyzing and optimizing their webpage titles based on data provided from Google Search Console (GSC). 
+
+        # Extract the data from the JSON
+        existing_title = data.get('existing_title')
+        existing_meta_description = data.get('existingMetaDescriptionElement')
+        page = data.get('page')
+        metaDescQueryTokensCount = data.get('metaDescQueryTokensCount')
+        h1 = data.get('h1')
+        openai_api_key = data.get('openai_api_key')
+
+        # Print or log the captured data for debugging
+        logger.info("Existing title: %s", existing_title)
+        logger.info("Page: %s", page)
+        #print('Title Query Tokens Count:', title_query_tokens_count)
+
+        print(type(metaDescQueryTokensCount))
+
+        # Format the information for the prompt
+        formatted_tokens = ""
+        for term, count, exists_in_title, examples in metaDescQueryTokensCount:
+            formatted_tokens += f"Term: {term}\n"
+            formatted_tokens += f"Used {count} times in search queries.\n"
+            formatted_tokens += f"Exists in the current Meta Description: {'Yes' if exists_in_title else 'No'}\n"
+            formatted_tokens += f"Top 5 search queries: {', '.join(examples)}\n"
+            formatted_tokens += "\n"  # Adding a line break between entries
+
+        logger.info(formatted_tokens)
+
+        # Here you can perform any operations, such as generating the AI title
+
+        client = OpenAI(
+            api_key=openai_api_key
+            )
+
+
+        system_prompt = """ 
+            You are an expert copywriter and SEO specialist who crafts highly compelling and optimized Meta Descriptions to improve click-through rates (CTR). 
+            Your task is to generate a new SEO Meta Description for a webpage using data provided from Google Search Console (GSC). 
             Your responses are precise, actionable, and based on best practices in SEO. 
 
             Ensure recommendations align with the following principles:
-            - Write a new Title that's actionable. When user will see this in SERP, they should have a clear idea of next Action.
-            - Improve click-through rates (CTR).
-            - Highlight the most relevant and high-performing keywords.
-            - Maintain relevance to the webpage's content and intent.
-            - Ensure clarity, readability, and compelling value propositions in titles.
-            - If data is incomplete or unclear, suggest an alternative approach or prompt the user for clarification. 
+            - Write Meta Descriptions that are actionable and enticing, encouraging users to click.
+            - Incorporate high-performing and relevant keywords that reflect the webpage's content.
+            - Maintain readability and make the Meta Description engaging while adhering to the character limit (120-160 characters).
+            - Use terms not included in the Title Tag to provide additional context or value to the user.
+            - If data is incomplete or unclear, suggest a generic alternative or prompt for clarification.
             Your tone is professional, concise, and helpful.
-                            """
-
-            task_prompt = f"""
-
-                I've uploaded data from Google Search Console (GSC) to you.
-
-                Web Page URL: "{page}".
-                Current Title Tag: "{existing_title}".
-                Current H1 Tag: "{h1}"
-
-                Analyze the following GSC information to help generate the new title. 
-                You don't have to use everything provided. This is for information and analysis purposes.
-
-
-                Here is the format of the provided data for your analysis:
-
-                Term: <term> used in Search Query
-                Used <X> times in search queries.
-                Exists in the current title: <Yes/No>
-                Top 5 search queries: <Query 1>, <Query 2>, <Query 3>, <Query 4>, <Query 5>
-
-                The following details include terms, their frequency in search queries, whether they exist in the current title, and the top 5 associated search queries.
-                The idea is, if you include the most recurrent terms in the title, it will be more likely to have higher CTR because it will be more relevant for user queries..
-                {formatted_tokens}
-
-                Based on this data, optimize the Title Tag for better SEO performance. 
-                Provide a new Title Tag and don't generate anything other than title.
-                Ensure it's within the character limit and includes high-value keywords from the associated queries.
-                When you write Titles, make it Actionable. Always keep this in mind.
-                
-                To handle edge cases:
-                - If sufficient data is not available, suggest an alternative generic approach to crafting an optimized Title Tag.
-
-                """
-            
-            completion = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": task_prompt},
-                    ]
-                    )
-            
-            ai_generated_title = completion.choices[0].message.content
-
-            ai_generated_title_html = f"""
-            <div class="p-5 bg-primary-content rounded-box">
-                <p class="text-s accent-content">
-                {ai_generated_title}
-                </p>
-
-            </div>
             """
-            return ai_generated_title_html
 
-        # GET request
-        return redirect(url_for('dashboard'))
-    
+        task_prompt = f"""
 
-@app.route('/optimize-ctr/generate-ai-meta-description/', methods=['POST', 'GET'])
-def generate_ai_meta_description():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
-    else:
-        # POST request
-        if request.method == 'POST':
+            Here is the Page URL: "{page}".
+            Here is the Existing Title of the Page: "{existing_title}".
+            Here is the Existing Meta Description of the Page: "{existing_meta_description}".
+            Here is the Existing H1 of the Page: "{h1}".
 
-            
-            # Capture the incoming JSON data from the request
-            data = request.get_json()
+            Use the following data for analysis:
 
+            Here is the format of the provided data for your analysis:
 
-            # Extract the data from the JSON
-            existing_title = data.get('existing_title')
-            existing_meta_description = data.get('existingMetaDescriptionElement')
-            page = data.get('page')
-            metaDescQueryTokensCount = data.get('metaDescQueryTokensCount')
-            h1 = data.get('h1')
-            openai_api_key = data.get('openai_api_key')
+            Term: <term> used in Search Query
+            Used <X> times in search queries.
+            Exists in the current title: <Yes/No>
+            Top 5 search queries: <Query 1>, <Query 2>, <Query 3>, <Query 4>, <Query 5>
 
-            # Print or log the captured data for debugging
-            logger.info("Existing title: %s", existing_title)
-            logger.info("Page: %s", page)
-            #print('Title Query Tokens Count:', title_query_tokens_count)
+            The following details include terms, their frequency in search queries, whether they exist in the current title, and the top 5 associated search queries:
+            {formatted_tokens}
 
-            print(type(metaDescQueryTokensCount))
-
-            # Format the information for the prompt
-            formatted_tokens = ""
-            for term, count, exists_in_title, examples in metaDescQueryTokensCount:
-                formatted_tokens += f"Term: {term}\n"
-                formatted_tokens += f"Used {count} times in search queries.\n"
-                formatted_tokens += f"Exists in the current Meta Description: {'Yes' if exists_in_title else 'No'}\n"
-                formatted_tokens += f"Top 5 search queries: {', '.join(examples)}\n"
-                formatted_tokens += "\n"  # Adding a line break between entries
-
-            logger.info(formatted_tokens)
-
-            # Here you can perform any operations, such as generating the AI title
-
-            client = OpenAI(
-                api_key=openai_api_key
-                )
-
-
-            system_prompt = """ 
-                You are an expert copywriter and SEO specialist who crafts highly compelling and optimized Meta Descriptions to improve click-through rates (CTR). 
-                Your task is to generate a new SEO Meta Description for a webpage using data provided from Google Search Console (GSC). 
-                Your responses are precise, actionable, and based on best practices in SEO. 
-
-                Ensure recommendations align with the following principles:
-                - Write Meta Descriptions that are actionable and enticing, encouraging users to click.
-                - Incorporate high-performing and relevant keywords that reflect the webpage's content.
-                - Maintain readability and make the Meta Description engaging while adhering to the character limit (120-160 characters).
-                - Use terms not included in the Title Tag to provide additional context or value to the user.
-                - If data is incomplete or unclear, suggest a generic alternative or prompt for clarification.
-                Your tone is professional, concise, and helpful.
-                """
-
-            task_prompt = f"""
-
-                Here is the Page URL: "{page}".
-                Here is the Existing Title of the Page: "{existing_title}".
-                Here is the Existing Meta Description of the Page: "{existing_meta_description}".
-                Here is the Existing H1 of the Page: "{h1}".
-
-                Use the following data for analysis:
-
-                Here is the format of the provided data for your analysis:
-
-                Term: <term> used in Search Query
-                Used <X> times in search queries.
-                Exists in the current title: <Yes/No>
-                Top 5 search queries: <Query 1>, <Query 2>, <Query 3>, <Query 4>, <Query 5>
-
-                The following details include terms, their frequency in search queries, whether they exist in the current title, and the top 5 associated search queries:
-                {formatted_tokens}
-
-                Important instructions:
-                1) The new Meta Description should be in the same language as the existing title.
-                2) Focus on terms not present in the existing title, but relevant to the page content, to differentiate the Meta Description and provide added value.
-                3) Adhere to the Meta Description character limit of 120-160 characters.
-                4) Provide only the new Meta Description and nothing else.
-                5) If sufficient data is unavailable, suggest a generic yet engaging Meta Description.
-                """
-
-            
-            completion = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": task_prompt},
-                    ]
-                    )
-            ai_generated_meta_description = completion.choices[0].message.content
-
-            ai_generated_meta_description_html = f"""
-
-            <div class="p-5 bg-primary-content rounded-box">
-                <p class="text-s accent-content">
-                {ai_generated_meta_description}
-                </p>
-
-            </div>
+            Important instructions:
+            1) The new Meta Description should be in the same language as the existing title.
+            2) Focus on terms not present in the existing title, but relevant to the page content, to differentiate the Meta Description and provide added value.
+            3) Adhere to the Meta Description character limit of 120-160 characters.
+            4) Provide only the new Meta Description and nothing else.
+            5) If sufficient data is unavailable, suggest a generic yet engaging Meta Description.
             """
-            return ai_generated_meta_description_html
 
         
-        # GET request
-        return redirect(url_for('dashboard'))
+        completion = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": task_prompt},
+                ]
+                )
+        ai_generated_meta_description = completion.choices[0].message.content
+
+        ai_generated_meta_description_html = f"""
+
+        <div class="p-5 bg-primary-content rounded-box">
+            <p class="text-s accent-content">
+            {ai_generated_meta_description}
+            </p>
+
+        </div>
+        """
+        return ai_generated_meta_description_html
+
     
+    # GET request
+    return redirect(url_for('dashboard'))
+
 
 @app.route('/actionable-insights/optimize-page-content', methods=['GET', 'POST'])
+@requires_gsc
 @report_errors
 def optimize_page_content():
     logger.info("Starting optimize_page_content route")
-    if 'credentials' not in session:
-        logger.warning("No credentials in session, redirecting to GSC authorize")
-        return redirect(url_for('gsc_authorize'))
     
     if request.method == 'POST':
         logger.info("Processing POST request for optimize_page_content")
 
-        selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-        brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+        selected_property = current_property()
+        brand_keywords = current_brand_keywords()
         logger.info(f"Selected property: {selected_property}")
         logger.info(f"Brand keywords: {brand_keywords}")
 
@@ -2576,8 +2527,8 @@ def optimize_page_content():
     
     #get request
     logger.info("Processing GET request for optimize_page_content")
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
     logger.info(f"Selected property: {selected_property}")
 
     #capture variable <page> from url path
@@ -2589,7 +2540,7 @@ def optimize_page_content():
     logger.info("Rendering main template")
     # Fetch latest available date
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
-    if selected_property != "You haven't selected a GSC Property yet":
+    if selected_property:
         try:
             webmasters_service = build_gsc_service()
             latest_date = get_cached_latest_date(selected_property, webmasters_service)
@@ -2606,21 +2557,17 @@ def optimize_page_content():
 
 
 @app.route('/tools/select-target', methods=['GET'])
+@requires_property
 def select_target():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
         
     destination = request.args.get('destination')
     if not destination:
         flash('No destination specified')
         return redirect(url_for('dashboard'))
 
-    selected_property = session.get("selected_property", "You haven't selected a GSC Property yet")
-    brand_keywords = session.get("brand_keywords", "You haven't selected Brand Keywords.")
+    selected_property = current_property()
+    brand_keywords = current_brand_keywords()
     
-    if selected_property == "You haven't selected a GSC Property yet":
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
 
     # Fetch latest date for property cards
     latest_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
@@ -2646,7 +2593,7 @@ def select_target_data():
     destination = request.args.get('destination')
     selected_property = session.get("selected_property")
     
-    if not selected_property or selected_property == "You haven't selected a GSC Property yet":
+    if not selected_property:
         return "<tr class='text-warning'><td colspan='4'>Please select a property first.</td></tr>"
 
     # Fetch last 30 days of data to show top pages

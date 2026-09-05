@@ -17,6 +17,9 @@ from app.routes.gsc_api_auth import build_gsc_service, fetch_search_console_data
 from app.routes.gsc_routes import (format_dates, get_cached_latest_date,
                                    process_dates, report_errors)
 from app.routes.segments import active_segment, apply_segment, segment_summary
+from app.routes.guards import (requires_gsc, requires_property,
+                               selected_property as current_property,
+                               brand_keywords as current_brand_keywords)
 
 # Google returns machine names; these are what Search Console calls them.
 APPEARANCE_LABELS = {
@@ -91,17 +94,11 @@ def _fetch(service, property_url, start, end, filter_groups):
 
 
 @app.route('/reports/search-appearance/', methods=['GET', 'POST'])
+@requires_property
 @report_errors
 def search_appearance_report():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
+    selected_property = current_property()
 
-    selected_property = session.get(
-        "selected_property", "You haven't selected a GSC Property yet")
-
-    if selected_property == "You haven't selected a GSC Property yet":
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
 
     if request.method == 'POST':
         webmasters_service = build_gsc_service()
@@ -164,5 +161,5 @@ def search_appearance_report():
 
     return render_template('/search-appearance/main.html',
                            selected_property=selected_property,
-                           brand_keywords=session.get("brand_keywords", ""),
+                           brand_keywords=current_brand_keywords(),
                            latest_date=latest_date)

@@ -12,6 +12,9 @@ from flask import render_template, redirect, url_for, flash, session
 from app import app
 from app.routes.gsc_api_auth import build_gsc_service
 from app.routes.gsc_routes import get_cached_latest_date
+from app.routes.guards import (requires_gsc, requires_property,
+                               selected_property as current_property,
+                               brand_keywords as current_brand_keywords)
 
 
 def _parse_timestamp(value):
@@ -71,16 +74,10 @@ def _summarise_sitemap(entry):
 
 
 @app.route('/reports/sitemaps/', methods=['GET'])
+@requires_property
 def sitemaps_report():
-    if 'credentials' not in session:
-        return redirect(url_for('gsc_authorize'))
+    selected_property = current_property()
 
-    selected_property = session.get(
-        "selected_property", "You haven't selected a GSC Property yet")
-
-    if selected_property == "You haven't selected a GSC Property yet":
-        flash('Please Select your GSC Property.')
-        return redirect(url_for('gsc_property_selection'))
 
     sitemaps = []
     fetch_error = None
