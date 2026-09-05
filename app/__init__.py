@@ -111,6 +111,20 @@ else:
         'REDIS_URL is not set. Using cookie sessions -- OAuth credentials '
         'will be stored in the client cookie.')
 
+# Database. SQLite by default; see app/db.py for the deployment caveat about
+# ephemeral filesystems.
+from app import db as _db
+
+app.teardown_appcontext(_db.close_db)
+
+try:
+    _applied = _db.run_migrations(logger=app.logger)
+    app.logger.info('Database ready at %s%s', _db.database_path(),
+                    f' (applied {len(_applied)} migration(s))' if _applied else '')
+except Exception as _migration_error:
+    app.logger.error('Database migrations failed: %s', _migration_error, exc_info=True)
+    raise
+
 # Initialize MongoDB client
 #cluster = MongoClient(MONGO_URI)
 
