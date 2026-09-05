@@ -21,8 +21,12 @@ LEGACY_BRAND_SENTINEL = "You haven't selected Brand Keywords."
 
 
 def is_signed_in():
-    """True when this session has a usable Google Search Console connection."""
-    return 'credentials' in session or bool(session.get('connection_id'))
+    """True when this session has a usable Google Search Console connection.
+
+    `account_id` is the current shape. `credentials` is honoured so a session
+    opened before the database existed keeps working until it expires.
+    """
+    return bool(session.get('account_id')) or 'credentials' in session
 
 
 def selected_property():
@@ -34,7 +38,22 @@ def selected_property():
 
 
 def brand_keywords():
-    """Brand terms for the chosen property, always a list (possibly empty)."""
+    """Brand terms for the chosen property, always a list (possibly empty).
+
+    Read from the property, not the session: held per-session they followed the
+    user from one property to the next, so an agency switching between clients
+    classified the second client's traffic with the first client's terms.
+    """
+    workspace_id = session.get('workspace_id')
+    site_url = selected_property()
+
+    if workspace_id and site_url:
+        from app import repositories as repo
+        prop = repo.get_property_by_site_url(workspace_id, site_url)
+        if prop:
+            return repo.get_brand_keywords(prop['id'])
+
+    # Sessions predating the database still carry their own copy.
     value = session.get('brand_keywords')
     if not value or value == LEGACY_BRAND_SENTINEL:
         return []

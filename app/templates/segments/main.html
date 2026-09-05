@@ -58,6 +58,16 @@
               </span>
             </label>
 
+            {% if selected_property %}
+            <label class="form-control">
+              <span class="label-text text-xs font-semibold uppercase tracking-wide opacity-60 mb-1">Applies to</span>
+              <select name="scope" class="select select-bordered select-sm">
+                <option value="workspace">Every property</option>
+                <option value="property">Only {{ selected_property }}</option>
+              </select>
+            </label>
+            {% endif %}
+
             <div class="flex items-center gap-3 pt-1">
               <button type="submit" class="btn btn-primary btn-sm">Save segment</button>
               <button type="button" class="btn btn-ghost btn-sm" id="seg-preview-btn"
@@ -74,8 +84,8 @@
       </div>
 
       <div class="text-xs opacity-60 mt-3 leading-relaxed">
-        Segments are stored with your sign-in session, so they stay until you sign out and
-        don't follow you to another device.
+        Segments belong to your workspace, so everyone in it sees them and they survive
+        signing out.
       </div>
     </div>
 
@@ -114,6 +124,11 @@
                 <span class="text-xs opacity-70">{{ dimensions[segment.dimension] }}
                   {{ operators[segment.operator] }}</span>
                 <div class="font-mono text-xs break-all">{{ segment.expression }}</div>
+                {% if segment.property_id %}
+                <span class="badge badge-outline badge-xs mt-1">this property only</span>
+                {% else %}
+                <span class="badge badge-ghost badge-xs mt-1">every property</span>
+                {% endif %}
               </td>
               <td class="align-top">
                 <form method="POST" action="{{ url_for('delete_segment', segment_id=segment.id) }}"

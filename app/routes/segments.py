@@ -6,19 +6,20 @@ named, reusable filter ("Blog only", "Question queries", "Everything except
 brand") that any report can be run through, which turns each existing report
 into as many reports as the user has segments.
 
-Segments live in the session. That means they last as long as the sign-in and
-are not shared between devices -- the honest limitation until the app has a
-database. Everything here goes through get_segments()/save_segments(), so
-moving to a table later is a change in two functions.
+Segments belong to the workspace, so a team shares them and they survive a
+sign-out. A segment with no property is available on every property; one scoped
+to a property appears only there.
 """
 
 import re
-import uuid
 
 from flask import (render_template, request, redirect, url_for, flash, session,
                    jsonify)
 
 from app import app
+from app import repositories as repo
+from app.routes.identity import (current_workspace_id, current_property_row,
+                                 current_account, can_edit)
 from app.routes.guards import (requires_gsc, requires_property,
                                selected_property as current_property,
                                brand_keywords as current_brand_keywords)
@@ -44,23 +45,24 @@ MAX_EXPRESSION_LENGTH = 4000
 
 
 def get_segments():
-    """Every saved segment for this session, oldest first."""
-    segments = session.get('segments')
-    return list(segments) if isinstance(segments, list) else []
+    """Segments visible right now: the workspace's, plus the property's own.
 
-
-def save_segments(segments):
-    session['segments'] = segments
+    Owned by the workspace rather than the session, so a team shares them and
+    they outlive a sign-out.
+    """
+    workspace_id = current_workspace_id()
+    if not workspace_id:
+        return []
+    prop = current_property_row()
+    return repo.list_segments(workspace_id, prop['id'] if prop else None)
 
 
 def get_segment(segment_id):
-    """One segment by id, or None."""
-    if not segment_id:
+    """One segment by id, scoped to the workspace so a foreign id reads as None."""
+    workspace_id = current_workspace_id()
+    if not workspace_id or not segment_id:
         return None
-    for segment in get_segments():
-        if segment.get('id') == segment_id:
-            return segment
-    return None
+    return repo.get_segment(workspace_id, segment_id)
 
 
 def validate_segment(name, dimension, operator, expression):
@@ -169,19 +171,34 @@ def create_segment():
         flash(error)
         return redirect(url_for('segments_page'))
 
-    segments = get_segments()
-    if len(segments) >= MAX_SEGMENTS:
+    workspace_id = current_workspace_id()
+    if not workspace_id:
+        flash("Reconnect your Google account before saving segments.")
+        return redirect(url_for('gsc_authorize'))
+
+    if not can_edit():
+        flash("Your role in this workspace is read-only.")
+        return redirect(url_for('segments_page'))
+
+    if repo.count_segments(workspace_id) >= MAX_SEGMENTS:
         flash(f"You can save up to {MAX_SEGMENTS} segments. Delete one first.")
         return redirect(url_for('segments_page'))
 
-    segments.append({
-        'id': f"seg_{uuid.uuid4().hex[:12]}",
-        'name': name[:60],
-        'dimension': dimension,
-        'operator': operator,
-        'expression': expression,
-    })
-    save_segments(segments)
+    # "This property only" scopes the segment; otherwise it applies everywhere,
+    # which is what a rule like /blog/ usually wants.
+    prop = current_property_row()
+    scope_to_property = request.form.get('scope') == 'property' and prop
+    account = current_account()
+
+    repo.create_segment(
+        workspace_id=workspace_id,
+        name=name[:60],
+        dimension=dimension,
+        operator=operator,
+        expression=expression,
+        property_id=prop['id'] if scope_to_property else None,
+        account_id=account['id'] if account else None)
+
     flash(f"Segment “{name}” saved.")
     return redirect(url_for('segments_page'))
 
@@ -189,14 +206,14 @@ def create_segment():
 @app.route('/segments/<segment_id>/delete', methods=['POST'])
 @requires_gsc
 def delete_segment(segment_id):
-    segments = get_segments()
-    remaining = [s for s in segments if s.get('id') != segment_id]
+    workspace_id = current_workspace_id()
 
-    if len(remaining) == len(segments):
-        flash("That segment no longer exists.")
-    else:
-        save_segments(remaining)
+    if not can_edit():
+        flash("Your role in this workspace is read-only.")
+    elif workspace_id and repo.delete_segment(workspace_id, segment_id):
         flash("Segment deleted.")
+    else:
+        flash("That segment no longer exists.")
 
     return redirect(url_for('segments_page'))
 

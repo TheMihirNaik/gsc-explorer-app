@@ -6,6 +6,7 @@ from app.routes.customer_support import *
 from app.routes.gsc_api_auth import *
 from app.routes.gsc_routes import *
 from app.routes.cluster_queries_routes import *
+from app.routes.identity import *
 from app.routes.segments import *
 from app.routes.search_appearance import *
 from app.routes.sitemaps import *

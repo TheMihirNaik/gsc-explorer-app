@@ -177,3 +177,9 @@ client_secrets.json
 *.pem
 *.p12
 *.pfx
+
+# SQLite database (see app/db.py)
+data/
+*.db
+*.db-wal
+*.db-shm

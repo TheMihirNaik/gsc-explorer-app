@@ -27,6 +27,9 @@ import ipaddress
 import threading
 from urllib.parse import quote, urlparse
 from app.routes.segments import active_segment, apply_segment, segment_summary
+from app import repositories as repo
+from app.routes.identity import (active_connection, current_workspace_id,
+                                 current_property_row)
 from app.routes.guards import (requires_gsc, requires_property,
                                selected_property as current_property,
                                brand_keywords as current_brand_keywords)
@@ -245,62 +248,58 @@ def dashboard():
 @app.route('/gsc-property-selection/', methods=['GET', 'POST'])
 @requires_gsc
 def gsc_property_selection():
-    if request.method == 'POST':
-        #save the selected website and country in session
-        selected_property = request.form.get('selected_property')
-        brand_keywords_list_input = request.form.get('brand_keywords')
-        # Trim whitespace and remove any trailing commas
-        brand_keywords = [kw.strip() for kw in brand_keywords_list_input.split(",") if kw.strip()]
+    workspace_id = current_workspace_id()
 
-        session['selected_property'] = selected_property
-        session['brand_keywords'] = brand_keywords
+    if request.method == 'POST':
+        chosen = request.form.get('selected_property')
+        keywords = [kw.strip() for kw in
+                    (request.form.get('brand_keywords') or '').split(",") if kw.strip()]
+
+        # Only a property this workspace can actually reach may be selected --
+        # otherwise the form value alone would let someone name any site URL.
+        if workspace_id:
+            prop = repo.get_property_by_site_url(workspace_id, chosen)
+            if not prop:
+                flash("That property is not available on your connected account.")
+                return redirect(url_for('gsc_property_selection'))
+            # Brand terms belong to the property, not the person browsing.
+            repo.set_brand_keywords(prop['id'], keywords)
+
+        session['selected_property'] = chosen
+        session.pop('brand_keywords', None)      # now read from the property
+        session.pop('latest_date_cache', None)   # freshness is per property
 
         return redirect(url_for('dashboard'))
-    
+
     # Check and refresh credentials
     credentials, redirect_response = check_and_refresh_credentials()
     if redirect_response:
         return redirect_response
-    
+
     try:
-        # Retrieve list of properties in account
         search_console_service = googleapiclient.discovery.build(
             API_SERVICE_NAME, API_VERSION, credentials=credentials)
-        
-        site_list = search_console_service.sites().list().execute()
-        
-        site_list = site_list['siteEntry']
 
-        # exlude sites that are not verified
-        site_list = [s for s in site_list if s['permissionLevel'] != 'siteUnverifiedUser']
+        site_entries = search_console_service.sites().list().execute().get('siteEntry', [])
 
-        site_list_sorted = []
+        # Record what this grant can reach, so the workspace keeps knowing about
+        # the property even if this particular connection later goes away.
+        connection = active_connection()
+        if workspace_id and connection:
+            repo.sync_properties(workspace_id, connection['id'], site_entries)
 
-        for each in site_list:
-            site_list_sorted.append(each['siteUrl'])
+        site_list_sorted = sorted(
+            entry['siteUrl'] for entry in site_entries
+            if entry.get('permissionLevel') != 'siteUnverifiedUser')
 
-        site_list_sorted = sorted(site_list_sorted)
+        selected_property = current_property() or ""
 
-        selected_property = session.get("selected_property", "Please Select your GSC Property.")
-        
     except Exception as e:
-        # If any error occurs with credentials, clear session and redirect to auth
-        if 'credentials' in session:
-            del session['credentials']
+        logger.warning("Could not list Search Console properties: %s", e)
         flash("There was an issue with your authentication. Please log in again.")
         return redirect(url_for('gsc_authorize'))
 
-    brand_keywords = current_brand_keywords()
-
-    brand_keywords_string = ''
-
-    if len(brand_keywords) == 1:
-        brand_keywords_string = brand_keywords[0]
-    elif brand_keywords == "You haven't selected Brand Keywords.":
-        brand_keywords_string = ""
-    else:
-        for each in brand_keywords:
-            brand_keywords_string = brand_keywords_string + each + ','
+    brand_keywords_string = ', '.join(current_brand_keywords())
 
     return render_template('/gsc-property-selection.html', 
                            site_list=site_list_sorted,

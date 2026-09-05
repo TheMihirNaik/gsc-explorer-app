@@ -10,6 +10,9 @@ plotly==5.21.0
 pandas==2.2.2
 google-api-python-client==2.108.0
 google-auth==2.23.4
+# Encrypts OAuth tokens at rest; already a transitive dependency of
+# google-auth, pinned here because app/db.py imports it directly.
+cryptography==42.0.8
 google-auth-oauthlib==1.1.0
 google-auth-httplib2==0.1.1
 python-dotenv==1.0.1

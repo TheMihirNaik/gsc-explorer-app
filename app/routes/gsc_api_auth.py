@@ -17,7 +17,17 @@ from app.routes.google_oauth_config import (
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
-SCOPES = ['https://www.googleapis.com/auth/webmasters.readonly', 'https://www.googleapis.com/auth/webmasters']
+# Identity scopes come first: without them Google returns an anonymous grant
+# and the app has no stable key to store anything against. `sub` from the ID
+# token is that key.
+#
+# Adding these to an existing deployment forces every user through consent
+# again, once.
+SCOPES = ['openid',
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/userinfo.profile',
+          'https://www.googleapis.com/auth/webmasters.readonly',
+          'https://www.googleapis.com/auth/webmasters']
 API_SERVICE_NAME = 'searchconsole'
 API_VERSION = 'v1'
 
@@ -169,12 +179,18 @@ def gsc_oauth2callback():
     
     flow.fetch_token(authorization_response=authorization_response)
 
-    # Store credentials in the session.
-    # ACTION ITEM: In a production app, you likely want to save these
-    #              credentials in a persistent database instead.
     credentials = flow.credentials
-    flask.session['credentials'] = credentials_to_dict(credentials)
-    app.logger.info("Successfully stored credentials in session")
+
+    # The ID token says who authorised. Verified against Google's keys rather
+    # than decoded, so a forged token cannot mint an account.
+    id_info = verify_id_token(credentials)
+    if not id_info or not id_info.get('sub'):
+      app.logger.error("OAuth callback: no verifiable ID token in the response")
+      flash("Google did not confirm who you are. Please try connecting again.")
+      return flask.redirect(url_for('home'))
+
+    from app.routes.identity import sign_in
+    sign_in(id_info, credentials)
 
     return flask.redirect(url_for('gsc_property_selection'))
   except Exception as e:
@@ -277,22 +293,41 @@ def check_and_refresh_credentials():
     - (credentials, None) if credentials are valid
     - (None, redirect_response) if there's an issue and user should be redirected
   """
-  if 'credentials' not in flask.session:
+  from app.routes.guards import is_signed_in
+
+  if not is_signed_in():
     return None, redirect(url_for('gsc_authorize'))
-  
+
   try:
-    credentials = credentials_from_session()
-    
+    # Same source as build_gsc_service: the stored connection, falling back to
+    # a pre-database session so nobody is signed out by a deploy.
+    from app.routes.identity import active_connection, credentials_for_connection
+    credentials = None
+    connection = active_connection()
+    if connection:
+      credentials = credentials_for_connection(connection)
+    elif 'credentials' in flask.session:
+      credentials = credentials_from_session()
+
+    if credentials is None:
+      return None, redirect(url_for('gsc_authorize'))
+
     # Check if the token is expired and refresh it if needed
     if not credentials.valid and credentials.expired and credentials.refresh_token:
       try:
         credentials.refresh(google.auth.transport.requests.Request())
-        # Save updated credentials back to session
-        flask.session['credentials'] = credentials_to_dict(credentials)
+        if connection:
+          from app import repositories as repo
+          repo.update_connection_tokens(
+              connection['id'], credentials.token,
+              credentials.expiry.isoformat() if credentials.expiry else None)
+        else:
+          flask.session['credentials'] = credentials_to_dict(credentials)
       except Exception as e:
-        # If refresh fails, clear session and redirect to auth
-        if 'credentials' in flask.session:
-          del flask.session['credentials']
+        if connection:
+          from app import repositories as repo
+          repo.mark_connection(connection['id'], 'needs_reauth')
+        flask.session.pop('credentials', None)
         flash("Your session has expired. Please log in again.")
         return None, redirect(url_for('gsc_authorize'))
     
@@ -359,6 +394,40 @@ def handle_gsc_reauth_required(error):
   return flask.redirect(target)
 
 
+def verify_id_token(credentials):
+  """Who authorised, verified against Google's signing keys.
+
+  The ID token is a JWT from Google. Verifying rather than decoding matters:
+  an unverified token is attacker-controlled input, and this one mints the
+  account row everything else is keyed to.
+
+  Returns the claims dict, or None when there is no usable token.
+  """
+  raw = getattr(credentials, 'id_token', None)
+  if not raw:
+    app.logger.warning("No id_token on credentials -- were the openid scopes granted?")
+    return None
+
+  try:
+    from google.oauth2 import id_token as google_id_token
+    request_adapter = google.auth.transport.requests.Request()
+    claims = google_id_token.verify_oauth2_token(
+        raw, request_adapter, _configured_client_id())
+    if claims.get('iss') not in ('accounts.google.com', 'https://accounts.google.com'):
+      app.logger.error("ID token from unexpected issuer: %s", claims.get('iss'))
+      return None
+    return claims
+  except Exception as exc:
+    app.logger.error("Could not verify ID token: %s", exc, exc_info=True)
+    return None
+
+
+def _configured_client_id():
+  config = get_client_config() or {}
+  section = config.get('web') or config.get('installed') or {}
+  return section.get('client_id')
+
+
 def build_gsc_service():
   # One service per request. Building it parses the API discovery document,
   # and several routes ask for the service more than once while handling a
@@ -368,8 +437,24 @@ def build_gsc_service():
     if cached is not None:
       return cached
 
-  # Load credentials from the session
-  credentials = credentials_from_session()
+  # Credentials come from the stored connection. A session that predates the
+  # database still carries them in the cookie; honour that once so nobody is
+  # signed out mid-visit by a deploy.
+  from app.routes.identity import active_connection, credentials_for_connection
+  from app import repositories as repo
+
+  connection = active_connection()
+  if connection:
+      credentials = credentials_for_connection(connection)
+      if credentials is None:
+          repo.mark_connection(connection['id'], 'needs_reauth')
+          raise GSCReauthRequired(
+              "This Google connection can no longer be read. Please reconnect.")
+  elif 'credentials' in flask.session:
+      credentials = credentials_from_session()
+      connection = None
+  else:
+      raise GSCReauthRequired("Connect your Google Search Console account to continue.")
 
   # Check if the token is expired and refresh it if needed
   if not credentials.valid and credentials.expired and credentials.refresh_token:
@@ -377,12 +462,18 @@ def build_gsc_service():
           credentials.refresh(google.auth.transport.requests.Request())
       except Exception as e:
           app.logger.info(f"Token refresh failed, reauthorization needed: {e}")
+          if connection:
+              repo.mark_connection(connection['id'], 'needs_reauth')
           raise GSCReauthRequired(
               "Your Google Search Console session has expired. "
               "Please reconnect your account.")
 
-      # Save updated credentials back to session
-      flask.session['credentials'] = credentials_to_dict(credentials)
+      if connection:
+          repo.update_connection_tokens(
+              connection['id'], credentials.token,
+              credentials.expiry.isoformat() if credentials.expiry else None)
+      else:
+          flask.session['credentials'] = credentials_to_dict(credentials)
 
   # Build the Google Search Console API service
   search_console_service = googleapiclient.discovery.build(
