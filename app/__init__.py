@@ -121,6 +121,12 @@ try:
     _applied = _db.run_migrations(logger=app.logger)
     app.logger.info('Database ready at %s%s', _db.database_path(),
                     f' (applied {len(_applied)} migration(s))' if _applied else '')
+    if not _db.storage_is_configured():
+        app.logger.warning(
+            'DATABASE_PATH is not set, so the database lives at %s inside the '
+            'container. On a container host this is destroyed on every '
+            'redeploy. Mount a volume and point DATABASE_PATH at it.',
+            os.path.abspath(_db.database_path()))
 except Exception as _migration_error:
     app.logger.error('Database migrations failed: %s', _migration_error, exc_info=True)
     raise

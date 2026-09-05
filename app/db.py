@@ -34,6 +34,18 @@ def database_path():
     return os.environ.get('DATABASE_PATH') or DEFAULT_DATABASE_PATH
 
 
+def storage_is_configured():
+    """Whether someone has deliberately chosen where the database lives.
+
+    An unset DATABASE_PATH means the file sits inside the container's own
+    filesystem. On Coolify, Heroku, Render and most container hosts that is
+    wiped on every redeploy, taking every account, connection and segment with
+    it -- and it fails silently, because a fresh empty database works fine
+    until someone notices their data is gone.
+    """
+    return bool(os.environ.get('DATABASE_PATH'))
+
+
 def utcnow():
     """Timestamps are ISO-8601 UTC strings, which sort correctly as text."""
     return datetime.now(timezone.utc).isoformat(timespec='seconds')
